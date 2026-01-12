@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-// ... 폰트 import 등
 import EmotionRegistry from "@/lib/EmotionRegistry";
+import Providers from "./providers";
 
 export default function RootLayout({
   children,
@@ -11,7 +11,7 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <EmotionRegistry>
-          {children}
+          <Providers>{children}</Providers>
         </EmotionRegistry>
       </body>
     </html>
