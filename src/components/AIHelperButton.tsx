@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { Button } from '@mui/material';
 import { SparklesIcon } from '@heroicons/react/24/solid';
 import { SxProps, Theme } from '@mui/material/styles'; 

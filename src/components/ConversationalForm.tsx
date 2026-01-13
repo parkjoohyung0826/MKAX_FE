@@ -9,7 +9,6 @@ import WorkExperienceStep from './steps/WorkExperienceStep';
 import CertificationsStep from './steps/CertificationsStep';
 import FinalReviewStep from './steps/FinalReviewStep';
 
-// Define the data structure for the whole form
 export interface ResumeData {
   name: string;
   desiredJob: string;
@@ -19,7 +18,6 @@ export interface ResumeData {
   certifications: string;
 }
 
-// Define the props for the component, which will include the final submit handler
 interface Props {
   onSubmit: (data: ResumeData) => void;
 }

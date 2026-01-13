@@ -1,7 +1,6 @@
-// src/components/cover-letter/WritingGuide.tsx
 import React from 'react';
 import { Box, Typography, Paper } from '@mui/material';
-import { ResumeData } from '../ConversationalForm'; // Adjust path as needed
+import { ResumeData } from '../ConversationalForm';
 
 interface WritingGuideProps {
   section: string;

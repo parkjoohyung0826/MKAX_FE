@@ -1,8 +1,7 @@
-// src/components/steps/BasicInfoStep.tsx
 'use client';
 
 import React, { useState } from 'react';
-import { Box, Typography, TextField, Paper, Button } from '@mui/material'; // Button import 추가
+import { Box, Typography, TextField, Paper, Button } from '@mui/material';
 import { ResumeData } from '../ConversationalForm';
 import AIHelperButton from '../AIHelperButton';
 import ConversationalAssistant from '../ConversationalAssistant';

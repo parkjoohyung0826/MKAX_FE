@@ -1,17 +1,13 @@
-// src/components/steps/FinalReviewStep.tsx
 'use client';
 
-import React from 'react';
 import {
   Box,
   Typography,
   Paper,
   Divider,
-  Grid,
 } from '@mui/material';
+import { Grid } from '@mui/material/Grid'; 
 import { ResumeData } from '../ConversationalForm';
-import JobPostingList from '../JobPostingList';
-import { mockJobPostings } from '@/lib/mockJobPostings';
 
 interface Props {
   data: ResumeData;

@@ -162,14 +162,14 @@ const CoverLetterEditor = ({ coverLetterData, handleChange, setCoverLetterData, 
         </CustomModal>
 
         <CustomModal
-          open={isAIGenerateSectionModalOpen} // Using renamed state
+          open={isAIGenerateSectionModalOpen} 
           onClose={() => setIsAIGenerateSectionModalOpen(false)}
           title="AI 작성"
         >
           <AIWriter
             section={selectedSection}
             onGenerate={handleAIGenerate}
-            isGenerating={isGenerating || isGeneratingAll} // Pass combined loading state
+            isGenerating={isGenerating || isGeneratingAll} 
           />
         </CustomModal>
 
@@ -197,7 +197,7 @@ const CoverLetterEditor = ({ coverLetterData, handleChange, setCoverLetterData, 
               variant="contained"
               startIcon={<AutoAwesome />}
               onClick={() => handleAIGenerateAll((document.getElementById('ai-all-prompt') as HTMLInputElement)?.value || '')}
-              disabled={isGenerating || isGeneratingAll} // Use global loading states
+              disabled={isGenerating || isGeneratingAll}
             >
               AI로 전체 작성 요청
             </Button>

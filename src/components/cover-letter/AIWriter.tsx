@@ -1,4 +1,3 @@
-// src/components/cover-letter/AIWriter.tsx
 import React, { useState } from 'react';
 import { Box, TextField, Button, CircularProgress } from '@mui/material';
 

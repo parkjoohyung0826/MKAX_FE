@@ -43,7 +43,7 @@ interface ResumeData {
 interface ResultData {
   aiCoverLetter: string;
   aiResumeSummary: string;
-  jobPostings: JobPosting[]; // 타입을 JobPosting 배열로 수정
+  jobPostings: JobPosting[]; 
   resumeData: ResumeData;
 }
 
@@ -51,8 +51,6 @@ interface Props {
   data: ResultData;
   onReset: () => void;
 }
-
-// --- Helper 함수 ---
 
 const parseCoverLetter = (text: string): CoverLetterData => {
   const data: CoverLetterData = {

@@ -1,4 +1,3 @@
-// src/components/steps/CertificationsStep.tsx
 'use client';
 
 import React, { useState } from 'react';

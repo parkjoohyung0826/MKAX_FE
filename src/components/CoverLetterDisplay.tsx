@@ -49,8 +49,6 @@ const contentCellStyle = css`
   justify-content: flex-start; /* 텍스트 상단 정렬 */
 `;
 
-// --- Props 정의 ---
-// 기존의 단순 string content 대신, 각 항목별 데이터를 받도록 구조화
 interface CoverLetterData {
   growthProcess: string;
   strengthsAndWeaknesses: string;
@@ -59,13 +57,11 @@ interface CoverLetterData {
 }
 
 interface Props {
-  // 만약 데이터가 아직 분리되지 않았다면, 부모 컴포넌트에서 이 형태로 가공해서 넘겨주어야 합니다.
   data: CoverLetterData; 
   resumeName: string;
 }
 
 const CoverLetterDisplay = React.forwardRef<HTMLDivElement, Props>(({ data, resumeName }, ref) => {
-  // 표시할 항목 설정 (라벨명과 데이터 키 매핑)
   const sections = [
     { label: '성장과정', key: 'growthProcess' as keyof CoverLetterData },
     { label: '성격의 장, 단점', key: 'strengthsAndWeaknesses' as keyof CoverLetterData },
@@ -83,7 +79,7 @@ const CoverLetterDisplay = React.forwardRef<HTMLDivElement, Props>(({ data, resu
         p: '15mm',
         bgcolor: 'white',
         boxSizing: 'border-box',
-        margin: '0 auto', // 화면 중앙 정렬
+        margin: '0 auto',
       }}
     >
       <Box>

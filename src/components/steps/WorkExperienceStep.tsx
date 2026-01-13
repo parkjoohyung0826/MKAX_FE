@@ -1,4 +1,3 @@
-// src/components/steps/WorkExperienceStep.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -24,7 +23,6 @@ const WorkExperienceStep = ({ data, handleChange }: Props) => {
   };
 
   const handleAssistantSubmit = (text: string) => {
-    // `handleChange`는 ChangeEvent를 기대하므로, 가짜 이벤트를 생성하여 전달합니다.
     const syntheticEvent = {
       target: {
         name: 'workExperience',

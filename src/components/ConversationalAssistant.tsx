@@ -1,4 +1,3 @@
-// src/components/ConversationalAssistant.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -29,9 +28,9 @@ const style = {
   transform: 'translate(-50%, -50%)',
   width: 600,
   bgcolor: 'background.paper',
-  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.12)', // A softer shadow
+  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.12)', 
   borderRadius: 4,
-  overflow: 'hidden', // Ensures the child corners are also rounded
+  overflow: 'hidden',
 };
 
 const ConversationalAssistant = ({ open, onClose, onSubmit, title, prompt }: Props) => {
