@@ -117,7 +117,7 @@ const GenerationResult = ({ data, onReset }: Props) => {
   };
 
   // PDF 다운로드 핸들러
-  const handleDownloadPDF = async (targetRef: RefObject<HTMLDivElement>, fileName: string) => {
+  const handleDownloadPDF = async (targetRef: RefObject<HTMLDivElement | null>, fileName: string) => {
     if (!targetRef.current) return;
 
     try {
