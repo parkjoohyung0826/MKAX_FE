@@ -16,9 +16,9 @@ export const globalStyles = (theme: AppTheme) => css`
   }
 
   body {
-    font-family: ${theme.primitives.typography.fontFamily.base};
-    background-color: ${theme.semantic.bg.page};
-    color: ${theme.semantic.text.primary};
+    // font-family: ${theme.primitives.typography.fontFamily.base};
+    // background-color: ${theme.semantic.bg.page};
+    // color: ${theme.semantic.text.primary};
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }

@@ -70,7 +70,7 @@ const BasicInfoStep = ({ data, handleChange }: Props) => {
             <Typography variant="body1" fontWeight={600} sx={{ mb: 2 }}>
               희망 직무
             </Typography>
-            <AIHelperButton onClick={handleOpenAssistant} />
+            <AIHelperButton onClick={handleOpenAssistant} sx={{ flexShrink: 0 }} />
           </Box>
           <TextField
             fullWidth
