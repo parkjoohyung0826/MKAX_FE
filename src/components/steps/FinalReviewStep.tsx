@@ -6,7 +6,6 @@ import {
   Paper,
   Divider,
 } from '@mui/material';
-import { Grid } from '@mui/material/Grid'; 
 import { ResumeData } from '../ConversationalForm';
 
 interface Props {
@@ -15,7 +14,12 @@ interface Props {
 
 const Section = ({ title, content }: { title: string; content: string }) => (
   <Box mb={2}>
-    <Typography variant="overline" color="text.secondary" fontWeight={600}>
+    <Typography
+      variant="overline"
+      color="text.secondary"
+      fontWeight={600}
+      display="block"
+    >
       {title}
     </Typography>
     <Typography
@@ -30,22 +34,32 @@ const Section = ({ title, content }: { title: string; content: string }) => (
 const FinalReviewStep = ({ data }: Props) => {
   return (
     <Box>
-      <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
         📝 마지막으로, 입력하신 내용을 최종 확인해주세요.
       </Typography>
 
       <Paper
         elevation={0}
-        sx={{ p: 3, borderRadius: 2, bgcolor: 'grey.50' }}
+        sx={{
+          p: 3,
+          borderRadius: 2,
+          bgcolor: 'grey.50',
+        }}
       >
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6}>
-            <Section title="성함" content={data.name} />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Section title="희망 직무" content={data.desiredJob} />
-          </Grid>
-        </Grid>
+        {/* 상단 2열 영역 */}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: '1fr 1fr',
+            },
+            gap: 3,
+          }}
+        >
+          <Section title="성함" content={data.name} />
+          <Section title="희망 직무" content={data.desiredJob} />
+        </Box>
 
         <Divider sx={{ my: 2 }} />
         <Section title="학력 사항" content={data.education} />
@@ -59,7 +73,6 @@ const FinalReviewStep = ({ data }: Props) => {
         <Divider sx={{ my: 2 }} />
         <Section title="자격증 및 기타" content={data.certifications} />
       </Paper>
-      
     </Box>
   );
 };
