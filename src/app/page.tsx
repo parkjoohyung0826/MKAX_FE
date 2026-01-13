@@ -92,6 +92,8 @@ export default function Home() {
 
   if (!mounted) return null;
 
+  const isGeneratingApplication = appState === 'loading'; // Moved outside conditional rendering
+
   return (
     <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: 'background.default', pb: 8 }}>
       <AppBar position="sticky" color="transparent" elevation={0} sx={{ backgroundColor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', borderBottom: '1px solid', borderColor: 'divider' }}>
@@ -153,7 +155,7 @@ export default function Home() {
                   )}
                   {activeTab === 'coverLetter' && (
                     <Box sx={{ animation: 'fadeIn 0.5s' }}>
-                      <CoverLetterEditor coverLetterData={coverLetterData} setCoverLetterData={setCoverLetterData} handleChange={handleCoverLetterChange} handleGenerate={handleGenerate} isGenerating={appState === 'loading'} resumeData={resumeData} />
+                      <CoverLetterEditor coverLetterData={coverLetterData} setCoverLetterData={setCoverLetterData} handleChange={handleCoverLetterChange} handleGenerate={handleGenerate} isGenerating={isGeneratingApplication} resumeData={resumeData} />
                     </Box>
                   )}
                 </Box>
