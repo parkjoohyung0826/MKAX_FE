@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Box, Button, Container, Typography } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion'; // Smooth transitions
+import { motion, AnimatePresence } from 'framer-motion'; 
 import ProgressStepper from './ProgressStepper';
 import BasicInfoStep from './steps/BasicInfoStep';
 import EducationStep from './steps/EducationStep';
@@ -23,11 +23,11 @@ interface Props {
   onSubmit: (data: ResumeData) => void;
 }
 
-const steps = ['기본 정보', '학력 사항', '경력 사항', '자격증/보유기술', '최종 검토'];
+const steps = ['기본 정보', '학력 사항', '경력 사항', '자격증/주요활동', '최종 검토'];
 
 const ConversationalForm = ({ onSubmit }: Props) => {
   const [activeStep, setActiveStep] = useState(0);
-  const [direction, setDirection] = useState(0); // For animation direction
+  const [direction, setDirection] = useState(0); 
   const [resumeData, setResumeData] = useState<ResumeData>({
     name: '', desiredJob: '', education: '', workExperience: '', coreCompetencies: '', certifications: '',
   });

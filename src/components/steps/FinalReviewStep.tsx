@@ -95,14 +95,14 @@ const FinalReviewStep = ({ data }: Props) => {
           <SectionContent content={data.workExperience} />
         </Box>
 
-        {/* 4. 기술 및 자격증 (CSS Grid: 모바일 1열 / 데스크탑 이상 2열) */}
+        {/* 4. 기술 및 자격증 */}
         <Box sx={{ 
           display: 'grid', 
           gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
           gap: 3 
         }}>
           <Box sx={glassBox}>
-            <SectionHeader icon={WorkspacePremium} title="핵심 기술 및 역량" />
+            <SectionHeader icon={WorkspacePremium} title="주요 활동 및 역량" />
             <SectionContent content={data.coreCompetencies} />
           </Box>
           <Box sx={glassBox}>

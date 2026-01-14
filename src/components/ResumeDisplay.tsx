@@ -25,7 +25,6 @@ const rowStyle = css`
 const cellStyle = css`
   display: flex;
   align-items: center;
-  justify-content: center;
   border-right: 1px solid ${borderColor};
   padding: 8px;
   min-height: 45px;
@@ -119,31 +118,31 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data: resumeDat
                         <Typography variant="body2" color="text.secondary">사진</Typography>
                     </div>
 
-                    <div css={css`flex-grow: 1;`}>
+                    <div css={css`width: 100%;`}>
                         <div css={rowStyle}>
-                            <div css={cellStyle} className="header" style={{ width: '80px' }}>이 름</div>
-                            <div css={cellStyle} className="data" style={{ flexGrow: 1 }}>{resumeData.name}</div>
-                            <div css={cellStyle} className="header" style={{ width: '80px', borderLeft: `1px solid ${borderColor}` }}>영 문</div>
-                            <div css={cellStyle} className="data no-border-right" style={{ flexGrow: 1 }}></div>
+                            <div css={cellStyle} className="header" style={{ width: '20%' }}>이 름</div>
+                            <div css={cellStyle} className="data" style={{ width: '30%' }}>{resumeData.name}</div>
+                            <div css={cellStyle} className="header" style={{ width: '20%' }}>영 문</div>
+                            <div css={cellStyle} className="data no-border-right" style={{ width: '30%' }}></div>
                         </div>
 
                         <div css={rowStyle}>
-                            <div css={cellStyle} className="header" style={{ width: '80px' }}>생년월일</div>
-                            <div css={cellStyle} className="data" style={{ flexGrow: 1 }}></div>
-                            <div css={cellStyle} className="header" style={{ width: '80px', borderLeft: `1px solid ${borderColor}` }}>이메일</div>
-                            <div css={cellStyle} className="data no-border-right" style={{ flexGrow: 1 }}></div>
+                            <div css={cellStyle} className="header" style={{ width: '20%' }}>생년월일</div>
+                            <div css={cellStyle} className="data" style={{ width: '30%' }}></div>
+                            <div css={cellStyle} className="header" style={{ width: '20%' }}>이메일</div>
+                            <div css={cellStyle} className="data no-border-right" style={{ width: '30%' }}></div>
                         </div>
 
                         <div css={rowStyle}>
-                            <div css={cellStyle} className="header" style={{ width: '80px' }}>연락처</div>
-                            <div css={cellStyle} className="data" style={{ flexGrow: 1 }}>{resumeData.desiredJob}</div>
-                            <div css={cellStyle} className="header" style={{ width: '80px', borderLeft: `1px solid ${borderColor}` }}>비상연락처</div>
-                            <div css={cellStyle} className="data no-border-right" style={{ flexGrow: 1 }}></div>
+                            <div css={cellStyle} className="header" style={{ width: '20%' }}>연락처</div>
+                            <div css={cellStyle} className="data" style={{ width: '30%' }}>{resumeData.desiredJob}</div>
+                            <div css={cellStyle} className="header" style={{ width: '20%' }}>비상연락처</div>
+                            <div css={cellStyle} className="data no-border-right" style={{ width: '30%' }}></div>
                         </div>
 
                         <div css={rowStyle}>
-                            <div css={cellStyle} className="header" style={{ width: '80px' }}>주 소</div>
-                            <div css={cellStyle} className="data no-border-right" style={{ flexGrow: 1 }}></div>
+                            <div css={cellStyle} className="header" style={{ width: '20%' }}>주 소</div>
+                            <div css={cellStyle} className="data no-border-right" style={{ width: '80%' }}></div>
                         </div>
                     </div>
                 </div>

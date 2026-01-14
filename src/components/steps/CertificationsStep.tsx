@@ -65,23 +65,23 @@ const CertificationsStep = ({ data, handleChange }: Props) => {
         open={assistantFor === 'coreCompetencies'}
         onClose={handleCloseAssistant}
         onSubmit={handleAssistantSubmit}
-        title="핵심 기술/역량 AI"
-        prompt="보유한 기술 스택, 프로젝트 경험, 문제 해결 능력 등 자신의 강점에 대해 자유롭게 이야기해주세요."
+        title="교육사항/대외활동 AI"
+        prompt="참여했던 교육 프로그램, 대외 활동, 동아리 활동 등에 대해 자유롭게 이야기해주세요."
       />
       <ConversationalAssistant
         open={assistantFor === 'certifications'}
         onClose={handleCloseAssistant}
         onSubmit={handleAssistantSubmit}
         title="자격증/어학 AI"
-        prompt="취득한 자격증, 면허, 어학 성적, 수료한 교육 과정 등에 대해 알려주세요."
+        prompt="취득한 자격증, 면허, 어학 성적 등에 대해 자유롭게 이야기해주세요."
       />
 
       <Box sx={{ mb: 4 }}>
         <Typography variant="h5" gutterBottom sx={{ fontWeight: 800, color: '#1e293b' }}>
-          보유 기술 및 자격
+          주요 활동 및 자격
         </Typography>
         <Typography variant="body1" sx={{ color: '#64748b' }}>
-          나만의 경쟁력이 되는 스킬과 자격 사항을 입력해주세요.
+          교육 및 대외활동, 자격증, 어학 능력 등 주요 활동과 자격 사항을 입력해주세요.
         </Typography>
       </Box>
       
@@ -92,7 +92,7 @@ const CertificationsStep = ({ data, handleChange }: Props) => {
             <Box display="flex" alignItems="center" gap={1}>
               <WorkspacePremium fontSize="small" sx={{ color: '#64748b' }} />
               <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#334155' }}>
-                핵심 기술 및 역량
+                교육사항 / 대외활동
               </Typography>
             </Box>
             <Button 
@@ -109,7 +109,7 @@ const CertificationsStep = ({ data, handleChange }: Props) => {
             multiline
             rows={4}
             name="coreCompetencies"
-            placeholder="예: React, Next.js 기반의 프론트엔드 개발 경험&#13;&#10;AWS 인프라 구축 및 배포 경험&#13;&#10;애자일 환경에서의 협업 능력"
+            placeholder="예: 삼성 청년 SW 아카데미 (SSAFY) 10기 수료 (2023.07 ~ 2024.01)&#13;&#10;OOO 대외활동 (2022.01 ~ 2022.06) - 프로젝트 관리 및 기획 담당"
             value={data.coreCompetencies}
             onChange={handleChange}
             variant="outlined"

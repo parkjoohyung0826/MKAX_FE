@@ -103,7 +103,7 @@ const ConversationalAssistant = ({ open, onClose, onSubmit, title, prompt }: Pro
               rows={6}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="예) 지난 2년 동안 팀 리더로서 프로젝트를 성공적으로 이끌었으며, React와 Next.js를 활용한 웹 서비스 개발 경험이 풍부합니다..."
+              placeholder="AI에게 도움받고 싶은 내용을 입력해주세요."
               variant="outlined"
               sx={{
                 '& .MuiOutlinedInput-root': {

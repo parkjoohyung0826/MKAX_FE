@@ -257,7 +257,7 @@ const GenerationResult = ({ data, onReset }: Props) => {
                 <Box sx={{ 
                   boxShadow: '0 10px 40px rgba(0,0,0,0.1)', 
                   borderRadius: '4px', 
-                  overflow: 'hidden' // 이력서 튀어나감 방지
+                  overflow: 'hidden' 
                 }}>
                   <ResumeDisplay ref={resumeRef} data={resumeData} />
                 </Box>
