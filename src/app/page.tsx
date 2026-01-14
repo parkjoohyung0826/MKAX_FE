@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Box, Container, Typography, AppBar, Tabs, Tab, Button, ButtonGroup, 
-  useTheme, useMediaQuery, Dialog, DialogContent, TextField, IconButton 
+  useTheme, useMediaQuery, Dialog, DialogContent, TextField, IconButton,
+  Snackbar, Alert // 알림용 컴포넌트 추가
 } from '@mui/material';
-import { AutoAwesome, Restore, Close, VpnKey } from '@mui/icons-material'; // 아이콘 추가
+import { AutoAwesome, Restore, Close, VpnKey } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // 기존 컴포넌트 임포트 유지
@@ -35,7 +36,6 @@ interface ResultData {
   resumeData: ResumeData;
 }
 
-// 배경 파티클 애니메이션 (Type Error 수정됨)
 const particleVariant = (i: number) => ({
   animate: {
     y: [0, -30, 0],
@@ -44,12 +44,11 @@ const particleVariant = (i: number) => ({
     transition: {
       duration: 15 + i * 2,
       repeat: Infinity,
-      ease: "linear" as const // as const 추가로 타입 에러 방지
+      ease: "linear" as const
     }
   }
 });
 
-// 모달 내부 입력창 스타일
 const glassInputSx = {
   '& .MuiOutlinedInput-root': {
     backgroundColor: 'rgba(255, 255, 255, 0.6)',
@@ -70,11 +69,13 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<TabValue>('resume');
   const [resumeInputMode, setResumeInputMode] = useState<ResumeInputMode>('ai');
   
-  // --- 상태 추가: 기록 불러오기 ---
   const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
   const [accessCode, setAccessCode] = useState('');
 
-  // 데이터 상태 관리
+  // --- 상태 추가: 유효성 검사 알림 ---
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
   const [resumeData, setResumeData] = useState<ResumeData>({
     name: '', desiredJob: '', education: '', workExperience: '', coreCompetencies: '', certifications: ''
   });
@@ -88,35 +89,53 @@ export default function Home() {
 
   useEffect(() => { setMounted(true); }, []);
 
-  // --- 핸들러: 기록 불러오기 ---
+  // 이력서 완료 여부 체크 (최소 조건: 이름과 희망 직무)
+  const isResumeComplete = !!resumeData.name && !!resumeData.desiredJob;
+
+  // --- 탭 변경 핸들러 수정 ---
+  const handleTabChange = (event: React.SyntheticEvent, newValue: TabValue) => {
+    // 자기소개서 탭으로 이동하려고 하는데, 이력서가 미완성인 경우
+    if (newValue === 'coverLetter' && !isResumeComplete) {
+      setToastMessage('이력서의 기본 정보(이름, 희망 직무)를 먼저 입력해주세요.');
+      setToastOpen(true);
+      return; // 탭 변경 막음
+    }
+    setActiveTab(newValue);
+  };
+
+  // --- 다음 단계 버튼 핸들러 수정 ---
+  const handleNextStep = () => {
+    if (!isResumeComplete) {
+      setToastMessage('이력서의 기본 정보(이름, 희망 직무)를 먼저 입력해주세요.');
+      setToastOpen(true);
+      return;
+    }
+    setActiveTab('coverLetter');
+  };
+
   const handleLoadData = () => {
     if (!accessCode.trim()) return;
-    
-    // TODO: 실제 API 연동 부분 (accessCode로 DB 조회)
     console.log(`Loading data for code: ${accessCode}`);
-    
-    // 모의 동작: 성공했다고 가정하고 모달 닫기
     alert(`${accessCode} 코드로 저장된 이력서를 불러왔습니다.`);
     setIsLoadModalOpen(false);
     setAccessCode('');
-    
-    // 예시: 불러온 데이터로 상태 업데이트 (필요 시 구현)
-    // setResumeData({ ... });
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: TabValue) => setActiveTab(newValue);
   const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setResumeData((prev) => ({ ...prev, [name]: value }));
   };
+
   const handleResumeSubmit = (data: ResumeData) => {
     setResumeData(data);
-    setActiveTab('coverLetter');
+    setActiveTab('coverLetter'); // AI 모드 완료 시 자동 이동
   };
+
   const handleCoverLetterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setCoverLetterData((prev) => ({ ...prev, [name]: value }));
   };
+
   const handleGenerate = () => {
     setAppState('loading');
     setTimeout(() => {
@@ -130,6 +149,7 @@ export default function Home() {
       setAppState('result');
     }, 2000);
   };
+
   const handleReset = () => {
     setAppState('form');
     setResultData(null);
@@ -137,7 +157,6 @@ export default function Home() {
     setActiveTab('resume');
   };
 
-  const isNextDisabled = !resumeData.name || !resumeData.desiredJob;
   const isGeneratingApplication = appState === 'loading';
 
   if (!mounted) return null;
@@ -171,7 +190,7 @@ export default function Home() {
         />
       ))}
 
-      {/* --- 헤더 (수정됨) --- */}
+      {/* 헤더 */}
       <AppBar position="fixed" elevation={0} sx={{ background: 'transparent', pt: 2, zIndex: 10 }}>
         <Container maxWidth="lg">
           <Box sx={{ 
@@ -180,12 +199,11 @@ export default function Home() {
             borderRadius: '50px', 
             px: 3, py: 1,
             display: 'flex', 
-            justifyContent: 'space-between', // 좌우 배치
+            justifyContent: 'space-between',
             alignItems: 'center', 
             boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1)',
             border: '1px solid rgba(255, 255, 255, 0.18)'
           }}>
-            {/* 로고 영역 */}
             <Box display="flex" alignItems="center">
               <AutoAwesome sx={{ mr: 1.5, color: '#2563EB', fontSize: '1.8rem' }} />
               <Typography variant="h6" sx={{ fontWeight: 800, color: '#1e293b', letterSpacing: '-0.5px' }}>
@@ -193,7 +211,6 @@ export default function Home() {
               </Typography>
             </Box>
 
-            {/* 우측 버튼: 기록 불러오기 */}
             <Button
               startIcon={<Restore />}
               onClick={() => setIsLoadModalOpen(true)}
@@ -220,6 +237,7 @@ export default function Home() {
         <AnimatePresence mode="wait">
           {appState === 'form' && (
             <motion.div
+              key="form-title"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -252,6 +270,33 @@ export default function Home() {
               </Box>
             </motion.div>
           )}
+          {appState === 'result' && (
+            <motion.div
+              key="result-title"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.6 }}
+            >
+              <Box sx={{ mb: 6, textAlign: 'center' }}>
+                <Typography 
+                  variant={isMobile ? "h4" : "h3"}
+                  fontWeight={900} 
+                  gutterBottom 
+                  sx={{ 
+                    color: '#1e293b',
+                    textShadow: '0 2px 10px rgba(0,0,0,0.05)',
+                    letterSpacing: '-1px'
+                  }}
+                >
+                  분석 및 생성이 완료되었습니다!
+                </Typography>
+                <Typography variant="h6" color="text.secondary" fontWeight={500} sx={{ opacity: 0.8, mt: 2, wordBreak: 'keep-all' }}>
+                  AI가 분석한 커리어 리포트와 완성된 서류를 탭을 눌러 확인해보세요.
+                </Typography>
+              </Box>
+            </motion.div>
+          )}
         </AnimatePresence>
 
         <motion.div 
@@ -259,15 +304,15 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Box sx={{ 
-            background: 'rgba(255, 255, 255, 0.75)',
-            backdropFilter: 'blur(24px)',
-            borderRadius: '32px',
-            border: '1px solid rgba(255, 255, 255, 0.8)',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.05)',
-            overflow: 'hidden',
-          }}>
-            {appState === 'form' && (
+          {appState === 'form' && (
+            <Box sx={{ 
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(24px)',
+              borderRadius: '32px',
+              border: '1px solid rgba(255, 255, 255, 0.8)',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.05)',
+              overflow: 'hidden',
+            }}>
               <>
                 <Box sx={{ borderBottom: '1px solid rgba(0,0,0,0.05)', px: 4 }}>
                   <Tabs 
@@ -280,8 +325,8 @@ export default function Home() {
                       '& .Mui-selected': { color: '#2563EB !important' }
                     }}
                   >
-                    <Tab label="01. 이력서 정보" value="resume" />
-                    <Tab label="02. 자기소개서 생성" value="coverLetter" disabled={isNextDisabled} />
+                    <Tab label="01. 이력서 작성" value="resume" />
+                    <Tab label="02. 자기소개서 작성" value="coverLetter" />
                   </Tabs>
                 </Box>
                 
@@ -327,11 +372,11 @@ export default function Home() {
                             <>
                               <ResumeForm formData={resumeData} handleChange={handleResumeChange} />
                               <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 5 }}>
+                                {/* handleNextStep 함수 연결 */}
                                 <Button 
                                   variant="contained" 
                                   size="large" 
-                                  onClick={() => setActiveTab('coverLetter')} 
-                                  disabled={isNextDisabled} 
+                                  onClick={handleNextStep} 
                                   sx={{ 
                                     px: 5, py: 1.8, 
                                     borderRadius: '50px', 
@@ -365,11 +410,11 @@ export default function Home() {
                   </AnimatePresence>
                 </Box>
               </>
-            )}
+            </Box>
+          )}
 
-            {appState === 'loading' && <LoadingIndicator />}
-            {appState === 'result' && resultData && <GenerationResult data={resultData} onReset={handleReset} />}
-          </Box>
+          {appState === 'loading' && <LoadingIndicator />}
+          {appState === 'result' && resultData && <GenerationResult data={resultData} onReset={handleReset} />}
         </motion.div>
       </Container>
 
@@ -442,6 +487,23 @@ export default function Home() {
           </Button>
         </DialogContent>
       </Dialog>
+
+      {/* --- 알림용 Snackbar --- */}
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={3000}
+        onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setToastOpen(false)} 
+          severity="warning" 
+          variant="filled"
+          sx={{ width: '100%', borderRadius: '12px', fontWeight: 600 }}
+        >
+          {toastMessage}
+        </Alert>
+      </Snackbar>
 
     </Box>
   );
