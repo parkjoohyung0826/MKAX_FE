@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Box, Typography, TextField, Paper } from '@mui/material';
+import { Box, Typography, TextField, Button } from '@mui/material';
+import { BusinessCenter, AutoAwesome } from '@mui/icons-material';
 import { ResumeData } from '../ConversationalForm';
-import AIHelperButton from '../AIHelperButton';
 import ConversationalAssistant from '../ConversationalAssistant';
 
 interface Props {
@@ -11,67 +11,101 @@ interface Props {
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
+// 공통 Input 스타일 (Glassmorphism)
+const glassInputSx = {
+  '& .MuiOutlinedInput-root': {
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: '16px',
+    padding: '16px',
+    transition: 'all 0.3s ease',
+    '& fieldset': { borderColor: 'transparent' },
+    '&:hover fieldset': { borderColor: 'rgba(37, 99, 235, 0.3)' },
+    '&.Mui-focused': {
+      backgroundColor: '#fff',
+      boxShadow: '0 8px 20px rgba(37, 99, 235, 0.15)',
+      '& fieldset': { borderColor: '#2563EB', borderWidth: '1px' }
+    }
+  },
+  '& .MuiInputLabel-root': { color: '#64748b' }
+};
+
 const WorkExperienceStep = ({ data, handleChange }: Props) => {
   const [isAssistantOpen, setAssistantOpen] = useState(false);
 
-  const handleOpenAssistant = () => {
-    setAssistantOpen(true);
-  };
-
-  const handleCloseAssistant = () => {
-    setAssistantOpen(false);
-  };
+  const handleOpenAssistant = () => setAssistantOpen(true);
+  const handleCloseAssistant = () => setAssistantOpen(false);
 
   const handleAssistantSubmit = (text: string) => {
     const syntheticEvent = {
-      target: {
-        name: 'workExperience',
-        value: text,
-      },
+      target: { name: 'workExperience', value: text },
     } as React.ChangeEvent<HTMLTextAreaElement>;
-
     handleChange(syntheticEvent);
     handleCloseAssistant();
   };
 
   return (
-    <Box>
+    <Box sx={{ py: 2 }}>
       <ConversationalAssistant
         open={isAssistantOpen}
         onClose={handleCloseAssistant}
         onSubmit={handleAssistantSubmit}
-        title="경력 사항 AI 어시스턴트"
-        prompt="주요 경력, 담당했던 프로젝트, 역할, 그리고 성과에 대해 자유롭게 이야기해주세요. AI가 이력서에 맞게 내용을 정리해드립니다."
+        title="경력 상세 AI"
+        prompt="주요 경력, 담당했던 프로젝트, 역할, 그리고 성과(수치 등)에 대해 자유롭게 이야기해주세요. AI가 내용을 구조화해드립니다."
       />
 
-      <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
-        💼 주요 경력 사항에 대해 알려주세요.
-      </Typography>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 800, color: '#1e293b' }}>
+          경력 사항 입력
+        </Typography>
+        <Typography variant="body1" sx={{ color: '#64748b' }}>
+          직무와 관련된 주요 프로젝트와 성과를 중심으로 작성해주세요.
+        </Typography>
+      </Box>
 
-      <Paper elevation={0} sx={{ p: 3, borderRadius: 2, bgcolor: 'grey.50' }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-          <div>
-            <Typography variant="body1" fontWeight={600} gutterBottom>
-              경력
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              가장 최근 경력부터 순서대로 작성해주세요. 주요 업무와 성과 위주로 작성하는 것이 좋습니다.
-            </Typography>
-          </div>
-          <AIHelperButton onClick={handleOpenAssistant} />
+      <Box>
+        <Box display="flex" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 1.5, px: 1 }}>
+          <Box>
+             <Box display="flex" alignItems="center" gap={1} mb={0.5}>
+                <BusinessCenter fontSize="small" sx={{ color: '#64748b' }} />
+                <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#334155' }}>
+                  주요 경력 상세
+                </Typography>
+             </Box>
+             <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', ml: 3.5 }}>
+                최신순 기재 권장 (회사명, 기간, 직급, 주요 성과 등)
+             </Typography>
+          </Box>
+          <Button 
+             size="small" 
+             onClick={handleOpenAssistant}
+             startIcon={<AutoAwesome />}
+             sx={{ 
+                color: '#2563EB', 
+                fontWeight: 700,
+                textTransform: 'none',
+                bgcolor: 'rgba(37, 99, 235, 0.1)',
+                borderRadius: '20px',
+                px: 2,
+                py: 0.5,
+                fontSize: '0.85rem',
+                '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.2)' }
+             }}
+          >
+            AI 작성 도우미
+          </Button>
         </Box>
         <TextField
           fullWidth
           multiline
-          rows={6}
+          rows={7}
           name="workExperience"
-          placeholder="예: (주)가나다 (2015.01 ~ 2020.12)&#10;- ABC 프로젝트 리드&#10;- XYZ 서비스 개발 및 유지보수"
+          placeholder="예: (주)테크스타트업 (2021.01 ~ 재직중)&#13;&#10;- 주요 역할: 백엔드 리드 개발자&#13;&#10;- 주요 성과: 레거시 시스템 마이그레이션을 통해 서버 비용 40% 절감&#13;&#10;- 사용 기술: Node.js, AWS, Docker"
           value={data.workExperience}
           onChange={handleChange}
           variant="outlined"
-          sx={{ bgcolor: 'white' }}
+          sx={glassInputSx}
         />
-      </Paper>
+      </Box>
     </Box>
   );
 };

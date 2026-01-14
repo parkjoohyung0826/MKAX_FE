@@ -1,78 +1,117 @@
 'use client';
 
-import {
-  Box,
-  Typography,
-  Paper,
-  Divider,
-} from '@mui/material';
+import { Box, Typography } from '@mui/material';
+import { PersonOutline, WorkOutline, School, BusinessCenter, WorkspacePremium, Verified } from '@mui/icons-material';
 import { ResumeData } from '../ConversationalForm';
 
 interface Props {
   data: ResumeData;
 }
 
-const Section = ({ title, content }: { title: string; content: string }) => (
-  <Box mb={2}>
-    <Typography
-      variant="overline"
-      color="text.secondary"
-      fontWeight={600}
-      display="block"
-    >
+// 읽기 전용 데이터 박스 스타일
+const glassBox = {
+  backgroundColor: 'rgba(255, 255, 255, 0.6)',
+  borderRadius: '16px',
+  p: 3,
+  height: '100%', // 높이를 꽉 채우도록 설정
+  border: '1px solid rgba(255, 255, 255, 0.6)',
+  boxShadow: '0 4px 6px rgba(0,0,0,0.02)',
+  transition: 'transform 0.2s',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    boxShadow: '0 10px 15px rgba(0,0,0,0.05)',
+  }
+};
+
+const SectionHeader = ({ icon: Icon, title }: { icon: any, title: string }) => (
+  <Box display="flex" alignItems="center" gap={1} mb={1.5}>
+    <Icon fontSize="small" sx={{ color: '#2563EB' }} />
+    <Typography variant="subtitle2" fontWeight={700} color="text.secondary">
       {title}
-    </Typography>
-    <Typography
-      variant="body1"
-      sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
-    >
-      {content || '입력된 내용이 없습니다.'}
     </Typography>
   </Box>
 );
 
+const SectionContent = ({ content }: { content: string }) => (
+  <Typography 
+    variant="body1" 
+    sx={{ 
+      whiteSpace: 'pre-wrap', 
+      wordBreak: 'break-word',
+      color: '#334155',
+      lineHeight: 1.6,
+      fontSize: '0.95rem'
+    }}
+  >
+    {content || <span style={{ color: '#94a3b8' }}>(입력된 내용이 없습니다)</span>}
+  </Typography>
+);
+
 const FinalReviewStep = ({ data }: Props) => {
   return (
-    <Box>
-      <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
-        📝 마지막으로, 입력하신 내용을 최종 확인해주세요.
-      </Typography>
+    <Box sx={{ py: 2 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 800, color: '#1e293b' }}>
+          최종 검토
+        </Typography>
+        <Typography variant="body1" sx={{ color: '#64748b' }}>
+          작성하신 이력서 내용을 마지막으로 확인해주세요. 수정이 필요하면 이전 단계로 돌아갈 수 있습니다.
+        </Typography>
+      </Box>
 
-      <Paper
-        elevation={0}
-        sx={{
-          p: 3,
-          borderRadius: 2,
-          bgcolor: 'grey.50',
-        }}
-      >
-        {/* 상단 2열 영역 */}
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: '1fr 1fr',
-            },
-            gap: 3,
-          }}
-        >
-          <Section title="성함" content={data.name} />
-          <Section title="희망 직무" content={data.desiredJob} />
+      {/* 전체 컨텐츠를 감싸는 Flex 컨테이너 */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        
+        {/* 1. 기본 정보 (CSS Grid: 모바일 1열 / 태블릿 이상 2열) */}
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, 
+          gap: 3 
+        }}>
+          <Box sx={glassBox}>
+            <SectionHeader icon={PersonOutline} title="성함" />
+            <Typography variant="h6" fontWeight={700} color="#1e293b">
+              {data.name || '(미입력)'}
+            </Typography>
+          </Box>
+          <Box sx={glassBox}>
+            <SectionHeader icon={WorkOutline} title="희망 직무" />
+            <Typography variant="h6" fontWeight={700} color="#1e293b">
+              {data.desiredJob || '(미입력)'}
+            </Typography>
+          </Box>
         </Box>
 
-        <Divider sx={{ my: 2 }} />
-        <Section title="학력 사항" content={data.education} />
+        {/* 2. 학력 사항 (전체 너비) */}
+        <Box sx={glassBox}>
+          <SectionHeader icon={School} title="학력 사항" />
+          <SectionContent content={data.education} />
+        </Box>
 
-        <Divider sx={{ my: 2 }} />
-        <Section title="주요 경력" content={data.workExperience} />
+        {/* 3. 경력 사항 (전체 너비) */}
+        <Box sx={glassBox}>
+          <SectionHeader icon={BusinessCenter} title="주요 경력" />
+          <SectionContent content={data.workExperience} />
+        </Box>
 
-        <Divider sx={{ my: 2 }} />
-        <Section title="핵심 기술 및 역량" content={data.coreCompetencies} />
+        {/* 4. 기술 및 자격증 (CSS Grid: 모바일 1열 / 데스크탑 이상 2열) */}
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+          gap: 3 
+        }}>
+          <Box sx={glassBox}>
+            <SectionHeader icon={WorkspacePremium} title="핵심 기술 및 역량" />
+            <SectionContent content={data.coreCompetencies} />
+          </Box>
+          <Box sx={glassBox}>
+            <SectionHeader icon={Verified} title="자격증 및 기타" />
+            <SectionContent content={data.certifications} />
+          </Box>
+        </Box>
 
-        <Divider sx={{ my: 2 }} />
-        <Section title="자격증 및 기타" content={data.certifications} />
-      </Paper>
+      </Box>
     </Box>
   );
 };
