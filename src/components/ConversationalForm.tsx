@@ -12,6 +12,13 @@ import FinalReviewStep from './steps/FinalReviewStep';
 
 export interface ResumeData {
   name: string;
+  englishName: string;
+  dateOfBirth: string;
+  email: string;
+  phoneNumber: string;
+  emergencyContact: string;
+  address: string;
+  photo: string;
   desiredJob: string;
   education: string;
   workExperience: string;
@@ -29,7 +36,19 @@ const ConversationalForm = ({ onSubmit }: Props) => {
   const [activeStep, setActiveStep] = useState(0);
   const [direction, setDirection] = useState(0); 
   const [resumeData, setResumeData] = useState<ResumeData>({
-    name: '', desiredJob: '', education: '', workExperience: '', coreCompetencies: '', certifications: '',
+    name: '', 
+    englishName: '',
+    dateOfBirth: '',
+    email: '',
+    phoneNumber: '',
+    emergencyContact: '',
+    address: '',
+    photo: '',
+    desiredJob: '', 
+    education: '', 
+    workExperience: '', 
+    coreCompetencies: '', 
+    certifications: '',
   });
 
   const handleNext = () => {
