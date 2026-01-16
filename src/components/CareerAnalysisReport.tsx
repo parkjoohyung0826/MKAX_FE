@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { 
-  Box, Typography, Grid, Paper, LinearProgress, Chip, 
+  Box, Typography, Paper, LinearProgress, Chip, 
   List, ListItem, ListItemIcon, ListItemText, Divider 
 } from '@mui/material';
 import { 
@@ -10,7 +10,7 @@ import {
   CheckCircleOutline, LightbulbOutlined, Star 
 } from '@mui/icons-material';
 
-// --- 데이터 타입 정의 (AI가 이 형태로 데이터를 준다고 가정) ---
+// --- 데이터 타입 정의 ---
 export interface CareerAnalysisData {
   summary: string;
   competencies: { name: string; score: number; comment: string }[];
@@ -21,7 +21,7 @@ export interface CareerAnalysisData {
 }
 
 interface Props {
-  summaryText: string; // 기존의 단순 텍스트 데이터 (백업용)
+  summaryText: string;
 }
 
 // --- Glassmorphism 스타일 ---
@@ -32,7 +32,9 @@ const glassCardSx = {
   border: '1px solid rgba(255, 255, 255, 0.8)',
   boxShadow: '0 8px 32px rgba(31, 38, 135, 0.05)',
   p: 4,
-  height: '100%'
+  height: '100%', // 부모 높이에 맞춤
+  display: 'flex',
+  flexDirection: 'column'
 };
 
 const sectionTitleSx = {
@@ -44,9 +46,11 @@ const sectionTitleSx = {
   fontSize: '1.2rem'
 };
 
-// --- 더미 데이터 생성기 (실제 AI 연동 전 UI 테스트용) ---
+// --- 더미 데이터 생성기 ---
 const generateMockAnalysis = (name: string = '지원자'): CareerAnalysisData => ({
-  summary: `${name}님은 풍부한 실무 경험을 바탕으로 문제 해결 능력과 리더십이 돋보이는 인재입니다. 특히 위기 관리 능력과 팀 조직력 강화에 강점이 있어, 안정적인 운영이 필요한 중견/대기업 관리직에 매우 적합합니다.`,
+  // [수정] 한 줄 더 추가하여 내용 보강
+  summary: `${name}님의 이력서와 경험을 종합적으로 분석한 결과, 풍부한 실무 경험을 바탕으로 한 문제 해결 능력과 리더십이 돋보이는 인재입니다.\n\n특히 프로젝트 관리 경험에서 보여주신 위기 관리 능력은 팀의 안정적인 운영에 크게 기여할 것으로 판단됩니다. 다양한 유관 부서와 협업하며 이끌어낸 성과는 ${name}님의 뛰어난 소통 능력을 증명하고 있습니다.\n\n안정적인 프로세스 구축이 필요한 중견/대기업의 관리직 또는 PM(Project Manager) 포지션에 매우 적합하며, 향후 최신 트렌드 기술을 접목한다면 대체 불가능한 핵심 인재로 성장할 가능성이 매우 높습니다.`,
+  
   competencies: [
     { name: '직무 전문성', score: 92, comment: '동종 업계 상위 10% 수준' },
     { name: '리더십 & 소통', score: 88, comment: '팀 빌딩 및 코칭 능력 우수' },
@@ -75,12 +79,11 @@ const generateMockAnalysis = (name: string = '지원자'): CareerAnalysisData =>
 });
 
 const CareerAnalysisReport = ({ summaryText }: Props) => {
-  // 실제로는 summaryText를 분석하거나, 상위에서 객체 데이터를 받아야 함
-  // 현재는 UI 보여주기 위해 더미 데이터 사용
   const data = generateMockAnalysis(); 
 
   return (
     <Box sx={{ mt: 4 }}>
+      {/* 타이틀 영역 */}
       <Box sx={{ mb: 4, textAlign: 'center' }}>
         <Typography variant="h4" fontWeight={800} sx={{ color: '#1e293b', mb: 1 }}>
           종합 커리어 분석 리포트
@@ -90,19 +93,30 @@ const CareerAnalysisReport = ({ summaryText }: Props) => {
         </Typography>
       </Box>
 
-      <Grid container spacing={3}>
-        {/* 1. 종합 요약 & 역량 차트 */}
-        <Grid item xs={12} md={7}>
+      {/* 메인 레이아웃: Flexbox 사용 */}
+      <Box sx={{ 
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        gap: 3,
+        mb: 3,
+        alignItems: 'stretch'
+      }}>
+        
+        {/* 1. 좌측 열 (7 비율) */}
+        <Box sx={{ flex: { xs: '1 1 100%', md: '7' }, minWidth: 0 }}>
           <Paper sx={glassCardSx}>
             <Typography variant="h6" sx={sectionTitleSx}>
               <Psychology sx={{ mr: 1, color: '#2563EB' }} /> 핵심 역량 진단
             </Typography>
             
-            <Typography variant="body1" sx={{ mb: 4, lineHeight: 1.7, color: '#475569' }}>
+            <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.8, color: '#475569', flexGrow: 1, whiteSpace: 'pre-line' }}>
               {data.summary}
             </Typography>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {/* [추가됨] 구분선 */}
+            <Divider sx={{ my: 3, opacity: 0.6 }} />
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 'auto' }}>
               {data.competencies.map((item) => (
                 <Box key={item.name}>
                   <Box display="flex" justifyContent="space-between" mb={0.5}>
@@ -130,113 +144,121 @@ const CareerAnalysisReport = ({ summaryText }: Props) => {
               ))}
             </Box>
           </Paper>
-        </Grid>
+        </Box>
 
-        {/* 2. 산업군 적합도 & SWOT */}
-        <Grid item xs={12} md={5}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, height: '100%' }}>
-            {/* 산업군 추천 */}
-            <Paper sx={{ ...glassCardSx, flex: 1, p: 3 }}>
-              <Typography variant="h6" sx={sectionTitleSx}>
-                <Business sx={{ mr: 1, color: '#2563EB' }} /> 추천 산업군
-              </Typography>
-              <Box display="flex" flexWrap="wrap" gap={1}>
-                {data.industryFit.map((fit, idx) => (
-                  <Chip 
-                    key={fit.industry}
-                    label={`${fit.industry} ${fit.matchRate}%`}
-                    icon={idx === 0 ? <Star style={{ color: '#FFD700' }} /> : undefined}
-                    sx={{ 
-                      bgcolor: idx === 0 ? '#2563EB' : 'white',
-                      color: idx === 0 ? 'white' : '#475569',
-                      border: idx === 0 ? 'none' : '1px solid #e2e8f0',
-                      fontWeight: 600,
-                      py: 2,
-                      px: 1
-                    }}
-                  />
-                ))}
-              </Box>
-            </Paper>
-
-            {/* 강점과 보완점 */}
-            <Paper sx={{ ...glassCardSx, flex: 2, p: 3 }}>
-              <Typography variant="h6" sx={sectionTitleSx}>
-                <TrendingUp sx={{ mr: 1, color: '#2563EB' }} /> 강점 & 보완점
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" color="#2563EB" fontWeight={700} mb={1}>
-                    PLUS (강점)
-                  </Typography>
-                  <List dense disablePadding>
-                    {data.strengths.map((text, i) => (
-                      <ListItem key={i} disablePadding sx={{ mb: 1 }}>
-                        <ListItemIcon sx={{ minWidth: 28 }}>
-                          <CheckCircleOutline fontSize="small" sx={{ color: '#2563EB' }} />
-                        </ListItemIcon>
-                        <ListItemText primary={text} primaryTypographyProps={{ variant: 'body2', color: '#475569' }} />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Grid>
-                <Grid item xs={12}>
-                   <Divider sx={{ my: 1 }} />
-                   <Typography variant="subtitle2" color="#EF4444" fontWeight={700} mb={1} mt={1}>
-                    NEEDS (보완)
-                  </Typography>
-                   <List dense disablePadding>
-                    {data.improvements.map((text, i) => (
-                      <ListItem key={i} disablePadding sx={{ mb: 1 }}>
-                        <ListItemIcon sx={{ minWidth: 28 }}>
-                          <LightbulbOutlined fontSize="small" sx={{ color: '#EF4444' }} />
-                        </ListItemIcon>
-                        <ListItemText primary={text} primaryTypographyProps={{ variant: 'body2', color: '#475569' }} />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Grid>
-              </Grid>
-            </Paper>
-          </Box>
-        </Grid>
-
-        {/* 3. 취업 성공 로드맵 */}
-        <Grid item xs={12}>
-          <Paper sx={{ ...glassCardSx, background: 'linear-gradient(135deg, rgba(255,255,255,0.8), rgba(240,249,255,0.8))' }}>
+        {/* 2. 우측 열 (5 비율) */}
+        <Box sx={{ 
+          flex: { xs: '1 1 100%', md: '5' }, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: 3,
+          minWidth: 0
+        }}>
+          {/* 산업군 추천 */}
+          <Paper sx={{ ...glassCardSx, flex: '0 0 auto', height: 'auto' }}>
             <Typography variant="h6" sx={sectionTitleSx}>
-              <Flag sx={{ mr: 1, color: '#2563EB' }} /> 취업 성공 로드맵
+              <Business sx={{ mr: 1, color: '#2563EB' }} /> 추천 산업군
             </Typography>
-            <Grid container spacing={2}>
-              {data.roadmap.map((step, index) => (
-                <Grid item xs={12} sm={4} key={index}>
-                  <Box sx={{ 
-                    p: 2.5, 
-                    borderRadius: '16px', 
-                    bgcolor: 'white',
-                    border: '1px solid rgba(0,0,0,0.05)',
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.02)',
-                    height: '100%',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}>
-                    <Box sx={{ 
-                      position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', 
-                      bgcolor: index === 0 ? '#2563EB' : index === 1 ? '#60A5FA' : '#93C5FD' 
-                    }} />
-                    <Typography variant="subtitle2" color="text.secondary" fontWeight={700} mb={1}>
-                      STEP {index + 1}. {step.step}
-                    </Typography>
-                    <Typography variant="body1" fontWeight={600} color="#1e293b">
-                      {step.action}
-                    </Typography>
-                  </Box>
-                </Grid>
+            <Box display="flex" flexWrap="wrap" gap={1}>
+              {data.industryFit.map((fit, idx) => (
+                <Chip 
+                  key={fit.industry}
+                  label={`${fit.industry} ${fit.matchRate}%`}
+                  icon={idx === 0 ? <Star style={{ color: '#FFD700' }} /> : undefined}
+                  sx={{ 
+                    bgcolor: idx === 0 ? '#2563EB' : 'white',
+                    color: idx === 0 ? 'white' : '#475569',
+                    border: idx === 0 ? 'none' : '1px solid #e2e8f0',
+                    fontWeight: 600,
+                    py: 2,
+                    px: 1
+                  }}
+                />
               ))}
-            </Grid>
+            </Box>
           </Paper>
-        </Grid>
-      </Grid>
+
+          {/* 강점과 보완점 */}
+          <Paper sx={{ ...glassCardSx, flex: '1 1 auto' }}>
+            <Typography variant="h6" sx={sectionTitleSx}>
+              <TrendingUp sx={{ mr: 1, color: '#2563EB' }} /> 강점 & 보완점
+            </Typography>
+            
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle2" color="#2563EB" fontWeight={700} mb={1}>
+                  PLUS (강점)
+                </Typography>
+                <List dense disablePadding>
+                  {data.strengths.map((text, i) => (
+                    <ListItem key={i} disablePadding sx={{ mb: 1 }}>
+                      <ListItemIcon sx={{ minWidth: 28 }}>
+                        <CheckCircleOutline fontSize="small" sx={{ color: '#2563EB' }} />
+                      </ListItemIcon>
+                      <ListItemText primary={text} primaryTypographyProps={{ variant: 'body2', color: '#475569' }} />
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+
+              <Divider />
+
+              <Box sx={{ flex: 1 }}>
+                 <Typography variant="subtitle2" color="#EF4444" fontWeight={700} mb={1}>
+                  NEEDS (보완)
+                </Typography>
+                 <List dense disablePadding>
+                  {data.improvements.map((text, i) => (
+                    <ListItem key={i} disablePadding sx={{ mb: 1 }}>
+                      <ListItemIcon sx={{ minWidth: 28 }}>
+                        <LightbulbOutlined fontSize="small" sx={{ color: '#EF4444' }} />
+                      </ListItemIcon>
+                      <ListItemText primary={text} primaryTypographyProps={{ variant: 'body2', color: '#475569' }} />
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            </Box>
+          </Paper>
+        </Box>
+      </Box>
+
+      {/* 3. 취업 성공 로드맵 */}
+      <Paper sx={{ ...glassCardSx, background: 'linear-gradient(135deg, rgba(255,255,255,0.8), rgba(240,249,255,0.8))', height: 'auto' }}>
+        <Typography variant="h6" sx={sectionTitleSx}>
+          <Flag sx={{ mr: 1, color: '#2563EB' }} /> 취업 성공 로드맵
+        </Typography>
+        
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, 
+          gap: 2 
+        }}>
+          {data.roadmap.map((step, index) => (
+            <Box key={index} sx={{ 
+              p: 2.5, 
+              borderRadius: '16px', 
+              bgcolor: 'white',
+              border: '1px solid rgba(0,0,0,0.05)',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.02)',
+              height: '100%',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <Box sx={{ 
+                position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', 
+                bgcolor: index === 0 ? '#2563EB' : index === 1 ? '#60A5FA' : '#93C5FD' 
+              }} />
+              <Typography variant="subtitle2" color="text.secondary" fontWeight={700} mb={1}>
+                STEP {index + 1}. {step.step}
+              </Typography>
+              <Typography variant="body1" fontWeight={600} color="#1e293b">
+                {step.action}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+      </Paper>
     </Box>
   );
 };
