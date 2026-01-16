@@ -4,12 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { 
   Box, Container, Typography, AppBar, Tabs, Tab, Button, ButtonGroup, 
   useTheme, useMediaQuery, Dialog, DialogContent, TextField, IconButton,
-  Snackbar, Alert // 알림용 컴포넌트 추가
+  Snackbar, Alert 
 } from '@mui/material';
 import { AutoAwesome, Restore, Close, VpnKey } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// 기존 컴포넌트 임포트 유지
 import ResumeForm from '@/components/ResumeForm';
 import CoverLetterEditor from '@/components/CoverLetterEditor';
 import LoadingIndicator from '@/components/LoadingIndicator';
@@ -17,7 +16,6 @@ import GenerationResult from '@/components/GenerationResult';
 import ConversationalForm, { ResumeData } from '@/components/ConversationalForm';
 import { mockJobPostings } from '@/lib/mockJobPostings';
 
-// ... (타입 정의 기존 유지) ...
 type AppState = 'form' | 'loading' | 'result';
 type TabValue = 'resume' | 'coverLetter';
 type ResumeInputMode = 'direct' | 'ai';
@@ -77,7 +75,19 @@ export default function Home() {
   const [toastMessage, setToastMessage] = useState('');
 
   const [resumeData, setResumeData] = useState<ResumeData>({
-    name: '', desiredJob: '', education: '', workExperience: '', coreCompetencies: '', certifications: ''
+    name: '',
+    englishName: '',
+    dateOfBirth: '',
+    email: '',
+    phoneNumber: '',
+    emergencyContact: '',
+    address: '',
+    photo: '',
+    desiredJob: '',
+    education: '',
+    workExperience: '',
+    coreCompetencies: '',
+    certifications: '',
   });
   const [coverLetterData, setCoverLetterData] = useState<CoverLetterData>({
     growthProcess: '', strengthsAndWeaknesses: '', keyExperience: '', motivation: ''
@@ -128,7 +138,7 @@ export default function Home() {
 
   const handleResumeSubmit = (data: ResumeData) => {
     setResumeData(data);
-    setActiveTab('coverLetter'); // AI 모드 완료 시 자동 이동
+    setActiveTab('coverLetter');
   };
 
   const handleCoverLetterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -153,7 +163,21 @@ export default function Home() {
   const handleReset = () => {
     setAppState('form');
     setResultData(null);
-    setResumeData({ name: '', desiredJob: '', education: '', workExperience: '', coreCompetencies: '', certifications: '' });
+    setResumeData({
+      name: '',
+      englishName: '',
+      dateOfBirth: '',
+      email: '',
+      phoneNumber: '',
+      emergencyContact: '',
+      address: '',
+      photo: '',
+      desiredJob: '',
+      education: '',
+      workExperience: '',
+      coreCompetencies: '',
+      certifications: '',
+    });
     setActiveTab('resume');
   };
 
@@ -170,7 +194,7 @@ export default function Home() {
     }}>
       
       {/* 배경 파티클 */}
-      {[...Array(5)].map((_, i) => (
+      {appState !== 'form' && [...Array(5)].map((_, i) => (
         <motion.div
           key={i}
           custom={i}
