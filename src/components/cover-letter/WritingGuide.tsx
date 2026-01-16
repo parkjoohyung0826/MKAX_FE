@@ -48,8 +48,9 @@ const getGuidance = (section: string, resumeData: ResumeData) => {
           <strong>{workExperience}</strong> 경험 중에서 지원하는 직무와 가장 연관성 높은 프로젝트 1~2개를 선정하세요.
         </span>,
         <span key="2">
-          '역할 - 행동 - 결과' 구조로 작성하며, 가능하다면 <strong>수치화된 성과</strong>(예: 효율 20% 개선)를 포함하는 것이 신뢰도를 높입니다.
-        </span>,
+          {"'역할 - 행동 - 결과'"} 구조로 작성하며, 가능하다면 <strong>수치화된 성과</strong>(예: 효율 20% 개선)를 포함하는 것이 신뢰도를 높입니다.
+        </span>
+
       ];
     case 'motivation':
       return [
