@@ -32,7 +32,7 @@ const glassCardSx = {
   border: '1px solid rgba(255, 255, 255, 0.8)',
   boxShadow: '0 8px 32px rgba(31, 38, 135, 0.05)',
   p: 4,
-  height: '100%', // 부모 높이에 맞춤
+  height: '100%', 
   display: 'flex',
   flexDirection: 'column'
 };
@@ -48,7 +48,6 @@ const sectionTitleSx = {
 
 // --- 더미 데이터 생성기 ---
 const generateMockAnalysis = (name: string = '지원자'): CareerAnalysisData => ({
-  // [수정] 한 줄 더 추가하여 내용 보강
   summary: `${name}님의 이력서와 경험을 종합적으로 분석한 결과, 풍부한 실무 경험을 바탕으로 한 문제 해결 능력과 리더십이 돋보이는 인재입니다.\n\n특히 프로젝트 관리 경험에서 보여주신 위기 관리 능력은 팀의 안정적인 운영에 크게 기여할 것으로 판단됩니다. 다양한 유관 부서와 협업하며 이끌어낸 성과는 ${name}님의 뛰어난 소통 능력을 증명하고 있습니다.\n\n안정적인 프로세스 구축이 필요한 중견/대기업의 관리직 또는 PM(Project Manager) 포지션에 매우 적합하며, 향후 최신 트렌드 기술을 접목한다면 대체 불가능한 핵심 인재로 성장할 가능성이 매우 높습니다.`,
   
   competencies: [
