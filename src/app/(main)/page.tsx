@@ -9,11 +9,12 @@ import {
 import { AutoAwesome, Restore, Close, VpnKey } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import ResumeForm from '@/features/resume/components/ResumeForm';
 import CoverLetterEditor from '@/features/cover-letter/components/CoverLetterEditor';
 import LoadingIndicator from '@/shared/components/LoadingIndicator';
 import GenerationResult from '@/features/report/components/GenerationResult';
 import ConversationalForm from '@/features/resume/components/ConversationalForm';
+import AIChatView from '@/features/resume/components/AIChatView';
+import FinalReviewStep from '@/features/resume/components/steps/FinalReviewStep';
 import { mockJobPostings } from '@/features/report/services/mockJobPostings';
 
 import { ResumeData } from '@/features/resume/types';
@@ -63,12 +64,19 @@ const glassInputSx = {
   }
 };
 
+const resumeSteps = ['기본 정보', '학력 사항', '경력 사항', '자격증/주요활동', '최종 검토'];
+
 export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [appState, setAppState] = useState<AppState>('form');
   const [activeTab, setActiveTab] = useState<TabValue>('resume');
   const [resumeInputMode, setResumeInputMode] = useState<ResumeInputMode>('ai');
   
+  // Stepper state
+  const [activeStep, setActiveStep] = useState(0);
+  const [direction, setDirection] = useState(0);
+  const [isStepComplete, setIsStepComplete] = useState(false);
+
   const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
   const [accessCode, setAccessCode] = useState('');
 
@@ -131,7 +139,13 @@ export default function Home() {
       .then(data => console.log("DATA:", data))
       .catch(err => console.error("ERROR:", err));
   }, []);
-
+  
+  // Reset step when input mode changes
+  useEffect(() => {
+    setActiveStep(0);
+    setDirection(0);
+    setIsStepComplete(false);
+  }, [resumeInputMode]);
 
 
   // 이력서 완료 여부 체크 (최소 조건: 이름과 희망 직무)
@@ -150,13 +164,22 @@ export default function Home() {
 
   // --- 다음 단계 버튼 핸들러 수정 ---
   const handleNextStep = () => {
-    if (!isResumeComplete) {
-      setToastMessage('이력서의 기본 정보(이름, 희망 직무)를 먼저 입력해주세요.');
-      setToastOpen(true);
-      return;
+    if (activeStep === resumeSteps.length - 1) {
+      // Final step -> go to cover letter
+      setActiveTab('coverLetter');
+    } else {
+      setDirection(1);
+      setActiveStep((prev) => prev + 1);
+      setIsStepComplete(false); // Reset for next step
     }
-    setActiveTab('coverLetter');
   };
+
+  const handleBackStep = () => {
+    setDirection(-1);
+    setActiveStep((prev) => prev - 1);
+    setIsStepComplete(true); // Assume previous step is always complete
+  };
+
 
   const handleLoadData = () => {
     if (!accessCode.trim()) return;
@@ -164,16 +187,6 @@ export default function Home() {
     alert(`${accessCode} 코드로 저장된 이력서를 불러왔습니다.`);
     setIsLoadModalOpen(false);
     setAccessCode('');
-  };
-
-  const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setResumeData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleResumeSubmit = (data: ResumeData) => {
-    setResumeData(data);
-    setActiveTab('coverLetter');
   };
 
   const handleCoverLetterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -214,9 +227,40 @@ export default function Home() {
       certifications: '',
     });
     setActiveTab('resume');
+    setActiveStep(0);
+    setDirection(0); 
+    setIsStepComplete(false); 
   };
 
   const isGeneratingApplication = appState === 'loading';
+
+  const renderResumeContent = () => {
+    const isFinalStep = activeStep === resumeSteps.length - 1;
+
+    if (resumeInputMode === 'ai' && isFinalStep) {
+        return <FinalReviewStep data={resumeData} />;
+    }
+    
+    if (resumeInputMode === 'ai') {
+      return <AIChatView 
+               activeStep={activeStep} 
+               steps={resumeSteps}
+               onStepComplete={() => setIsStepComplete(true)} 
+               resumeData={resumeData}
+               setResumeData={setResumeData}
+             />;
+    }
+    
+    if (resumeInputMode === 'direct') {
+      return <ConversationalForm 
+               activeStep={activeStep}
+               direction={direction}
+               steps={resumeSteps}
+               resumeData={resumeData}
+               setResumeData={setResumeData}
+             />;
+    }
+  };
 
   if (!mounted) return null;
 
@@ -422,36 +466,22 @@ export default function Home() {
                                   '&:hover': { bgcolor: resumeInputMode === mode ? '#1d4ed8' : 'rgba(0,0,0,0.05)', border: 'none' }
                                 }}
                               >
-                                {mode === 'ai' ? '단계 별 AI 인터뷰' : '직접 입력'}
+                                {mode === 'ai' ? 'AI 챗봇으로 작성' : '단계별로 직접 입력'}
                               </Button>
                             ))}
                           </ButtonGroup>
+                          
+                          {renderResumeContent()}
 
-                          {resumeInputMode === 'direct' ? (
-                            <>
-                              <ResumeForm formData={resumeData} handleChange={handleResumeChange} />
-                              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 5 }}>
-                                {/* handleNextStep 함수 연결 */}
-                                <Button 
-                                  variant="contained" 
-                                  size="large" 
-                                  onClick={handleNextStep} 
-                                  sx={{ 
-                                    px: 5, py: 1.8, 
-                                    borderRadius: '50px', 
-                                    fontSize: '1.1rem', 
-                                    fontWeight: 700,
-                                    boxShadow: '0 10px 20px rgba(37, 99, 235, 0.3)',
-                                    background: 'linear-gradient(45deg, #2563EB, #4F46E5)'
-                                  }}
-                                >
-                                  다음 단계
-                                </Button>
-                              </Box>
-                            </>
-                          ) : (
-                            <ConversationalForm onSubmit={handleResumeSubmit} />
-                          )}
+                           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 6, pt: 3, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                            <Button disabled={activeStep === 0} onClick={handleBackStep} sx={{ color: '#64748b', fontWeight: 600, px: 3, py: 1, borderRadius: '20px', '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' } }} >
+                              이전 단계
+                            </Button>
+                            <Button variant="contained" onClick={handleNextStep} sx={{ px: 4, py: 1.2, borderRadius: '30px', fontWeight: 700, boxShadow: '0 8px 16px rgba(37, 99, 235, 0.25)', background: 'linear-gradient(45deg, #2563EB, #1d4ed8)' }} >
+                              {activeStep === resumeSteps.length - 1 ? '자기소개서 작성' : '다음'}
+                            </Button>
+                          </Box>
+
                         </Box>
                       )}
                       

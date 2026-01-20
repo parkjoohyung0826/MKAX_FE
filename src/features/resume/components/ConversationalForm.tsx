@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Box, Button, Container, Typography } from '@mui/material';
+import { Box, Typography, Container } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion'; 
 import ProgressStepper from '@/shared/components/ProgressStepper';
 import BasicInfoStep from './steps/BasicInfoStep';
@@ -13,39 +13,14 @@ import FinalReviewStep from './steps/FinalReviewStep';
 import { ResumeData } from '../types';
 
 interface Props {
-  onSubmit: (data: ResumeData) => void;
+  activeStep: number;
+  direction: number;
+  steps: string[];
+  resumeData: ResumeData;
+  setResumeData: React.Dispatch<React.SetStateAction<ResumeData>>;
 }
 
-const steps = ['기본 정보', '학력 사항', '경력 사항', '자격증/주요활동', '최종 검토'];
-
-const ConversationalForm = ({ onSubmit }: Props) => {
-  const [activeStep, setActiveStep] = useState(0);
-  const [direction, setDirection] = useState(0); 
-  const [resumeData, setResumeData] = useState<ResumeData>({
-    name: '', 
-    englishName: '',
-    dateOfBirth: '',
-    email: '',
-    phoneNumber: '',
-    emergencyContact: '',
-    address: '',
-    photo: '',
-    desiredJob: '', 
-    education: '', 
-    workExperience: '', 
-    coreCompetencies: '', 
-    certifications: '',
-  });
-
-  const handleNext = () => {
-    setDirection(1);
-    setActiveStep((prev) => prev + 1);
-  };
-
-  const handleBack = () => {
-    setDirection(-1);
-    setActiveStep((prev) => prev - 1);
-  };
+const ConversationalForm = ({ activeStep, direction, steps, resumeData, setResumeData }: Props) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -63,18 +38,12 @@ const ConversationalForm = ({ onSubmit }: Props) => {
     }
   }
 
-  const handleSubmit = () => {
-    onSubmit(resumeData);
-  }
-
   return (
     <Container maxWidth="md" disableGutters>
-      {/* Stepper 영역 커스텀 (필요 시 ProgressStepper 내부 스타일도 투명하게 조정 권장) */}
       <Box sx={{ mb: 4, opacity: 0.9 }}>
         <ProgressStepper steps={steps} activeStep={activeStep} />
       </Box>
 
-      {/* 컨텐츠 영역: 내부 Paper 제거하고 투명한 글래스 스타일 유지 */}
       <Box sx={{ 
         position: 'relative', 
         minHeight: 320, 
@@ -92,58 +61,6 @@ const ConversationalForm = ({ onSubmit }: Props) => {
             {getStepContent(activeStep)}
           </motion.div>
         </AnimatePresence>
-      </Box>
-
-      {/* 하단 네비게이션 버튼 */}
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        mt: 6, 
-        pt: 3, 
-        borderTop: '1px solid rgba(0,0,0,0.05)' 
-      }}>
-        <Button
-          disabled={activeStep === 0}
-          onClick={handleBack}
-          sx={{ 
-            color: '#64748b', 
-            fontWeight: 600,
-            px: 3, py: 1,
-            borderRadius: '20px',
-            '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
-          }}
-        >
-          이전 단계
-        </Button>
-        {activeStep === steps.length - 1 ? (
-          <Button 
-            variant="contained" 
-            onClick={handleSubmit}
-            sx={{ 
-              px: 4, py: 1.2, 
-              borderRadius: '30px', 
-              fontWeight: 700,
-              boxShadow: '0 8px 16px rgba(37, 99, 235, 0.25)',
-              background: 'linear-gradient(45deg, #2563EB, #1d4ed8)'
-            }}
-          >
-            이력서 작성 완료
-          </Button>
-        ) : (
-          <Button 
-            variant="contained" 
-            onClick={handleNext}
-            sx={{ 
-              px: 4, py: 1.2, 
-              borderRadius: '30px', 
-              fontWeight: 700,
-              boxShadow: '0 8px 16px rgba(37, 99, 235, 0.25)',
-              background: 'linear-gradient(45deg, #2563EB, #4F46E5)'
-            }}
-          >
-            다음
-          </Button>
-        )}
       </Box>
     </Container>
   );
