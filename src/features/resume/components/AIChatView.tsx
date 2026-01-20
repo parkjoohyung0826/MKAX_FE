@@ -63,7 +63,7 @@ const floatingInputWrapperSx = {
   p: 3,
   display: 'flex',
   justifyContent: 'center',
-  background: 'linear-gradient(to top, rgba(248,250,252,1) 30%, rgba(248,250,252,0) 100%)',
+  // background: 'linear-gradient(to top, rgba(248,250,252,1) 30%, rgba(248,250,252,0) 100%)',
   zIndex: 10
 };
 
