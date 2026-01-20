@@ -15,6 +15,7 @@ import GenerationResult from '@/features/report/components/GenerationResult';
 import ConversationalForm from '@/features/resume/components/ConversationalForm';
 import AIChatView from '@/features/resume/components/AIChatView';
 import FinalReviewStep from '@/features/resume/components/steps/FinalReviewStep';
+import ProgressStepper from '@/shared/components/ProgressStepper';
 import { mockJobPostings } from '@/features/report/services/mockJobPostings';
 
 import { ResumeData } from '@/features/resume/types';
@@ -237,11 +238,15 @@ export default function Home() {
   const renderResumeContent = () => {
     const isFinalStep = activeStep === resumeSteps.length - 1;
 
-    if (resumeInputMode === 'ai' && isFinalStep) {
-        return <FinalReviewStep data={resumeData} />;
-    }
-    
     if (resumeInputMode === 'ai') {
+      if (isFinalStep) {
+        return (
+          <>
+            <ProgressStepper steps={resumeSteps} activeStep={activeStep} />
+            <FinalReviewStep data={resumeData} />
+          </>
+        );
+      }
       return <AIChatView 
                activeStep={activeStep} 
                steps={resumeSteps}

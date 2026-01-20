@@ -207,10 +207,6 @@ const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeDa
     }
   }, [activeStep, currentStepConfig]);
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
-
   const handleSendMessage = () => {
     if (!userInput.trim() || isCurrentStepComplete) return;
 
@@ -252,7 +248,7 @@ const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeDa
   return (
     <Box sx={{ maxWidth: '800px', mx: 'auto', p: 0, position: 'relative' }}>
       
-      <Box sx={{ px: 2, mb: 2 }}>
+      <Box sx={{ mb: 2, opacity: 0.9 }}>
         <ProgressStepper steps={steps} activeStep={activeStep} />
       </Box>
 
