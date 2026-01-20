@@ -2,7 +2,7 @@
 
 import { Box, Typography } from '@mui/material';
 import { PersonOutline, WorkOutline, School, BusinessCenter, WorkspacePremium, Verified } from '@mui/icons-material';
-import { ResumeData } from '../ConversationalForm';
+import { ResumeData } from '../../types';
 
 interface Props {
   data: ResumeData;

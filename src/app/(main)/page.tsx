@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Box, Container, Typography, AppBar, Tabs, Tab, Button, ButtonGroup, 
   useTheme, useMediaQuery, Dialog, DialogContent, TextField, IconButton,
@@ -9,30 +9,32 @@ import {
 import { AutoAwesome, Restore, Close, VpnKey } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import ResumeForm from '@/components/ResumeForm';
-import CoverLetterEditor from '@/components/CoverLetterEditor';
-import LoadingIndicator from '@/components/LoadingIndicator';
-import GenerationResult from '@/components/GenerationResult';
-import ConversationalForm, { ResumeData } from '@/components/ConversationalForm';
-import { mockJobPostings } from '@/lib/mockJobPostings';
+import ResumeForm from '@/features/resume/components/ResumeForm';
+import CoverLetterEditor from '@/features/cover-letter/components/CoverLetterEditor';
+import LoadingIndicator from '@/shared/components/LoadingIndicator';
+import GenerationResult from '@/features/report/components/GenerationResult';
+import ConversationalForm from '@/features/resume/components/ConversationalForm';
+import { mockJobPostings } from '@/features/report/services/mockJobPostings';
+
+import { ResumeData } from '@/features/resume/types';
+import { CoverLetterData } from '@/features/cover-letter/types';
+import { ResultData } from '@/features/report/types';
+
+// api 테스트
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+async function fetchItems() {
+  if (!API_BASE) throw new Error("NEXT_PUBLIC_API_BASE_URL is not set");
+  const res = await fetch(`${API_BASE}/items`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch items");
+  return res.json();
+}
+//
 
 type AppState = 'form' | 'loading' | 'result';
 type TabValue = 'resume' | 'coverLetter';
 type ResumeInputMode = 'direct' | 'ai';
-
-interface CoverLetterData {
-  growthProcess: string;
-  strengthsAndWeaknesses: string;
-  keyExperience: string;
-  motivation: string;
-}
-
-interface ResultData {
-  aiCoverLetter: string;
-  aiResumeSummary: string;
-  jobPostings: any[];
-  resumeData: ResumeData;
-}
 
 const particleVariant = (i: number) => ({
   animate: {
@@ -97,7 +99,40 @@ export default function Home() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  useEffect(() => { setMounted(true); }, []);
+  //api 테스트
+  const [items, setItems] = useState<any[]>([]);
+
+  const loadItems = useCallback(async () => {
+    try {
+      const data = await fetchItems();
+      setItems(data);
+      console.log("items:", data);
+    } catch (e) {
+      console.error(e);
+      setToastMessage("아이템 목록을 불러오지 못했습니다.");
+      setToastOpen(true);
+    }
+  }, []);
+  //
+
+  // useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    loadItems();
+  }, [loadItems]);
+  useEffect(() => {
+    console.log("API BASE:", process.env.NEXT_PUBLIC_API_BASE_URL);
+
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/items`)
+      .then(res => {
+        console.log("STATUS:", res.status);
+        return res.json();
+      })
+      .then(data => console.log("DATA:", data))
+      .catch(err => console.error("ERROR:", err));
+  }, []);
+
+
 
   // 이력서 완료 여부 체크 (최소 조건: 이름과 희망 직무)
   const isResumeComplete = !!resumeData.name && !!resumeData.desiredJob;

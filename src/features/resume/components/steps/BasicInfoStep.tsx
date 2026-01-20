@@ -15,8 +15,8 @@ import {
   CloudUploadOutlined,
   Edit
 } from '@mui/icons-material';
-import { ResumeData } from '../ConversationalForm';
-import ConversationalAssistant from '../ConversationalAssistant';
+import { ResumeData } from '../../types';
+import ConversationalAssistant from '@/shared/components/ConversationalAssistant';
 
 interface Props {
   data: ResumeData;

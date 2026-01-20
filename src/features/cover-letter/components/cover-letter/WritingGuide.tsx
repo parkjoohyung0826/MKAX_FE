@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { ResumeData } from '../ConversationalForm';
+import { ResumeData } from '@/features/resume/types';
 import { LightbulbOutlined } from '@mui/icons-material';
 
 interface WritingGuideProps {

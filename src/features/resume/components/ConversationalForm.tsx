@@ -3,28 +3,14 @@
 import React, { useState } from 'react';
 import { Box, Button, Container, Typography } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion'; 
-import ProgressStepper from './ProgressStepper';
+import ProgressStepper from '@/shared/components/ProgressStepper';
 import BasicInfoStep from './steps/BasicInfoStep';
 import EducationStep from './steps/EducationStep';
 import WorkExperienceStep from './steps/WorkExperienceStep';
 import CertificationsStep from './steps/CertificationsStep';
 import FinalReviewStep from './steps/FinalReviewStep';
 
-export interface ResumeData {
-  name: string;
-  englishName: string;
-  dateOfBirth: string;
-  email: string;
-  phoneNumber: string;
-  emergencyContact: string;
-  address: string;
-  photo: string;
-  desiredJob: string;
-  education: string;
-  workExperience: string;
-  coreCompetencies: string;
-  certifications: string;
-}
+import { ResumeData } from '../types';
 
 interface Props {
   onSubmit: (data: ResumeData) => void;

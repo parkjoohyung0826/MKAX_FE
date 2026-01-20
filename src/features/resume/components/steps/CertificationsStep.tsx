@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import { Box, Typography, TextField, Button } from '@mui/material';
 import { WorkspacePremium, Verified, AutoAwesome } from '@mui/icons-material';
-import { ResumeData } from '../ConversationalForm';
-import ConversationalAssistant from '../ConversationalAssistant';
+import { ResumeData } from '../../types';
+import ConversationalAssistant from '@/shared/components/ConversationalAssistant';
 
 interface Props {
   data: ResumeData;

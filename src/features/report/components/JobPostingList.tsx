@@ -1,5 +1,5 @@
 import React from 'react';
-import { JobPosting } from '@/types/job';
+import { JobPosting } from '../types';
 import {
   Box,
   Card,

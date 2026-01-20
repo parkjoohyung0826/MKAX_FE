@@ -3,9 +3,9 @@
 import React from 'react';
 import { Box, Button, TextField, Typography, Stack, IconButton, Tooltip } from '@mui/material';
 import { AutoAwesome, HelpOutline } from '@mui/icons-material';
-import CustomModal from './common/CustomModal';
+import CustomModal from '@/shared/components/CustomModal';
 import AIWriter from './cover-letter/AIWriter';
-import { ResumeData } from './ConversationalForm';
+import { ResumeData } from '@/features/resume/types';
 import WritingGuide from './cover-letter/WritingGuide';
 
 interface Props {

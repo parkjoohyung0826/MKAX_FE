@@ -1,4 +1,4 @@
-import { JobPosting } from '@/types/job';
+import { JobPosting } from '../types/job';
 
 export const mockJobPostings: JobPosting[] = [
   {

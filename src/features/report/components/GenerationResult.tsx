@@ -24,35 +24,13 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 // 하위 컴포넌트 임포트
-import ResumeDisplay from './ResumeDisplay';
-import CoverLetterDisplay from './CoverLetterDisplay';
+import ResumeDisplay from '@/features/resume/components/ResumeDisplay';
+import CoverLetterDisplay from '@/features/cover-letter/components/CoverLetterDisplay';
 import JobPostingList from './JobPostingList';
 import CareerAnalysisReport from './CareerAnalysisReport';
-import { JobPosting } from '@/types/job'; 
-
-// --- 타입 정의 ---
-interface CoverLetterData {
-  growthProcess: string;
-  strengthsAndWeaknesses: string;
-  keyExperience: string;
-  motivation: string;
-}
-
-interface ResumeData {
-  name: string;
-  desiredJob: string;
-  education: string;
-  workExperience: string;
-  coreCompetencies: string;
-  certifications: string;
-}
-
-interface ResultData {
-  aiCoverLetter: string;
-  aiResumeSummary: string;
-  jobPostings: JobPosting[]; 
-  resumeData: ResumeData;
-}
+import { JobPosting, ResultData } from '../types';
+import { ResumeData } from '@/features/resume/types';
+import { CoverLetterData } from '@/features/cover-letter/types';
 
 interface Props {
   data: ResultData;
