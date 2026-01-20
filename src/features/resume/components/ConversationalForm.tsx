@@ -40,7 +40,7 @@ const ConversationalForm = ({ activeStep, direction, steps, resumeData, setResum
 
   return (
     <Container maxWidth="md" disableGutters>
-      <Box sx={{ mb: 4, opacity: 0.9 }}>
+      <Box sx={{ mt: -3, mb: 4, opacity: 0.9 }}>
         <ProgressStepper steps={steps} activeStep={activeStep} />
       </Box>
 

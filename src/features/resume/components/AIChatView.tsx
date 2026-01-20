@@ -38,7 +38,8 @@ const mainContainerSx = {
   position: 'relative',
   bgcolor: 'transparent', 
   boxShadow: 'none',      
-  border: 'none',         
+  border: 'none',       
+  mb: -5,
 };
 
 const messageListSx = {
@@ -248,13 +249,13 @@ const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeDa
   return (
     <Box sx={{ maxWidth: '800px', mx: 'auto', p: 0, position: 'relative' }}>
       
-      <Box sx={{ mb: 2, opacity: 0.9 }}>
+      <Box sx={{ mt: -3, mb: 2, opacity: 0.9 }}>
         <ProgressStepper steps={steps} activeStep={activeStep} />
       </Box>
 
       <Box sx={mainContainerSx}>
         <Box sx={messageListSx}>
-          <Box sx={{ textAlign: 'center', py: 4, opacity: 0.5 }}>
+          <Box sx={{ textAlign: 'center', py: -3, opacity: 0.5 }}>
             <SmartToyOutlined sx={{ fontSize: 40, color: '#94a3b8', mb: 1 }} />
             <Typography variant="body2" sx={{ fontWeight: 600, color: '#94a3b8' }}>
               AI 채용 코디네이터가 입력을 도와드립니다
