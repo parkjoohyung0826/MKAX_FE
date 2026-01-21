@@ -94,7 +94,6 @@ const chatInputSx = {
 const drawerPaperSx = {
   width: { xs: '100%', sm: '450px' },
   boxSizing: 'border-box',
-  background: '#F3F8FD', 
   backdropFilter: 'blur(16px)',
   boxShadow: '-10px 0 50px rgba(0,0,0,0.1)',
   borderLeft: '1px solid rgba(255,255,255,0.5)',
