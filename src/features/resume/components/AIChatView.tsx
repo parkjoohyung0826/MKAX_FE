@@ -188,6 +188,9 @@ const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeDa
   const [hasUnreadChanges, setHasUnreadChanges] = useState(false);
   
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const messageListRef = useRef<HTMLDivElement>(null);
+
   const currentStepConfig = conversationSteps[activeStep];
 
   useEffect(() => {
@@ -203,9 +206,30 @@ const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeDa
     }
   }, [activeStep, currentStepConfig]);
 
-  // useEffect(() => {
-  //   chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  // }, [messages]);
+  useEffect(() => {
+    if (!isTyping && !isCurrentStepComplete) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus({ preventScroll: true });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isTyping, isCurrentStepComplete]);
+
+  useEffect(() => {
+    const el = messageListRef.current;
+    if (!el) return;
+
+    // setTimeout을 사용하여 Framer Motion 애니메이션이 DOM에 공간을 차지한 직후에 스크롤되도록 함
+    const scrollTimer = setTimeout(() => {
+      el.scrollTo({
+        top: el.scrollHeight,
+        behavior: 'smooth', // 부드럽게 스크롤 (즉시 이동을 원하시면 'auto'로 변경)
+      });
+    }, 100);
+
+    return () => clearTimeout(scrollTimer);
+  }, [messages, isTyping]);
+
 
   const handleSendMessage = () => {
     if (!userInput.trim() || isCurrentStepComplete) return;
@@ -248,7 +272,7 @@ const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeDa
   return (
     <Box sx={{ maxWidth: '800px', mx: 'auto', p: 0, position: 'relative' }}>
       
-      <Box sx={{ px: 2, mb: 2 }}>
+      <Box sx={{ mt: -3, mb: 4, opacity: 0.9 }}>
         <ProgressStepper steps={steps} activeStep={activeStep} />
       </Box>
 
@@ -268,7 +292,7 @@ const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeDa
               overflow: 'hidden' 
             }}
           >
-            <Box sx={messageListSx}>
+            <Box ref={messageListRef} sx={messageListSx}>
               <Box sx={{ textAlign: 'center', py: -5, opacity: 0.5 }}>
                 <SmartToyOutlined sx={{ fontSize: 40, color: '#94a3b8', mb: 1 }} />
                 <Typography variant="body2" sx={{ fontWeight: 600, color: '#94a3b8' }}>
@@ -343,6 +367,7 @@ const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeDa
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
               disabled={isCurrentStepComplete || isTyping}
               sx={chatInputSx}
+              inputRef={inputRef}
             />
             <IconButton 
               onClick={handleSendMessage} 
