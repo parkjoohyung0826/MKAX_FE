@@ -49,29 +49,64 @@ const CertificationsStep = ({ data, handleChange }: Props) => {
   const handleOpenAssistant = (field: AssistantField) => setAssistantFor(field);
   const handleCloseAssistant = () => setAssistantFor(null);
 
-  const handleAssistantSubmit = (text: string) => {
-    if (!assistantFor) return;
-    const syntheticEvent = {
-      target: { name: assistantFor, value: text },
-    } as React.ChangeEvent<HTMLTextAreaElement>;
-    handleChange(syntheticEvent);
+  const submitCoreCompetencies = async (text: string): Promise<void> => {
+    const res = await fetch('/api/recommend/activity', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userInput: text }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.message ?? '교육사항/대외활동 생성에 실패했습니다.');
+    }
+
+    const result = await res.json();
+
+    handleChange({
+      target: { name: 'coreCompetencies', value: result.fullDescription ?? '' },
+    } as React.ChangeEvent<HTMLTextAreaElement>);
+
     handleCloseAssistant();
   };
+
+  const submitCertifications = async (text: string): Promise<void> => {
+    const res = await fetch("/api/recommend/certification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userInput: text }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.message ?? "자격증/어학 생성에 실패했습니다.");
+    }
+
+    const result = await res.json();
+    // { fullDescription, period, certificationName, institution }
+
+    handleChange({
+      target: { name: "certifications", value: result.fullDescription ?? "" },
+    } as React.ChangeEvent<HTMLTextAreaElement>);
+
+    handleCloseAssistant();
+  };
+
 
   return (
     <Box sx={{ py: 2 }}>
       {/* Modals */}
-      <ConversationalAssistant
+       <ConversationalAssistant
         open={assistantFor === 'coreCompetencies'}
         onClose={handleCloseAssistant}
-        onSubmit={handleAssistantSubmit}
+        onSubmit={submitCoreCompetencies}
         title="교육사항/대외활동 AI"
         prompt="참여했던 교육 프로그램, 대외 활동, 동아리 활동 등에 대해 자유롭게 이야기해주세요."
       />
       <ConversationalAssistant
         open={assistantFor === 'certifications'}
         onClose={handleCloseAssistant}
-        onSubmit={handleAssistantSubmit}
+        onSubmit={submitCertifications}
         title="자격증/어학 AI"
         prompt="취득한 자격증, 면허, 어학 성적 등에 대해 자유롭게 이야기해주세요."
       />

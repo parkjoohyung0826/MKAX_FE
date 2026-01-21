@@ -18,7 +18,7 @@ import { AutoAwesome } from '@mui/icons-material';
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSubmit: (text: string) => void;
+  onSubmit: (text: string) => Promise<void>; 
   title: string;
   prompt: string;
 }
@@ -29,8 +29,8 @@ const modalStyle = {
   left: '50%',
   transform: 'translate(-50%, -50%)',
   width: { xs: '90%', md: 600 },
-  bgcolor: 'rgba(255, 255, 255, 0.85)', // 투명도 적용
-  backdropFilter: 'blur(20px)', // 내부 블러
+  bgcolor: 'rgba(255, 255, 255, 0.85)', 
+  backdropFilter: 'blur(20px)', 
   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', 
   borderRadius: '24px',
   border: '1px solid rgba(255, 255, 255, 0.9)',
@@ -40,12 +40,25 @@ const modalStyle = {
 
 const ConversationalAssistant = ({ open, onClose, onSubmit, title, prompt }: Props) => {
   const [text, setText] = useState('');
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = () => {
-    onSubmit(text);
+const handleSubmit = async () => {
+  if (!text.trim()) return;
+  setLoading(true);
+  setError(null);
+
+  try {
+    await onSubmit(text);  
     setText('');
     onClose();
-  };
+  } catch (e: any) {
+    setError(e?.message ?? "AI 생성에 실패했습니다.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <Modal 
@@ -142,9 +155,9 @@ const ConversationalAssistant = ({ open, onClose, onSubmit, title, prompt }: Pro
               취소
             </Button>
             <Button 
-              variant="contained" 
-              onClick={handleSubmit} 
-              disableElevation
+              variant="contained"
+              onClick={handleSubmit}
+              disabled={loading || !text.trim()}
               startIcon={<AutoAwesome />}
               sx={{
                 borderRadius: '12px',
@@ -155,7 +168,7 @@ const ConversationalAssistant = ({ open, onClose, onSubmit, title, prompt }: Pro
                 '&:hover': { bgcolor: '#1d4ed8' }
               }}
             >
-              AI 생성하기
+              {loading ? "생성 중..." : "AI 생성하기"}
             </Button>
           </Box>
         </Box>

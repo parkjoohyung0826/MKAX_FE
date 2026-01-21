@@ -35,13 +35,36 @@ const EducationStep = ({ data, handleChange }: Props) => {
   const handleOpenAssistant = () => setAssistantOpen(true);
   const handleCloseAssistant = () => setAssistantOpen(false);
 
-  const handleAssistantSubmit = (text: string) => {
+  // const handleAssistantSubmit = (text: string) => {
+  //   const syntheticEvent = {
+  //     target: { name: 'education', value: text },
+  //   } as React.ChangeEvent<HTMLTextAreaElement>;
+  //   handleChange(syntheticEvent);
+  //   handleCloseAssistant();
+  // };
+
+  const handleAssistantSubmit = async (text: string): Promise<void> => {
+    const res = await fetch("/api/recommend/education", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description: text }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.message ?? "학력 정보 생성에 실패했습니다.");
+    }
+
+    const data = await res.json();
+    // { schoolName, major, period, graduationStatus, details, fullDescription }
+
     const syntheticEvent = {
-      target: { name: 'education', value: text },
+      target: { name: "education", value: data.fullDescription ?? "" },
     } as React.ChangeEvent<HTMLTextAreaElement>;
+
     handleChange(syntheticEvent);
-    handleCloseAssistant();
   };
+
 
   return (
     <Box sx={{ py: 2 }}>

@@ -11,7 +11,6 @@ interface Props {
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
-// 공통 Input 스타일 (Glassmorphism)
 const glassInputSx = {
   '& .MuiOutlinedInput-root': {
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
@@ -35,12 +34,26 @@ const WorkExperienceStep = ({ data, handleChange }: Props) => {
   const handleOpenAssistant = () => setAssistantOpen(true);
   const handleCloseAssistant = () => setAssistantOpen(false);
 
-  const handleAssistantSubmit = (text: string) => {
+  const handleAssistantSubmit = async (text: string): Promise<void> => {
+    const res = await fetch('/api/recommend/career', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userInput: text }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.message ?? '경력 정보 생성에 실패했습니다.');
+    }
+
+    const result = await res.json();
+    // expected: { fullDescription, companyName, period, mainTask, leavingReason }
+
     const syntheticEvent = {
-      target: { name: 'workExperience', value: text },
+      target: { name: 'workExperience', value: result.fullDescription ?? '' },
     } as React.ChangeEvent<HTMLTextAreaElement>;
+
     handleChange(syntheticEvent);
-    handleCloseAssistant();
   };
 
   return (
@@ -65,35 +78,37 @@ const WorkExperienceStep = ({ data, handleChange }: Props) => {
       <Box>
         <Box display="flex" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 1.5, px: 1 }}>
           <Box>
-             <Box display="flex" alignItems="center" gap={1} mb={0.5}>
-                <BusinessCenter fontSize="small" sx={{ color: '#64748b' }} />
-                <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#334155' }}>
-                  주요 경력 상세
-                </Typography>
-             </Box>
-             <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', ml: 3.5 }}>
-                최신순 기재 권장 (회사명, 기간, 직급, 주요 성과 등)
-             </Typography>
+            <Box display="flex" alignItems="center" gap={1} mb={0.5}>
+              <BusinessCenter fontSize="small" sx={{ color: '#64748b' }} />
+              <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#334155' }}>
+                주요 경력 상세
+              </Typography>
+            </Box>
+            <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', ml: 3.5 }}>
+              최신순 기재 권장 (회사명, 기간, 직급, 주요 성과 등)
+            </Typography>
           </Box>
-          <Button 
-             size="small" 
-             onClick={handleOpenAssistant}
-             startIcon={<AutoAwesome />}
-             sx={{ 
-                color: '#2563EB', 
-                fontWeight: 700,
-                textTransform: 'none',
-                bgcolor: 'rgba(37, 99, 235, 0.1)',
-                borderRadius: '20px',
-                px: 2,
-                py: 0.5,
-                fontSize: '0.85rem',
-                '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.2)' }
-             }}
+
+          <Button
+            size="small"
+            onClick={handleOpenAssistant}
+            startIcon={<AutoAwesome />}
+            sx={{
+              color: '#2563EB',
+              fontWeight: 700,
+              textTransform: 'none',
+              bgcolor: 'rgba(37, 99, 235, 0.1)',
+              borderRadius: '20px',
+              px: 2,
+              py: 0.5,
+              fontSize: '0.85rem',
+              '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.2)' }
+            }}
           >
             AI 작성 도우미
           </Button>
         </Box>
+
         <TextField
           fullWidth
           multiline

@@ -56,13 +56,13 @@ const BasicInfoStep = ({ data, handleChange }: Props) => {
   const handleOpenAssistant = () => setAssistantOpen(true);
   const handleCloseAssistant = () => setAssistantOpen(false);
 
-  const handleAssistantSubmit = (text: string) => {
-    const syntheticEvent = {
-      target: { name: 'desiredJob', value: text },
-    } as React.ChangeEvent<HTMLInputElement>;
-    handleChange(syntheticEvent);
-    handleCloseAssistant();
-  };
+  // const handleAssistantSubmit = (text: string) => {
+  //   const syntheticEvent = {
+  //     target: { name: 'desiredJob', value: text },
+  //   } as React.ChangeEvent<HTMLInputElement>;
+  //   handleChange(syntheticEvent);
+  //   handleCloseAssistant();
+  // };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -75,6 +75,28 @@ const BasicInfoStep = ({ data, handleChange }: Props) => {
       };
       reader.readAsDataURL(e.target.files[0]);
     }
+  };
+
+  const handleAssistantSubmit = async (text: string): Promise<void> => {
+    const res = await fetch("/api/recommend/jobs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description: text }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.message ?? "직무 추천에 실패했습니다.");
+    }
+
+    const data = await res.json();
+    // { recommendedJob, reason }
+
+    const syntheticEvent = {
+      target: { name: "desiredJob", value: data.recommendedJob },
+    } as React.ChangeEvent<HTMLInputElement>;
+
+    handleChange(syntheticEvent);
   };
 
   return (

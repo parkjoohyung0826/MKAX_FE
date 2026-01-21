@@ -218,12 +218,10 @@ const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeDa
   useEffect(() => {
     const el = messageListRef.current;
     if (!el) return;
-
-    // setTimeout을 사용하여 Framer Motion 애니메이션이 DOM에 공간을 차지한 직후에 스크롤되도록 함
     const scrollTimer = setTimeout(() => {
       el.scrollTo({
         top: el.scrollHeight,
-        behavior: 'smooth', // 부드럽게 스크롤 (즉시 이동을 원하시면 'auto'로 변경)
+        behavior: 'smooth', 
       });
     }, 100);
 
