@@ -1,25 +1,21 @@
 'use client';
 
-import React from 'react';
 import { Box, Typography, Paper, Avatar } from '@mui/material';
-import { SchoolOutlined, HistoryEduOutlined, AutoAwesome } from '@mui/icons-material';
+import { SchoolOutlined, AutoAwesome } from '@mui/icons-material';
 import { ResumeData } from '../../types';
 
 interface Props {
   data: Partial<ResumeData>;
 }
 
-// 긴 텍스트를 위한 카드 컴포넌트
-const LongInfoCard = ({ 
-  icon, 
+const LongInfoCardNoIcon = ({ 
   label, 
   value, 
-  placeholder = '내용이 아직 입력되지 않았습니다.' 
+  placeholder 
 }: { 
-  icon: React.ReactNode; 
   label: string; 
   value?: string; 
-  placeholder?: string;
+  placeholder: string;
 }) => (
   <Paper
     elevation={0}
@@ -30,8 +26,7 @@ const LongInfoCard = ({
       border: '1px solid rgba(226, 232, 240, 0.8)',
       boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
       display: 'flex',
-      alignItems: 'flex-start', // 상단 정렬 (멀티라인 대응)
-      gap: 2.5,
+      flexDirection: 'column', 
       transition: 'all 0.2s ease',
       minHeight: '120px',
       '&:hover': {
@@ -41,26 +36,7 @@ const LongInfoCard = ({
       }
     }}
   >
-    {/* 아이콘 영역 */}
-    <Box
-      sx={{
-        width: 48,
-        height: 48,
-        borderRadius: '16px',
-        bgcolor: value ? 'rgba(37, 99, 235, 0.08)' : '#f1f5f9',
-        color: value ? '#2563EB' : '#94a3b8',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-        mt: 0.5 // 텍스트 라인 높이에 맞춤
-      }}
-    >
-      {icon}
-    </Box>
-
-    {/* 텍스트 영역 */}
-    <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+    <Box sx={{ width: '100%' }}>
       <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8', display: 'block', mb: 1 }}>
         {label}
       </Typography>
@@ -70,7 +46,7 @@ const LongInfoCard = ({
           fontWeight: 500, 
           color: value ? '#334155' : '#cbd5e1',
           lineHeight: 1.7,
-          whiteSpace: 'pre-wrap' // 줄바꿈 보존
+          whiteSpace: 'pre-wrap' 
         }}
       >
         {value || placeholder}
@@ -86,13 +62,12 @@ const EducationPanel = ({ data }: Props) => {
       sx={{ 
         p: 3, 
         borderRadius: '28px',
-        bgcolor: '#F8FAFC', // BasicInfoPanel과 동일한 배경색
+        bgcolor: '#F8FAFC',
         border: '1px solid #F1F5F9',
         boxShadow: 'none',
         height: '100%'
       }}
     >
-      {/* 1. 헤더 섹션 */}
       <Box 
         sx={{ 
           mb: 4, 
@@ -106,7 +81,6 @@ const EducationPanel = ({ data }: Props) => {
           border: '1px solid rgba(255,255,255,0.8)'
         }}
       >
-        {/* 아이콘 */}
         <Avatar
           sx={{
             width: 64,
@@ -130,16 +104,13 @@ const EducationPanel = ({ data }: Props) => {
         </Box>
       </Box>
 
-      {/* 2. 상세 정보 카드 */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <LongInfoCard 
-          icon={<HistoryEduOutlined />} 
+        <LongInfoCardNoIcon 
           label="최종 학력 상세" 
           value={data.education} 
           placeholder="예: OO대학교 컴퓨터공학과 졸업 (2018.03 ~ 2024.02)&#13;&#10;- 주요 수강 과목: 데이터베이스, 알고리즘&#13;&#10;- 졸업 프로젝트: AI 기반 추천 시스템 개발"
         />
 
-        {/* AI 가이드 팁 (비어있을 때만 표시하거나 항상 표시) */}
         {!data.education && (
           <Box 
             sx={{ 

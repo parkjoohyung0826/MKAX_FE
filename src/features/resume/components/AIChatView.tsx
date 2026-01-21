@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Box, TextField, Paper, Typography, Avatar, Drawer, IconButton, Fade, Grow, Fab, Tooltip, Badge, Zoom } from '@mui/material';
 import { Send, AutoAwesome, Close, ArticleOutlined, SmartToyOutlined } from '@mui/icons-material';
 import { ResumeData } from '../types';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import BasicInfoPanel from './chat-panels/BasicInfoPanel';
 import EducationPanel from './chat-panels/EducationPanel';
@@ -11,7 +12,6 @@ import WorkExperiencePanel from './chat-panels/WorkExperiencePanel';
 import SkillsPanel from './chat-panels/SkillsPanel';
 import ProgressStepper from '@/shared/components/ProgressStepper';
 
-// --- Typing Indicator ---
 const TypingIndicator = () => (
   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, p: 2, px: 2.5, bgcolor: '#fff', borderRadius: '20px', borderTopLeftRadius: '4px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', width: 'fit-content' }}>
     {[0, 1, 2].map((i) => (
@@ -27,8 +27,6 @@ const TypingIndicator = () => (
     ))}
   </Box>
 );
-
-// --- Styles ---
 
 const mainContainerSx = {
   height: '75vh', 
@@ -64,7 +62,6 @@ const floatingInputWrapperSx = {
   p: 3,
   display: 'flex',
   justifyContent: 'center',
-  // background: 'linear-gradient(to top, rgba(248,250,252,1) 30%, rgba(248,250,252,0) 100%)',
   zIndex: 10
 };
 
@@ -97,7 +94,7 @@ const chatInputSx = {
 const drawerPaperSx = {
   width: { xs: '100%', sm: '450px' },
   boxSizing: 'border-box',
-  backgroud: '#F3F8FD',
+  background: '#F3F8FD', 
   backdropFilter: 'blur(16px)',
   boxShadow: '-10px 0 50px rgba(0,0,0,0.1)',
   borderLeft: '1px solid rgba(255,255,255,0.5)',
@@ -129,7 +126,6 @@ const badgeRippleSx = {
   },
 };
 
-// --- Interfaces & Steps ---
 interface ChatMessage {
   id: number;
   sender: 'ai' | 'user';
@@ -208,6 +204,10 @@ const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeDa
     }
   }, [activeStep, currentStepConfig]);
 
+  // useEffect(() => {
+  //   chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // }, [messages]);
+
   const handleSendMessage = () => {
     if (!userInput.trim() || isCurrentStepComplete) return;
 
@@ -249,72 +249,89 @@ const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeDa
   return (
     <Box sx={{ maxWidth: '800px', mx: 'auto', p: 0, position: 'relative' }}>
       
-      <Box sx={{ mt: -3, mb: 2, opacity: 0.9 }}>
+      <Box sx={{ px: 2, mb: 2 }}>
         <ProgressStepper steps={steps} activeStep={activeStep} />
       </Box>
 
       <Box sx={mainContainerSx}>
-        <Box sx={messageListSx}>
-          <Box sx={{ textAlign: 'center', py: -3, opacity: 0.5 }}>
-            <SmartToyOutlined sx={{ fontSize: 40, color: '#94a3b8', mb: 1 }} />
-            <Typography variant="body2" sx={{ fontWeight: 600, color: '#94a3b8' }}>
-              AI 채용 코디네이터가 입력을 도와드립니다
-            </Typography>
-          </Box>
+        
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeStep}
+            initial={{ x: 30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -30, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            style={{ 
+              flexGrow: 1, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              overflow: 'hidden' 
+            }}
+          >
+            <Box sx={messageListSx}>
+              <Box sx={{ textAlign: 'center', py: -5, opacity: 0.5 }}>
+                <SmartToyOutlined sx={{ fontSize: 40, color: '#94a3b8', mb: 1 }} />
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#94a3b8' }}>
+                  AI 채용 코디네이터가 입력을 도와드립니다
+                </Typography>
+              </Box>
 
-          {messages.map((msg) => (
-            <Grow in={true} key={msg.id} timeout={500}>
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: msg.sender === 'ai' ? 'flex-start' : 'flex-end',
-                alignItems: 'flex-start',
-                mb: 1
-              }}>
-                {msg.sender === 'ai' && (
-                  <Avatar sx={{ 
-                    width: 38, height: 38, 
-                    bgcolor: '#fff', color: '#2563EB', 
-                    mr: 2, mt: 0.5,
-                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.15)'
+              {messages.map((msg) => (
+                <Grow in={true} key={msg.id} timeout={500}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: msg.sender === 'ai' ? 'flex-start' : 'flex-end',
+                    alignItems: 'flex-start',
+                    mb: 1
                   }}>
-                    <AutoAwesome sx={{ fontSize: 20 }} />
-                  </Avatar>
-                )}
-                
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2.5,
-                    px: 3,
-                    maxWidth: '80%',
-                    borderRadius: '26px',
-                    borderTopLeftRadius: msg.sender === 'ai' ? '4px' : '26px',
-                    borderTopRightRadius: msg.sender === 'user' ? '4px' : '26px',
-                    bgcolor: msg.sender === 'ai' ? '#fff' : '#2563EB',
-                    background: msg.sender === 'user' ? 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)' : '#fff',
-                    color: msg.sender === 'ai' ? '#334155' : '#fff',
-                    boxShadow: msg.sender === 'ai' 
-                      ? '0 4px 20px rgba(0,0,0,0.05)' 
-                      : '0 8px 25px rgba(37, 99, 235, 0.3)',
-                    fontSize: '1rem',
-                    lineHeight: 1.6,
-                  }}
-                >
-                  <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>{msg.text}</Typography>
-                </Paper>
-              </Box>
-            </Grow>
-          ))}
-          
-          {isTyping && (
-            <Fade in={true}>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start', pl: 7 }}>
-                <TypingIndicator />
-              </Box>
-            </Fade>
-          )}
-          <div ref={chatEndRef} />
-        </Box>
+                    {msg.sender === 'ai' && (
+                      <Avatar sx={{ 
+                        width: 38, height: 38, 
+                        bgcolor: '#fff', color: '#2563EB', 
+                        mr: 2, mt: 0.5,
+                        boxShadow: '0 4px 12px rgba(37, 99, 235, 0.15)'
+                      }}>
+                        <AutoAwesome sx={{ fontSize: 20 }} />
+                      </Avatar>
+                    )}
+                    
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 2.5,
+                        px: 3,
+                        maxWidth: '80%',
+                        borderRadius: '26px',
+                        borderTopLeftRadius: msg.sender === 'ai' ? '4px' : '26px',
+                        borderTopRightRadius: msg.sender === 'user' ? '4px' : '26px',
+                        bgcolor: msg.sender === 'ai' ? '#fff' : '#2563EB',
+                        background: msg.sender === 'user' ? 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)' : '#fff',
+                        color: msg.sender === 'ai' ? '#334155' : '#fff',
+                        boxShadow: msg.sender === 'ai' 
+                          ? '0 4px 20px rgba(0,0,0,0.05)' 
+                          : '0 8px 25px rgba(37, 99, 235, 0.3)',
+                        fontSize: '1rem',
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>{msg.text}</Typography>
+                    </Paper>
+                  </Box>
+                </Grow>
+              ))}
+              
+              {isTyping && (
+                <Fade in={true}>
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-start', pl: 7 }}>
+                    <TypingIndicator />
+                  </Box>
+                </Fade>
+              )}
+              <div ref={chatEndRef} />
+            </Box>
+          </motion.div>
+        </AnimatePresence>
 
         <Box sx={floatingInputWrapperSx}>
           <Paper sx={inputPaperSx} elevation={0}>
@@ -347,7 +364,7 @@ const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeDa
         </Box>
       </Box>
 
-      {/* 4. [수정됨] 우측 하단 버튼 (Zoom으로 숨김 처리, 부드러운 호버) */}
+      {/* 4. 우측 하단 버튼 */}
       <Zoom in={!isDrawerOpen} unmountOnExit>
         <Tooltip title="작성된 내용 확인" placement="left">
           <Fab 
@@ -372,9 +389,6 @@ const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeDa
               }
             }}
           >
-            {/* [핵심] Badge에 key={messages.length}를 주어 메시지가 갱신될 때마다 
-              컴포넌트를 다시 그려 애니메이션(3회 반복)을 처음부터 다시 실행시킴 
-            */}
             <Badge 
               key={messages.length}
               color="error" 
