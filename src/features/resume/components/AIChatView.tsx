@@ -6,12 +6,6 @@ import { Send, AutoAwesome, Close, ArticleOutlined, SmartToyOutlined } from '@mu
 import { ResumeData } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import BasicInfoPanel from './chat-panels/BasicInfoPanel';
-import EducationPanel from './chat-panels/EducationPanel';
-import WorkExperiencePanel from './chat-panels/WorkExperiencePanel';
-import SkillsPanel from './chat-panels/SkillsPanel';
-import ProgressStepper from '@/shared/components/ProgressStepper';
-
 const TypingIndicator = () => (
   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, p: 2, px: 2.5, bgcolor: '#fff', borderRadius: '20px', borderTopLeftRadius: '4px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', width: 'fit-content' }}>
     {[0, 1, 2].map((i) => (
@@ -247,11 +241,6 @@ const AIChatView = <T extends Record<string, any>>({
 
   return (
     <Box sx={{ maxWidth: '800px', mx: 'auto', p: 0, position: 'relative' }}>
-      
-      <Box sx={{ mt: -3, mb: 4, opacity: 0.9 }}>
-        <ProgressStepper steps={steps} activeStep={activeStep} />
-      </Box>
-
       <Box sx={mainContainerSx}>
         
         <AnimatePresence mode="wait">

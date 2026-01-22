@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Box, Button } from '@mui/material';
+import { Box, Button, ButtonGroup } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import AIChatView, { ConversationStep } from '@/features/resume/components/AIChatView';
+import CoverLetterDirectInputStep from './steps/CoverLetterDirectInputStep';
 import FinalReviewStep from './steps/FinalReviewStep';
 import QuestionPanel from './chat-panels/QuestionPanel';
 import ProgressStepper from '@/shared/components/ProgressStepper';
@@ -12,6 +13,8 @@ import ProgressStepper from '@/shared/components/ProgressStepper';
 import { CoverLetterData } from '../types';
 
 const coverLetterSteps = ['성장과정', '성격의 장단점', '주요 경력 및 업무 강점', '지원 동기 및 포부', '최종 검토'];
+
+type InputMode = 'ai' | 'direct';
 
 const coverLetterConversationSteps: ConversationStep<CoverLetterData>[] = [
   {
@@ -44,7 +47,6 @@ const coverLetterConversationSteps: ConversationStep<CoverLetterData>[] = [
   },
 ];
 
-
 interface Props {
   coverLetterData: CoverLetterData;
   setCoverLetterData: React.Dispatch<React.SetStateAction<CoverLetterData>>;
@@ -52,10 +54,12 @@ interface Props {
   isGenerating: boolean;
 }
 
-const CoverLetterForm = ({ coverLetterData, setCoverLetterData, handleGenerate, isGenerating }: Props) => {
+const CoverLetter = ({ coverLetterData, setCoverLetterData, handleGenerate, isGenerating }: Props) => {
   const [activeStep, setActiveStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isStepComplete, setIsStepComplete] = useState(false);
+  const [stepInputModes, setStepInputModes] = useState<Record<number, InputMode>>({});
+  const currentMode = stepInputModes[activeStep] || 'ai';
 
   const handleNextStep = () => {
     if (activeStep === coverLetterSteps.length - 1) {
@@ -72,33 +76,79 @@ const CoverLetterForm = ({ coverLetterData, setCoverLetterData, handleGenerate, 
     setActiveStep((prev) => prev - 1);
     setIsStepComplete(true);
   };
+
+  const handleModeChange = (step: number, mode: InputMode) => {
+    setStepInputModes(prev => ({...prev, [step]: mode}));
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setCoverLetterData((prev) => ({ ...prev, [name]: value }));
+  };
   
   const renderContent = () => {
     const isFinalStep = activeStep === coverLetterSteps.length - 1;
+    const currentMode = stepInputModes[activeStep] || 'ai';
 
-    // 최종 검토 단계
     if (isFinalStep) {
-      return (
-        <>
-          <ProgressStepper steps={coverLetterSteps} activeStep={activeStep} />
-          <FinalReviewStep data={coverLetterData} />
-        </>
-      );
+      return <FinalReviewStep data={coverLetterData} />;
     }
     
-    // AI 챗봇 기반 입력 단계
-    return <AIChatView 
-             activeStep={activeStep} 
-             steps={coverLetterSteps}
-             onStepComplete={() => setIsStepComplete(true)} 
-             data={coverLetterData}
-             setData={setCoverLetterData}
-             conversationSteps={coverLetterConversationSteps}
-           />;
+    return (
+        <Box>
+            <ButtonGroup fullWidth sx={{ 
+                mb: 5, 
+                p: 0.5, 
+                bgcolor: '#f1f5f9', 
+                borderRadius: '16px',
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
+              }}>
+                {['ai', 'direct'].map((mode) => (
+                  <Button 
+                    key={mode}
+                    variant={currentMode === mode ? 'contained' : 'text'}
+                    onClick={() => handleModeChange(activeStep, mode as InputMode)}
+                    sx={{ 
+                      borderRadius: '12px !important',
+                      py: 1.5,
+                      boxShadow: currentMode === mode ? '0 4px 12px rgba(37,99,235,0.2)' : 'none',
+                      bgcolor: currentMode === mode ? '#2563EB' : 'transparent',
+                      color: currentMode === mode ? 'white' : '#64748b',
+                      border: 'none',
+                      '&:hover': { bgcolor: currentMode === mode ? '#1d4ed8' : 'rgba(0,0,0,0.05)', border: 'none' }
+                    }}
+                  >
+                    {mode === 'ai' ? 'AI 챗봇으로 작성' : '단계별로 직접 입력'}
+                  </Button>
+                ))}
+            </ButtonGroup>
+            {currentMode === 'ai' ? (
+                <AIChatView 
+                    activeStep={activeStep} 
+                    steps={coverLetterSteps}
+                    onStepComplete={() => setIsStepComplete(true)} 
+                    data={coverLetterData}
+                    setData={setCoverLetterData}
+                    conversationSteps={coverLetterConversationSteps}
+                />
+            ) : (
+                <CoverLetterDirectInputStep
+                    activeStep={activeStep}
+                    coverLetterData={coverLetterData}
+                    handleChange={handleChange}
+                    setCoverLetterData={setCoverLetterData}
+                    isGenerating={isGenerating}
+                />
+            )}
+        </Box>
+    );
   };
 
   return (
     <Box>
+      <Box sx={{mt: -3}}>
+        <ProgressStepper steps={coverLetterSteps} activeStep={activeStep} />
+      </Box>
        <AnimatePresence mode="wait">
         <motion.div
           key={activeStep}
@@ -115,7 +165,7 @@ const CoverLetterForm = ({ coverLetterData, setCoverLetterData, handleGenerate, 
         <Button disabled={activeStep === 0} onClick={handleBackStep} sx={{ color: '#64748b', fontWeight: 600, px: 3, py: 1, borderRadius: '20px', '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' } }} >
           이전 단계
         </Button>
-        <Button variant="contained" onClick={handleNextStep} disabled={!isStepComplete && activeStep < coverLetterSteps.length -1 } sx={{ px: 4, py: 1.2, borderRadius: '30px', fontWeight: 700, boxShadow: '0 8px 16px rgba(37, 99, 235, 0.25)', background: 'linear-gradient(45deg, #2563EB, #1d4ed8)' }} >
+        <Button variant="contained" onClick={handleNextStep} disabled={currentMode === 'ai' && !isStepComplete && activeStep < coverLetterSteps.length -1 } sx={{ px: 4, py: 1.2, borderRadius: '30px', fontWeight: 700, boxShadow: '0 8px 16px rgba(37, 99, 235, 0.25)', background: 'linear-gradient(45deg, #2563EB, #1d4ed8)' }} >
           {activeStep === coverLetterSteps.length - 1 ? '자기소개서 완성하기' : '다음'}
         </Button>
       </Box>
@@ -123,4 +173,4 @@ const CoverLetterForm = ({ coverLetterData, setCoverLetterData, handleGenerate, 
   );
 };
 
-export default CoverLetterForm;
+export default CoverLetter;

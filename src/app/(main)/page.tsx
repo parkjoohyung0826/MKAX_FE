@@ -1,22 +1,32 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Box, Container, Typography, AppBar, Tabs, Tab, Button, ButtonGroup, 
-  useTheme, useMediaQuery, Dialog, DialogContent, TextField, IconButton,
-  Snackbar, Alert 
+import {
+  AppBar,
+  Box,
+  Button,
+  ButtonGroup,
+  Container,
+  Dialog,
+  DialogContent,
+  IconButton,
+  Snackbar,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
+  useMediaQuery,
 } from '@mui/material';
-import { AutoAwesome, Restore, Close, VpnKey } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Alert } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { AnimatePresence, motion } from 'framer-motion';
+import { AutoAwesome, Close, Restore, VpnKey } from '@mui/icons-material';
 
-import CoverLetterDirectInput from '@/features/cover-letter/components/CoverLetterDirectInput';
-import CoverLetterForm from '@/features/cover-letter/components/CoverLetterForm';
+import CoverLetter from '@/features/cover-letter/components/CoverLetter';
 import LoadingIndicator from '@/shared/components/LoadingIndicator';
 import GenerationResult from '@/features/report/components/GenerationResult';
-import ConversationalForm from '@/features/resume/components/ConversationalForm';
-import AIChatView, { ConversationStep } from '@/features/resume/components/AIChatView';
-import FinalReviewStep from '@/features/resume/components/steps/FinalReviewStep';
-import ProgressStepper from '@/shared/components/ProgressStepper';
+import type { ConversationStep } from '@/features/resume/components/AIChatView';
+import Resume from '@/features/resume/components/Resume';
 import { mockJobPostings } from '@/features/report/services/mockJobPostings';
 
 import { ResumeData } from '@/features/resume/types';
@@ -27,6 +37,7 @@ import BasicInfoPanel from '@/features/resume/components/chat-panels/BasicInfoPa
 import EducationPanel from '@/features/resume/components/chat-panels/EducationPanel';
 import WorkExperiencePanel from '@/features/resume/components/chat-panels/WorkExperiencePanel';
 import SkillsPanel from '@/features/resume/components/chat-panels/SkillsPanel';
+
 
 const resumeConversationSteps: ConversationStep<ResumeData>[] = [
   {
@@ -117,7 +128,6 @@ export default function Home() {
   const [appState, setAppState] = useState<AppState>('form');
   const [activeTab, setActiveTab] = useState<TabValue>('resume');
   const [resumeInputMode, setResumeInputMode] = useState<InputMode>('ai');
-  const [coverLetterInputMode, setCoverLetterInputMode] = useState<InputMode>('ai');
   
   // Stepper state
   const [activeStep, setActiveStep] = useState(0);
@@ -275,39 +285,6 @@ export default function Home() {
   };
 
   const isGeneratingApplication = appState === 'loading';
-
-  const renderResumeContent = () => {
-    const isFinalStep = activeStep === resumeSteps.length - 1;
-
-    if (resumeInputMode === 'ai') {
-      if (isFinalStep) {
-        return (
-          <>
-            <ProgressStepper steps={resumeSteps} activeStep={activeStep} />
-            <FinalReviewStep data={resumeData} />
-          </>
-        );
-      }
-      return <AIChatView 
-               activeStep={activeStep} 
-               steps={resumeSteps}
-               onStepComplete={() => setIsStepComplete(true)} 
-               data={resumeData}
-               setData={setResumeData}
-               conversationSteps={resumeConversationSteps}
-             />;
-    }
-    
-    if (resumeInputMode === 'direct') {
-      return <ConversationalForm 
-               activeStep={activeStep}
-               direction={direction}
-               steps={resumeSteps}
-               resumeData={resumeData}
-               setResumeData={setResumeData}
-             />;
-    }
-  };
 
   if (!mounted) return null;
 
@@ -490,93 +467,28 @@ export default function Home() {
                       transition={{ duration: 0.3 }}
                     >
                       {activeTab === 'resume' && (
-                        <Box>
-                          <ButtonGroup fullWidth sx={{ 
-                            mb: 5, 
-                            p: 0.5, 
-                            bgcolor: '#f1f5f9', 
-                            borderRadius: '16px',
-                            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
-                          }}>
-                            {['ai', 'direct'].map((mode) => (
-                              <Button 
-                                key={mode}
-                                variant={resumeInputMode === mode ? 'contained' : 'text'} 
-                                onClick={() => setResumeInputMode(mode as ResumeInputMode)}
-                                sx={{ 
-                                  borderRadius: '12px !important',
-                                  py: 1.5,
-                                  boxShadow: resumeInputMode === mode ? '0 4px 12px rgba(37,99,235,0.2)' : 'none',
-                                  bgcolor: resumeInputMode === mode ? '#2563EB' : 'transparent',
-                                  color: resumeInputMode === mode ? 'white' : '#64748b',
-                                  border: 'none',
-                                  '&:hover': { bgcolor: resumeInputMode === mode ? '#1d4ed8' : 'rgba(0,0,0,0.05)', border: 'none' }
-                                }}
-                              >
-                                {mode === 'ai' ? 'AI 챗봇으로 작성' : '단계별로 직접 입력'}
-                              </Button>
-                            ))}
-                          </ButtonGroup>
-                          
-                          {renderResumeContent()}
-
-                           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 6, pt: 3, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
-                            <Button disabled={activeStep === 0} onClick={handleBackStep} sx={{ color: '#64748b', fontWeight: 600, px: 3, py: 1, borderRadius: '20px', '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' } }} >
-                              이전 단계
-                            </Button>
-                            <Button variant="contained" onClick={handleNextStep} sx={{ px: 4, py: 1.2, borderRadius: '30px', fontWeight: 700, boxShadow: '0 8px 16px rgba(37, 99, 235, 0.25)', background: 'linear-gradient(45deg, #2563EB, #1d4ed8)' }} >
-                              {activeStep === resumeSteps.length - 1 ? '자기소개서 작성' : '다음'}
-                            </Button>
-                          </Box>
-
-                        </Box>
+                        <Resume
+                          activeStep={activeStep}
+                          direction={direction}
+                          steps={resumeSteps}
+                          resumeData={resumeData}
+                          setResumeData={setResumeData}
+                          resumeInputMode={resumeInputMode}
+                          setResumeInputMode={setResumeInputMode}
+                          handleNextStep={handleNextStep}
+                          handleBackStep={handleBackStep}
+                          setIsStepComplete={setIsStepComplete}
+                          conversationSteps={resumeConversationSteps}
+                        />
                       )}
                       
                       {activeTab === 'coverLetter' && (
-                        <Box>
-                          <ButtonGroup fullWidth sx={{ 
-                            mb: 5, 
-                            p: 0.5, 
-                            bgcolor: '#f1f5f9', 
-                            borderRadius: '16px',
-                            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
-                          }}>
-                            {['ai', 'direct'].map((mode) => (
-                              <Button 
-                                key={mode}
-                                variant={coverLetterInputMode === mode ? 'contained' : 'text'} 
-                                onClick={() => setCoverLetterInputMode(mode as 'ai' | 'direct')}
-                                sx={{ 
-                                  borderRadius: '12px !important',
-                                  py: 1.5,
-                                  boxShadow: coverLetterInputMode === mode ? '0 4px 12px rgba(37,99,235,0.2)' : 'none',
-                                  bgcolor: coverLetterInputMode === mode ? '#2563EB' : 'transparent',
-                                  color: coverLetterInputMode === mode ? 'white' : '#64748b',
-                                  border: 'none',
-                                  '&:hover': { bgcolor: coverLetterInputMode === mode ? '#1d4ed8' : 'rgba(0,0,0,0.05)', border: 'none' }
-                                }}
-                              >
-                                {mode === 'ai' ? 'AI 챗봇으로 작성' : '단계별로 직접 입력'}
-                              </Button>
-                            ))}
-                          </ButtonGroup>
-
-                          {coverLetterInputMode === 'ai' ? (
-                            <CoverLetterForm 
-                              coverLetterData={coverLetterData} 
-                              setCoverLetterData={setCoverLetterData}
-                              handleGenerate={handleGenerate}
-                              isGenerating={isGeneratingApplication}
-                            />
-                          ) : (
-                            <CoverLetterDirectInput
-                              coverLetterData={coverLetterData}
-                              setCoverLetterData={setCoverLetterData}
-                              handleGenerate={handleGenerate}
-                              isGenerating={isGeneratingApplication}
-                            />
-                          )}
-                        </Box>
+                        <CoverLetter 
+                          coverLetterData={coverLetterData}
+                          setCoverLetterData={setCoverLetterData}
+                          handleGenerate={handleGenerate}
+                          isGenerating={isGeneratingApplication}
+                        />
                       )}
                     </motion.div>
                   </AnimatePresence>

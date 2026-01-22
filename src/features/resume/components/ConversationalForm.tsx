@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Box, Typography, Container } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion'; 
-import ProgressStepper from '@/shared/components/ProgressStepper';
+
 import BasicInfoStep from './steps/BasicInfoStep';
 import EducationStep from './steps/EducationStep';
 import WorkExperienceStep from './steps/WorkExperienceStep';
@@ -40,9 +40,7 @@ const ConversationalForm = ({ activeStep, direction, steps, resumeData, setResum
 
   return (
     <Container maxWidth="md" disableGutters>
-      <Box sx={{ mt: -3, mb: 4, opacity: 0.9 }}>
-        <ProgressStepper steps={steps} activeStep={activeStep} />
-      </Box>
+      
 
       <Box sx={{ 
         position: 'relative', 
