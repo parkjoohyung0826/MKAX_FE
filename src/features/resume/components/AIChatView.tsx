@@ -131,54 +131,32 @@ interface ChatMessage {
   text: string;
 }
 
-interface AIChatViewProps {
+export interface ConversationStep<T> {
+  title: string;
+  panel: (data: Partial<T>) => React.ReactNode;
+  fields: {
+    field: keyof T;
+    question: string;
+  }[];
+}
+
+interface AIChatViewProps<T> {
   activeStep: number;
   steps: string[];
   onStepComplete: () => void;
-  resumeData: ResumeData;
-  setResumeData: React.Dispatch<React.SetStateAction<ResumeData>>;
+  data: T;
+  setData: React.Dispatch<React.SetStateAction<T>>;
+  conversationSteps: ConversationStep<T>[];
 }
 
-const conversationSteps = [
-  {
-    title: '기본 정보',
-    panel: (data: Partial<ResumeData>) => <BasicInfoPanel data={data} />,
-    fields: [
-      { field: 'name', question: '안녕하세요! 이력서 작성을 도와드릴게요.\n먼저 성함(한글)을 알려주세요.' },
-      { field: 'englishName', question: '영문 이름도 알려주시겠어요?' },
-      { field: 'desiredJob', question: '지원하고자 하는 희망 직무는 무엇인가요?' },
-      { field: 'dateOfBirth', question: '생년월일(YYYY-MM-DD)을 입력해주세요.' },
-      { field: 'email', question: '이메일 주소를 알려주세요.' },
-      { field: 'phoneNumber', question: '연락 가능한 휴대폰 번호를 알려주세요.' },
-      { field: 'address', question: '거주 중인 주소를 입력해주세요.' },
-      { field: 'emergencyContact', question: '비상 연락처도 하나 남겨주세요.' },
-    ]
-  },
-  {
-    title: '학력 사항',
-    panel: (data: Partial<ResumeData>) => <EducationPanel data={data} />,
-    fields: [
-      { field: 'education', question: '학력 사항에 대해 알려주세요.\n(예: OO대학교 컴퓨터공학과 졸업, 2018.03 ~ 2024.02)' },
-    ]
-  },
-  {
-    title: '경력 사항',
-    panel: (data: Partial<ResumeData>) => <WorkExperiencePanel data={data} />,
-    fields: [
-      { field: 'workExperience', question: '경력 사항이 있다면 최신순으로 알려주세요.\n(회사명, 기간, 주요 업무 등)' },
-    ]
-  },
-  {
-    title: '자격증/주요활동',
-    panel: (data: Partial<ResumeData>) => <SkillsPanel data={data} />,
-    fields: [
-      { field: 'coreCompetencies', question: '보유하신 핵심 역량이나 기술 스택을 자유롭게 말씀해주세요.' },
-      { field: 'certifications', question: '자격증, 어학 성적, 또는 주요 대외활동 경험이 있다면 알려주세요.' },
-    ]
-  }
-];
-
-const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeData }: AIChatViewProps) => {
+const AIChatView = <T extends Record<string, any>>({ 
+  activeStep, 
+  steps, 
+  onStepComplete, 
+  data, 
+  setData, 
+  conversationSteps 
+}: AIChatViewProps<T>) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -233,10 +211,10 @@ const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeDa
     if (!userInput.trim() || isCurrentStepComplete) return;
 
     const newUserMessage: ChatMessage = { id: Date.now(), sender: 'user', text: userInput };
-    const currentField = currentStepConfig.fields[questionIndex].field as keyof ResumeData;
+    const currentField = currentStepConfig.fields[questionIndex].field;
     
     setMessages(prev => [...prev, newUserMessage]);
-    setResumeData(prev => ({ ...prev, [currentField]: userInput }));
+    setData(prev => ({ ...prev, [currentField]: userInput }));
     setUserInput('');
     setIsTyping(true);
 
@@ -447,7 +425,7 @@ const AIChatView = ({ activeStep, steps, onStepComplete, resumeData, setResumeDa
         </Box>
 
         <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 1 }}>
-          {currentStepConfig.panel(resumeData)}
+          {currentStepConfig.panel(data)}
         </Box>
       </Drawer>
     </Box>

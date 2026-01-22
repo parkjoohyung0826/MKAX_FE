@@ -9,11 +9,12 @@ import {
 import { AutoAwesome, Restore, Close, VpnKey } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import CoverLetterEditor from '@/features/cover-letter/components/CoverLetterEditor';
+import CoverLetterDirectInput from '@/features/cover-letter/components/CoverLetterDirectInput';
+import CoverLetterForm from '@/features/cover-letter/components/CoverLetterForm';
 import LoadingIndicator from '@/shared/components/LoadingIndicator';
 import GenerationResult from '@/features/report/components/GenerationResult';
 import ConversationalForm from '@/features/resume/components/ConversationalForm';
-import AIChatView from '@/features/resume/components/AIChatView';
+import AIChatView, { ConversationStep } from '@/features/resume/components/AIChatView';
 import FinalReviewStep from '@/features/resume/components/steps/FinalReviewStep';
 import ProgressStepper from '@/shared/components/ProgressStepper';
 import { mockJobPostings } from '@/features/report/services/mockJobPostings';
@@ -21,6 +22,50 @@ import { mockJobPostings } from '@/features/report/services/mockJobPostings';
 import { ResumeData } from '@/features/resume/types';
 import { CoverLetterData } from '@/features/cover-letter/types';
 import { ResultData } from '@/features/report/types';
+
+import BasicInfoPanel from '@/features/resume/components/chat-panels/BasicInfoPanel';
+import EducationPanel from '@/features/resume/components/chat-panels/EducationPanel';
+import WorkExperiencePanel from '@/features/resume/components/chat-panels/WorkExperiencePanel';
+import SkillsPanel from '@/features/resume/components/chat-panels/SkillsPanel';
+
+const resumeConversationSteps: ConversationStep<ResumeData>[] = [
+  {
+    title: '기본 정보',
+    panel: (data: Partial<ResumeData>) => <BasicInfoPanel data={data} />,
+    fields: [
+      { field: 'name', question: '안녕하세요! 이력서 작성을 도와드릴게요.\n먼저 성함(한글)을 알려주세요.' },
+      { field: 'englishName', question: '영문 이름도 알려주시겠어요?' },
+      { field: 'desiredJob', question: '지원하고자 하는 희망 직무는 무엇인가요?' },
+      { field: 'dateOfBirth', question: '생년월일(YYYY-MM-DD)을 입력해주세요.' },
+      { field: 'email', question: '이메일 주소를 알려주세요.' },
+      { field: 'phoneNumber', question: '연락 가능한 휴대폰 번호를 알려주세요.' },
+      { field: 'address', question: '거주 중인 주소를 입력해주세요.' },
+      { field: 'emergencyContact', question: '비상 연락처도 하나 남겨주세요.' },
+    ]
+  },
+  {
+    title: '학력 사항',
+    panel: (data: Partial<ResumeData>) => <EducationPanel data={data} />,
+    fields: [
+      { field: 'education', question: '학력 사항에 대해 알려주세요.\n(예: OO대학교 컴퓨터공학과 졸업, 2018.03 ~ 2024.02)' },
+    ]
+  },
+  {
+    title: '경력 사항',
+    panel: (data: Partial<ResumeData>) => <WorkExperiencePanel data={data} />,
+    fields: [
+      { field: 'workExperience', question: '경력 사항이 있다면 최신순으로 알려주세요.\n(회사명, 기간, 주요 업무 등)' },
+    ]
+  },
+  {
+    title: '자격증/주요활동',
+    panel: (data: Partial<ResumeData>) => <SkillsPanel data={data} />,
+    fields: [
+      { field: 'coreCompetencies', question: '보유하신 핵심 역량이나 기술 스택을 자유롭게 말씀해주세요.' },
+      { field: 'certifications', question: '자격증, 어학 성적, 또는 주요 대외활동 경험이 있다면 알려주세요.' },
+    ]
+  }
+];
 
 // api 테스트
 
@@ -36,7 +81,7 @@ async function fetchItems() {
 
 type AppState = 'form' | 'loading' | 'result';
 type TabValue = 'resume' | 'coverLetter';
-type ResumeInputMode = 'direct' | 'ai';
+type InputMode = 'direct' | 'ai';
 
 const particleVariant = (i: number) => ({
   animate: {
@@ -71,7 +116,8 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [appState, setAppState] = useState<AppState>('form');
   const [activeTab, setActiveTab] = useState<TabValue>('resume');
-  const [resumeInputMode, setResumeInputMode] = useState<ResumeInputMode>('ai');
+  const [resumeInputMode, setResumeInputMode] = useState<InputMode>('ai');
+  const [coverLetterInputMode, setCoverLetterInputMode] = useState<InputMode>('ai');
   
   // Stepper state
   const [activeStep, setActiveStep] = useState(0);
@@ -190,11 +236,6 @@ export default function Home() {
     setAccessCode('');
   };
 
-  const handleCoverLetterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setCoverLetterData((prev) => ({ ...prev, [name]: value }));
-  };
-
   const handleGenerate = () => {
     setAppState('loading');
     setTimeout(() => {
@@ -251,8 +292,9 @@ export default function Home() {
                activeStep={activeStep} 
                steps={resumeSteps}
                onStepComplete={() => setIsStepComplete(true)} 
-               resumeData={resumeData}
-               setResumeData={setResumeData}
+               data={resumeData}
+               setData={setResumeData}
+               conversationSteps={resumeConversationSteps}
              />;
     }
     
@@ -491,14 +533,50 @@ export default function Home() {
                       )}
                       
                       {activeTab === 'coverLetter' && (
-                        <CoverLetterEditor 
-                          coverLetterData={coverLetterData} 
-                          setCoverLetterData={setCoverLetterData} 
-                          handleChange={handleCoverLetterChange} 
-                          handleGenerate={handleGenerate} 
-                          isGenerating={isGeneratingApplication} 
-                          resumeData={resumeData} 
-                        />
+                        <Box>
+                          <ButtonGroup fullWidth sx={{ 
+                            mb: 5, 
+                            p: 0.5, 
+                            bgcolor: '#f1f5f9', 
+                            borderRadius: '16px',
+                            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
+                          }}>
+                            {['ai', 'direct'].map((mode) => (
+                              <Button 
+                                key={mode}
+                                variant={coverLetterInputMode === mode ? 'contained' : 'text'} 
+                                onClick={() => setCoverLetterInputMode(mode as 'ai' | 'direct')}
+                                sx={{ 
+                                  borderRadius: '12px !important',
+                                  py: 1.5,
+                                  boxShadow: coverLetterInputMode === mode ? '0 4px 12px rgba(37,99,235,0.2)' : 'none',
+                                  bgcolor: coverLetterInputMode === mode ? '#2563EB' : 'transparent',
+                                  color: coverLetterInputMode === mode ? 'white' : '#64748b',
+                                  border: 'none',
+                                  '&:hover': { bgcolor: coverLetterInputMode === mode ? '#1d4ed8' : 'rgba(0,0,0,0.05)', border: 'none' }
+                                }}
+                              >
+                                {mode === 'ai' ? 'AI 챗봇으로 작성' : '단계별로 직접 입력'}
+                              </Button>
+                            ))}
+                          </ButtonGroup>
+
+                          {coverLetterInputMode === 'ai' ? (
+                            <CoverLetterForm 
+                              coverLetterData={coverLetterData} 
+                              setCoverLetterData={setCoverLetterData}
+                              handleGenerate={handleGenerate}
+                              isGenerating={isGeneratingApplication}
+                            />
+                          ) : (
+                            <CoverLetterDirectInput
+                              coverLetterData={coverLetterData}
+                              setCoverLetterData={setCoverLetterData}
+                              handleGenerate={handleGenerate}
+                              isGenerating={isGeneratingApplication}
+                            />
+                          )}
+                        </Box>
                       )}
                     </motion.div>
                   </AnimatePresence>

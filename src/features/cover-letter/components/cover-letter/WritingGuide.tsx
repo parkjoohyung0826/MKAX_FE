@@ -7,7 +7,7 @@ import { LightbulbOutlined } from '@mui/icons-material';
 
 interface WritingGuideProps {
   section: string;
-  resumeData: ResumeData;
+  resumeData?: ResumeData;
 }
 
 const guideBoxSx = {
@@ -18,8 +18,10 @@ const guideBoxSx = {
   border: '1px solid rgba(0,0,0,0.05)',
 };
 
-const getGuidance = (section: string, resumeData: ResumeData) => {
-  const { desiredJob, workExperience, coreCompetencies } = resumeData;
+const getGuidance = (section: string, resumeData?: ResumeData) => {
+  const desiredJob = resumeData?.desiredJob || '지원 직무';
+  const workExperience = resumeData?.workExperience || '주요 경력';
+  const coreCompetencies = resumeData?.coreCompetencies || '핵심 역량';
 
   // 수정 포인트: 여기서 Typography 대신 span을 사용합니다.
   // 부모 컴포넌트(WritingGuide)에서 이미 Typography로 감싸고 있기 때문입니다.
