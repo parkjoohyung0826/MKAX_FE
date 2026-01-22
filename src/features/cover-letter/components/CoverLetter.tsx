@@ -61,6 +61,14 @@ const CoverLetter = ({ coverLetterData, setCoverLetterData, handleGenerate, isGe
   const [stepInputModes, setStepInputModes] = useState<Record<number, InputMode>>({});
   const currentMode = stepInputModes[activeStep] || 'ai';
 
+  const coverLetterCompletedSteps = [
+    !!coverLetterData.growthProcess,
+    !!coverLetterData.strengthsAndWeaknesses,
+    !!coverLetterData.keyExperience,
+    !!coverLetterData.motivation,
+    false,
+  ];
+
   const handleNextStep = () => {
     if (activeStep === coverLetterSteps.length - 1) {
       handleGenerate();
@@ -75,6 +83,15 @@ const CoverLetter = ({ coverLetterData, setCoverLetterData, handleGenerate, isGe
     setDirection(-1);
     setActiveStep((prev) => prev - 1);
     setIsStepComplete(true);
+  };
+
+  const handleStepClick = (step: number) => {
+    if (step > activeStep) {
+      setDirection(1);
+    } else if (step < activeStep) {
+      setDirection(-1);
+    }
+    setActiveStep(step);
   };
 
   const handleModeChange = (step: number, mode: InputMode) => {
@@ -147,7 +164,12 @@ const CoverLetter = ({ coverLetterData, setCoverLetterData, handleGenerate, isGe
   return (
     <Box>
       <Box sx={{mt: -3}}>
-        <ProgressStepper steps={coverLetterSteps} activeStep={activeStep} />
+        <ProgressStepper
+          steps={coverLetterSteps}
+          activeStep={activeStep}
+          onStepClick={handleStepClick}
+          completedSteps={coverLetterCompletedSteps}
+        />
       </Box>
        <AnimatePresence mode="wait">
         <motion.div

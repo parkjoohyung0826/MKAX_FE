@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect} from 'react';
 import {
   AppBar,
   Box,
   Button,
-  ButtonGroup,
   Container,
   Dialog,
   DialogContent,
@@ -25,70 +24,12 @@ import { AutoAwesome, Close, Restore, VpnKey } from '@mui/icons-material';
 import CoverLetter from '@/features/cover-letter/components/CoverLetter';
 import LoadingIndicator from '@/shared/components/LoadingIndicator';
 import GenerationResult from '@/features/report/components/GenerationResult';
-import type { ConversationStep } from '@/features/resume/components/AIChatView';
 import Resume from '@/features/resume/components/Resume';
 import { mockJobPostings } from '@/features/report/services/mockJobPostings';
 
 import { ResumeData } from '@/features/resume/types';
 import { CoverLetterData } from '@/features/cover-letter/types';
 import { ResultData } from '@/features/report/types';
-
-import BasicInfoPanel from '@/features/resume/components/chat-panels/BasicInfoPanel';
-import EducationPanel from '@/features/resume/components/chat-panels/EducationPanel';
-import WorkExperiencePanel from '@/features/resume/components/chat-panels/WorkExperiencePanel';
-import SkillsPanel from '@/features/resume/components/chat-panels/SkillsPanel';
-
-
-const resumeConversationSteps: ConversationStep<ResumeData>[] = [
-  {
-    title: '기본 정보',
-    panel: (data: Partial<ResumeData>) => <BasicInfoPanel data={data} />,
-    fields: [
-      { field: 'name', question: '안녕하세요! 이력서 작성을 도와드릴게요.\n먼저 성함(한글)을 알려주세요.' },
-      { field: 'englishName', question: '영문 이름도 알려주시겠어요?' },
-      { field: 'desiredJob', question: '지원하고자 하는 희망 직무는 무엇인가요?' },
-      { field: 'dateOfBirth', question: '생년월일(YYYY-MM-DD)을 입력해주세요.' },
-      { field: 'email', question: '이메일 주소를 알려주세요.' },
-      { field: 'phoneNumber', question: '연락 가능한 휴대폰 번호를 알려주세요.' },
-      { field: 'address', question: '거주 중인 주소를 입력해주세요.' },
-      { field: 'emergencyContact', question: '비상 연락처도 하나 남겨주세요.' },
-    ]
-  },
-  {
-    title: '학력 사항',
-    panel: (data: Partial<ResumeData>) => <EducationPanel data={data} />,
-    fields: [
-      { field: 'education', question: '학력 사항에 대해 알려주세요.\n(예: OO대학교 컴퓨터공학과 졸업, 2018.03 ~ 2024.02)' },
-    ]
-  },
-  {
-    title: '경력 사항',
-    panel: (data: Partial<ResumeData>) => <WorkExperiencePanel data={data} />,
-    fields: [
-      { field: 'workExperience', question: '경력 사항이 있다면 최신순으로 알려주세요.\n(회사명, 기간, 주요 업무 등)' },
-    ]
-  },
-  {
-    title: '자격증/주요활동',
-    panel: (data: Partial<ResumeData>) => <SkillsPanel data={data} />,
-    fields: [
-      { field: 'coreCompetencies', question: '보유하신 핵심 역량이나 기술 스택을 자유롭게 말씀해주세요.' },
-      { field: 'certifications', question: '자격증, 어학 성적, 또는 주요 대외활동 경험이 있다면 알려주세요.' },
-    ]
-  }
-];
-
-// api 테스트
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-async function fetchItems() {
-  if (!API_BASE) throw new Error("NEXT_PUBLIC_API_BASE_URL is not set");
-  const res = await fetch(`${API_BASE}/items`, { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to fetch items");
-  return res.json();
-}
-//
 
 type AppState = 'form' | 'loading' | 'result';
 type TabValue = 'resume' | 'coverLetter';
@@ -121,19 +62,12 @@ const glassInputSx = {
   }
 };
 
-const resumeSteps = ['기본 정보', '학력 사항', '경력 사항', '자격증/주요활동', '최종 검토'];
-
 export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [appState, setAppState] = useState<AppState>('form');
   const [activeTab, setActiveTab] = useState<TabValue>('resume');
   const [resumeInputMode, setResumeInputMode] = useState<InputMode>('ai');
   
-  // Stepper state
-  const [activeStep, setActiveStep] = useState(0);
-  const [direction, setDirection] = useState(0);
-  const [isStepComplete, setIsStepComplete] = useState(false);
-
   const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
   const [accessCode, setAccessCode] = useState('');
 
@@ -164,79 +98,18 @@ export default function Home() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  //api 테스트
-  const [items, setItems] = useState<any[]>([]);
-
-  const loadItems = useCallback(async () => {
-    try {
-      const data = await fetchItems();
-      setItems(data);
-      console.log("items:", data);
-    } catch (e) {
-      console.error(e);
-      setToastMessage("아이템 목록을 불러오지 못했습니다.");
-      setToastOpen(true);
-    }
-  }, []);
-  //
-
-  // useEffect(() => { setMounted(true); }, []);
-  useEffect(() => {
-    setMounted(true);
-    loadItems();
-  }, [loadItems]);
-  useEffect(() => {
-    console.log("API BASE:", process.env.NEXT_PUBLIC_API_BASE_URL);
-
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/items`)
-      .then(res => {
-        console.log("STATUS:", res.status);
-        return res.json();
-      })
-      .then(data => console.log("DATA:", data))
-      .catch(err => console.error("ERROR:", err));
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
   
-  // Reset step when input mode changes
-  useEffect(() => {
-    setActiveStep(0);
-    setDirection(0);
-    setIsStepComplete(false);
-  }, [resumeInputMode]);
-
-
-  // 이력서 완료 여부 체크 (최소 조건: 이름과 희망 직무)
   const isResumeComplete = !!resumeData.name && !!resumeData.desiredJob;
 
-  // --- 탭 변경 핸들러 수정 ---
   const handleTabChange = (event: React.SyntheticEvent, newValue: TabValue) => {
-    // 자기소개서 탭으로 이동하려고 하는데, 이력서가 미완성인 경우
     if (newValue === 'coverLetter' && !isResumeComplete) {
       setToastMessage('이력서의 기본 정보(이름, 희망 직무)를 먼저 입력해주세요.');
       setToastOpen(true);
-      return; // 탭 변경 막음
+      return; 
     }
     setActiveTab(newValue);
   };
-
-  // --- 다음 단계 버튼 핸들러 수정 ---
-  const handleNextStep = () => {
-    if (activeStep === resumeSteps.length - 1) {
-      // Final step -> go to cover letter
-      setActiveTab('coverLetter');
-    } else {
-      setDirection(1);
-      setActiveStep((prev) => prev + 1);
-      setIsStepComplete(false); // Reset for next step
-    }
-  };
-
-  const handleBackStep = () => {
-    setDirection(-1);
-    setActiveStep((prev) => prev - 1);
-    setIsStepComplete(true); // Assume previous step is always complete
-  };
-
 
   const handleLoadData = () => {
     if (!accessCode.trim()) return;
@@ -279,9 +152,6 @@ export default function Home() {
       certifications: '',
     });
     setActiveTab('resume');
-    setActiveStep(0);
-    setDirection(0); 
-    setIsStepComplete(false); 
   };
 
   const isGeneratingApplication = appState === 'loading';
@@ -468,17 +338,11 @@ export default function Home() {
                     >
                       {activeTab === 'resume' && (
                         <Resume
-                          activeStep={activeStep}
-                          direction={direction}
-                          steps={resumeSteps}
                           resumeData={resumeData}
                           setResumeData={setResumeData}
                           resumeInputMode={resumeInputMode}
                           setResumeInputMode={setResumeInputMode}
-                          handleNextStep={handleNextStep}
-                          handleBackStep={handleBackStep}
-                          setIsStepComplete={setIsStepComplete}
-                          conversationSteps={resumeConversationSteps}
+                          onFinishResume={() => setActiveTab('coverLetter')}
                         />
                       )}
                       

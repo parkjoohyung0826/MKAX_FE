@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, ButtonGroup } from '@mui/material';
 import ProgressStepper from '@/shared/components/ProgressStepper';
 import FinalReviewStep from './steps/FinalReviewStep';
@@ -8,37 +8,114 @@ import AIChatView, { ConversationStep } from './AIChatView';
 import ConversationalForm from './ConversationalForm';
 import { ResumeData } from '../types';
 
+import BasicInfoPanel from '@/features/resume/components/chat-panels/BasicInfoPanel';
+import EducationPanel from '@/features/resume/components/chat-panels/EducationPanel';
+import WorkExperiencePanel from '@/features/resume/components/chat-panels/WorkExperiencePanel';
+import SkillsPanel from '@/features/resume/components/chat-panels/SkillsPanel';
+
 type InputMode = 'direct' | 'ai';
 
+const resumeConversationSteps: ConversationStep<ResumeData>[] = [
+  {
+    title: '기본 정보',
+    panel: (data: Partial<ResumeData>) => <BasicInfoPanel data={data} />,
+    fields: [
+      { field: 'name', question: '안녕하세요! 이력서 작성을 도와드릴게요.\n먼저 성함(한글)을 알려주세요.' },
+      { field: 'englishName', question: '영문 이름도 알려주시겠어요?' },
+      { field: 'desiredJob', question: '지원하고자 하는 희망 직무는 무엇인가요?' },
+      { field: 'dateOfBirth', question: '생년월일(YYYY-MM-DD)을 입력해주세요.' },
+      { field: 'email', question: '이메일 주소를 알려주세요.' },
+      { field: 'phoneNumber', question: '연락 가능한 휴대폰 번호를 알려주세요.' },
+      { field: 'address', question: '거주 중인 주소를 입력해주세요.' },
+      { field: 'emergencyContact', question: '비상 연락처도 하나 남겨주세요.' },
+    ]
+  },
+  {
+    title: '학력 사항',
+    panel: (data: Partial<ResumeData>) => <EducationPanel data={data} />,
+    fields: [
+      { field: 'education', question: '학력 사항에 대해 알려주세요.\n(예: OO대학교 컴퓨터공학과 졸업, 2018.03 ~ 2024.02)' },
+    ]
+  },
+  {
+    title: '경력 사항',
+    panel: (data: Partial<ResumeData>) => <WorkExperiencePanel data={data} />,
+    fields: [
+      { field: 'workExperience', question: '경력 사항이 있다면 최신순으로 알려주세요.\n(회사명, 기간, 주요 업무 등)' },
+    ]
+  },
+  {
+    title: '자격증/주요활동',
+    panel: (data: Partial<ResumeData>) => <SkillsPanel data={data} />,
+    fields: [
+      { field: 'coreCompetencies', question: '보유하신 핵심 역량이나 기술 스택을 자유롭게 말씀해주세요.' },
+      { field: 'certifications', question: '자격증, 어학 성적, 또는 주요 대외활동 경험이 있다면 알려주세요.' },
+    ]
+  }
+];
+
+const resumeSteps = ['기본 정보', '학력 사항', '경력 사항', '자격증/주요활동', '최종 검토'];
+
 interface Props {
-  activeStep: number;
-  direction: number;
-  steps: string[];
   resumeData: ResumeData;
   setResumeData: React.Dispatch<React.SetStateAction<ResumeData>>;
   resumeInputMode: InputMode;
   setResumeInputMode: (mode: InputMode) => void;
-  handleNextStep: () => void;
-  handleBackStep: () => void;
-  setIsStepComplete: (isComplete: boolean) => void;
-  conversationSteps: ConversationStep<ResumeData>[];
+  onFinishResume: () => void;
 }
 
 const Resume = ({
-  activeStep,
-  direction,
-  steps,
   resumeData,
   setResumeData,
   resumeInputMode,
   setResumeInputMode,
-  handleNextStep,
-  handleBackStep,
-  setIsStepComplete,
-  conversationSteps
+  onFinishResume,
 }: Props) => {
+  const [activeStep, setActiveStep] = useState(0);
+  const [direction, setDirection] = useState(0);
+  const [isStepComplete, setIsStepComplete] = useState(false);
+
+  useEffect(() => {
+    setActiveStep(0);
+    setDirection(0);
+    setIsStepComplete(false);
+  }, [resumeInputMode]);
+
+  const completedSteps = [
+    !!(resumeData.name && resumeData.desiredJob && resumeData.email && resumeData.phoneNumber),
+    !!resumeData.education,
+    !!resumeData.workExperience,
+    !!(resumeData.coreCompetencies || resumeData.certifications),
+    false,
+  ];
+
+  const handleNextStep = () => {
+    if (activeStep === resumeSteps.length - 1) {
+      onFinishResume();
+    } else {
+      setDirection(1);
+      setActiveStep((prev) => prev + 1);
+      setIsStepComplete(false);
+    }
+  };
+
+  const handleBackStep = () => {
+    setDirection(-1);
+    setActiveStep((prev) => prev - 1);
+    setIsStepComplete(true);
+  };
+
+  const handleStepClick = (step: number) => {
+    if (step > activeStep) {
+      setDirection(1);
+    } else if (step < activeStep) {
+      setDirection(-1);
+    }
+    setActiveStep(step);
+  };
+
   const renderResumeContent = () => {
-    const isFinalStep = activeStep === steps.length - 1;
+    const isFinalStep = activeStep === resumeSteps.length - 1;
 
     if (isFinalStep) {
       return <FinalReviewStep data={resumeData} />;
@@ -48,11 +125,11 @@ const Resume = ({
       return (
         <AIChatView
           activeStep={activeStep}
-          steps={steps}
+          steps={resumeSteps}
           onStepComplete={() => setIsStepComplete(true)}
           data={resumeData}
           setData={setResumeData}
-          conversationSteps={conversationSteps}
+          conversationSteps={resumeConversationSteps}
         />
       );
     }
@@ -62,7 +139,7 @@ const Resume = ({
         <ConversationalForm
           activeStep={activeStep}
           direction={direction}
-          steps={steps}
+          steps={resumeSteps}
           resumeData={resumeData}
           setResumeData={setResumeData}
         />
@@ -73,7 +150,12 @@ const Resume = ({
   return (
     <Box>
       <Box sx={{ mt: -3 }}>
-        <ProgressStepper steps={steps} activeStep={activeStep} />
+        <ProgressStepper
+          steps={resumeSteps}
+          activeStep={activeStep}
+          onStepClick={handleStepClick}
+          completedSteps={completedSteps}
+        />
       </Box>
       <ButtonGroup
         fullWidth
@@ -145,7 +227,7 @@ const Resume = ({
             background: 'linear-gradient(45deg, #2563EB, #1d4ed8)',
           }}
         >
-          {activeStep === steps.length - 1 ? '자기소개서 작성' : '다음'}
+          {activeStep === resumeSteps.length - 1 ? '자기소개서 작성' : '다음'}
         </Button>
       </Box>
     </Box>

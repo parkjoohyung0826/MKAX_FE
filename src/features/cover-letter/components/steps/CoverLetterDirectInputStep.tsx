@@ -6,7 +6,7 @@ import { AutoAwesome, HelpOutline } from '@mui/icons-material';
 import CustomModal from '@/shared/components/CustomModal';
 import AIWriter from '../cover-letter/AIWriter';
 import WritingGuide from '../cover-letter/WritingGuide';
-import { CoverLetterData } from '../../../types';
+import { CoverLetterData } from '../../types';
 
 interface Props {
   activeStep: number;
