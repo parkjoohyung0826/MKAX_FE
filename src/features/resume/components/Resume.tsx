@@ -59,27 +59,19 @@ const resumeSteps = ['기본 정보', '학력 사항', '경력 사항', '자격�
 interface Props {
   resumeData: ResumeData;
   setResumeData: React.Dispatch<React.SetStateAction<ResumeData>>;
-  resumeInputMode: InputMode;
-  setResumeInputMode: (mode: InputMode) => void;
   onFinishResume: () => void;
 }
 
 const Resume = ({
   resumeData,
   setResumeData,
-  resumeInputMode,
-  setResumeInputMode,
   onFinishResume,
 }: Props) => {
   const [activeStep, setActiveStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isStepComplete, setIsStepComplete] = useState(false);
-
-  useEffect(() => {
-    setActiveStep(0);
-    setDirection(0);
-    setIsStepComplete(false);
-  }, [resumeInputMode]);
+  const [stepInputModes, setStepInputModes] = useState<Record<number, InputMode>>({});
+  const currentMode = stepInputModes[activeStep] || 'ai';
 
   const completedSteps = [
     !!(resumeData.name && resumeData.desiredJob && resumeData.email && resumeData.phoneNumber),
@@ -114,6 +106,10 @@ const Resume = ({
     setActiveStep(step);
   };
 
+  const handleModeChange = (step: number, mode: InputMode) => {
+    setStepInputModes(prev => ({...prev, [step]: mode}));
+  }
+
   const renderResumeContent = () => {
     const isFinalStep = activeStep === resumeSteps.length - 1;
 
@@ -121,30 +117,60 @@ const Resume = ({
       return <FinalReviewStep data={resumeData} />;
     }
 
-    if (resumeInputMode === 'ai') {
-      return (
-        <AIChatView
-          activeStep={activeStep}
-          steps={resumeSteps}
-          onStepComplete={() => setIsStepComplete(true)}
-          data={resumeData}
-          setData={setResumeData}
-          conversationSteps={resumeConversationSteps}
-        />
-      );
-    }
-
-    if (resumeInputMode === 'direct') {
-      return (
-        <ConversationalForm
-          activeStep={activeStep}
-          direction={direction}
-          steps={resumeSteps}
-          resumeData={resumeData}
-          setResumeData={setResumeData}
-        />
-      );
-    }
+    return (
+      <Box>
+        <ButtonGroup
+          fullWidth
+          sx={{
+            mb: 5,
+            p: 0.5,
+            bgcolor: '#f1f5f9',
+            borderRadius: '16px',
+            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)',
+          }}
+        >
+          {(['ai', 'direct'] as InputMode[]).map((mode) => (
+            <Button
+              key={mode}
+              variant={currentMode === mode ? 'contained' : 'text'}
+              onClick={() => handleModeChange(activeStep, mode)}
+              sx={{
+                borderRadius: '12px !important',
+                py: 1.5,
+                boxShadow: currentMode === mode ? '0 4px 12px rgba(37,99,235,0.2)' : 'none',
+                bgcolor: currentMode === mode ? '#2563EB' : 'transparent',
+                color: currentMode === mode ? 'white' : '#64748b',
+                border: 'none',
+                '&:hover': {
+                  bgcolor: currentMode === mode ? '#1d4ed8' : 'rgba(0,0,0,0.05)',
+                  border: 'none',
+                },
+              }}
+            >
+              {mode === 'ai' ? 'AI 챗봇으로 작성' : '단계별로 직접 입력'}
+            </Button>
+          ))}
+        </ButtonGroup>
+        {currentMode === 'ai' ? (
+          <AIChatView
+            activeStep={activeStep}
+            steps={resumeSteps}
+            onStepComplete={() => setIsStepComplete(true)}
+            data={resumeData}
+            setData={setResumeData}
+            conversationSteps={resumeConversationSteps}
+          />
+        ) : (
+          <ConversationalForm
+            activeStep={activeStep}
+            direction={direction}
+            steps={resumeSteps}
+            resumeData={resumeData}
+            setResumeData={setResumeData}
+          />
+        )}
+      </Box>
+    );
   };
 
   return (
@@ -157,39 +183,7 @@ const Resume = ({
           completedSteps={completedSteps}
         />
       </Box>
-      <ButtonGroup
-        fullWidth
-        sx={{
-          mb: 5,
-          p: 0.5,
-          bgcolor: '#f1f5f9',
-          borderRadius: '16px',
-          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)',
-        }}
-      >
-        {(['ai', 'direct'] as InputMode[]).map((mode) => (
-          <Button
-            key={mode}
-            variant={resumeInputMode === mode ? 'contained' : 'text'}
-            onClick={() => setResumeInputMode(mode)}
-            sx={{
-              borderRadius: '12px !important',
-              py: 1.5,
-              boxShadow: resumeInputMode === mode ? '0 4px 12px rgba(37,99,235,0.2)' : 'none',
-              bgcolor: resumeInputMode === mode ? '#2563EB' : 'transparent',
-              color: resumeInputMode === mode ? 'white' : '#64748b',
-              border: 'none',
-              '&:hover': {
-                bgcolor: resumeInputMode === mode ? '#1d4ed8' : 'rgba(0,0,0,0.05)',
-                border: 'none',
-              },
-            }}
-          >
-            {mode === 'ai' ? 'AI 챗봇으로 작성' : '단계별로 직접 입력'}
-          </Button>
-        ))}
-      </ButtonGroup>
-
+      
       {renderResumeContent()}
 
       <Box

@@ -336,16 +336,13 @@ export default function Home() {
                       exit={{ opacity: 0, x: -20 }}
                       transition={{ duration: 0.3 }}
                     >
-                      {activeTab === 'resume' && (
-                        <Resume
-                          resumeData={resumeData}
-                          setResumeData={setResumeData}
-                          resumeInputMode={resumeInputMode}
-                          setResumeInputMode={setResumeInputMode}
-                          onFinishResume={() => setActiveTab('coverLetter')}
-                        />
-                      )}
-                      
+                                        {activeTab === 'resume' && (
+                                          <Resume
+                                            resumeData={resumeData}
+                                            setResumeData={setResumeData}
+                                            onFinishResume={() => setActiveTab('coverLetter')}
+                                          />
+                                        )}                      
                       {activeTab === 'coverLetter' && (
                         <CoverLetter 
                           coverLetterData={coverLetterData}
