@@ -1,20 +1,22 @@
 'use client';
 
-import React from 'react';
-import { Box, Button, TextField, Typography, Stack, IconButton, Tooltip } from '@mui/material';
+import React, { useState } from 'react';
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Stack,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
 import { AutoAwesome, HelpOutline } from '@mui/icons-material';
 import CustomModal from '@/shared/components/CustomModal';
 import AIWriter from '../cover-letter/AIWriter';
 import WritingGuide from '../cover-letter/WritingGuide';
 import { CoverLetterData } from '../../types';
 
-interface Props {
-  activeStep: number;
-  coverLetterData: CoverLetterData;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  setCoverLetterData: React.Dispatch<React.SetStateAction<CoverLetterData>>;
-  isGenerating: boolean;
-}
+/* ================= 스타일 ================= */
 
 const glassSectionSx = {
   backgroundColor: 'rgba(255, 255, 255, 0.6)',
@@ -25,8 +27,8 @@ const glassSectionSx = {
   transition: 'all 0.3s ease',
   '&:hover': {
     backgroundColor: 'rgba(255, 255, 255, 0.75)',
-    boxShadow: '0 8px 30px rgba(0,0,0,0.04)'
-  }
+    boxShadow: '0 8px 30px rgba(0,0,0,0.04)',
+  },
 };
 
 const glassInputSx = {
@@ -40,13 +42,13 @@ const glassInputSx = {
     '&.Mui-focused': {
       backgroundColor: '#fff',
       boxShadow: '0 8px 20px rgba(37, 99, 235, 0.1)',
-      '& fieldset': { borderColor: '#2563EB', borderWidth: '1px' }
-    }
+      '& fieldset': { borderColor: '#2563EB', borderWidth: '1px' },
+    },
   },
   '& .MuiInputBase-input': {
     lineHeight: 1.6,
-    color: '#334155'
-  }
+    color: '#334155',
+  },
 };
 
 const actionButtonSx = {
@@ -55,62 +57,171 @@ const actionButtonSx = {
   fontWeight: 700,
   px: 2,
   boxShadow: 'none',
-  '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }
+  '&:hover': {
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+  },
 };
 
+/* ================= 문항 정의 ================= */
+
 const coverLetterSections = [
-  { id: 'growthProcess', label: '성장과정', rows: 8, desc: '직무에 관심을 갖게 된 계기나 가치관 형성 과정' },
-  { id: 'strengthsAndWeaknesses', label: '성격의 장단점', rows: 8, desc: '직무 수행에 도움이 되는 장점과 개선 노력' },
-  { id: 'keyExperience', label: '주요 경력 및 업무 강점', rows: 8, desc: '관련 경험에서의 구체적인 역할과 성과' },
-  { id: 'motivation', label: '지원 동기 및 포부', rows: 8, desc: '회사 지원 이유와 입사 후 구체적 목표' },
+  {
+    id: 'growthProcess',
+    label: '성장과정',
+    rows: 8,
+    desc: '직무에 관심을 갖게 된 계기나 가치관 형성 과정',
+  },
+  {
+    id: 'strengthsAndWeaknesses',
+    label: '성격의 장단점',
+    rows: 8,
+    desc: '직무 수행에 도움이 되는 장점과 개선 노력',
+  },
+  {
+    id: 'keyExperience',
+    label: '주요 경력 및 업무 강점',
+    rows: 8,
+    desc: '관련 경험에서의 구체적인 역할과 성과',
+  },
+  {
+    id: 'motivation',
+    label: '지원 동기 및 포부',
+    rows: 8,
+    desc: '회사 지원 이유와 입사 후 구체적 목표',
+  },
 ];
 
-const CoverLetterDirectInputStep = ({ activeStep, coverLetterData, handleChange, setCoverLetterData, isGenerating }: Props) => {
-  const [isGuideModalOpen, setGuideModalOpen] = React.useState(false);
-  const [isAIGenerateSectionModalOpen, setIsAIGenerateSectionModalOpen] = React.useState(false);
-  const [selectedSection, setSelectedSection] = React.useState('');
+/* ================= section → backend enum ================= */
 
+const SECTION_TO_BACKEND: Record<string, string> = {
+  growthProcess: 'GROWTH_PROCESS',
+  strengthsAndWeaknesses: 'PERSONALITY',
+  keyExperience: 'CAREER_STRENGTH',
+  motivation: 'MOTIVATION_ASPIRATION',
+};
+
+/* ================= Props ================= */
+
+interface Props {
+  activeStep: number;
+  coverLetterData: CoverLetterData;
+  handleChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
+  setCoverLetterData: React.Dispatch<
+    React.SetStateAction<CoverLetterData>
+  >;
+  isGenerating: boolean;
+}
+
+/* ================= Component ================= */
+
+const CoverLetterDirectInputStep = ({
+  activeStep,
+  coverLetterData,
+  handleChange,
+  setCoverLetterData,
+}: Props) => {
+  const [isGuideModalOpen, setGuideModalOpen] = useState(false);
+  const [isAIModalOpen, setAIModalOpen] = useState(false);
+  const [selectedSection, setSelectedSection] = useState<string>('');
+  const [isGenerating, setIsGenerating] = React.useState(false);
+
+  const section = coverLetterSections[activeStep];
+  if (!section) return null;
+
+  /* ---------- 가이드 ---------- */
   const handleGuideClick = (sectionId: string) => {
     setSelectedSection(sectionId);
     setGuideModalOpen(true);
   };
 
+  /* ---------- AI 초안 ---------- */
   const handleAIWriteClick = (sectionId: string) => {
     setSelectedSection(sectionId);
-    setIsAIGenerateSectionModalOpen(true);
+    setAIModalOpen(true);
   };
 
-  const handleAIGenerate = (prompt: string) => {
-    setIsAIGenerateSectionModalOpen(false);
-    const updatedSectionContent = `[AI 작성 예시] ${prompt}에 대한 내용입니다... (실제 연동 시 생성된 텍스트)`;
-    setCoverLetterData(prev => ({ ...prev, [selectedSection]: updatedSectionContent }));
+  const handleAIGenerate = async (prompt: string) => {
+    try {
+      const backendSection = SECTION_TO_BACKEND[selectedSection];
+      if (!backendSection) {
+        throw new Error('유효하지 않은 자기소개서 문항입니다.');
+      }
+
+      setIsGenerating(true);
+
+      const res = await fetch('/api/cover-letter/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          section: backendSection,
+          userInput: prompt,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data?.message ?? 'AI 초안 생성에 실패했습니다.');
+      }
+
+      setCoverLetterData((prev) => ({
+        ...prev,
+        [selectedSection]: data.fullDescription ?? '',
+      }));
+
+      setAIModalOpen(false);
+    } catch (e: any) {
+      console.error(e);
+      alert(e?.message ?? 'AI 생성 중 오류가 발생했습니다.');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  const section = coverLetterSections[activeStep];
-
-  if (!section) return null;
+  /* ================= Render ================= */
 
   return (
     <Box sx={{ py: 2 }}>
-      <Box key={section.id} sx={glassSectionSx}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+      <Box sx={glassSectionSx}>
+        {/* 헤더 */}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            mb: 3,
+          }}
+        >
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#334155', mb: 0.5 }}>
+            <Typography
+              variant="h6"
+              sx={{ fontWeight: 700, color: '#334155', mb: 0.5 }}
+            >
               {section.label}
             </Typography>
             <Typography variant="body2" sx={{ color: '#94a3b8' }}>
               {section.desc}
             </Typography>
           </Box>
+
           <Stack direction="row" spacing={1}>
             <Tooltip title="작성 가이드 보기">
               <IconButton
                 onClick={() => handleGuideClick(section.id)}
-                sx={{ color: '#94a3b8', '&:hover': { color: '#2563EB', bgcolor: 'rgba(37,99,235,0.05)' } }}
+                sx={{
+                  color: '#94a3b8',
+                  '&:hover': {
+                    color: '#2563EB',
+                    bgcolor: 'rgba(37,99,235,0.05)',
+                  },
+                }}
               >
                 <HelpOutline />
               </IconButton>
             </Tooltip>
+
             <Button
               size="small"
               variant="outlined"
@@ -132,21 +243,22 @@ const CoverLetterDirectInputStep = ({ activeStep, coverLetterData, handleChange,
             </Button>
           </Stack>
         </Box>
+
+        {/* 입력 */}
         <TextField
           fullWidth
-          id={section.id}
-          name={section.id}
           multiline
           minRows={section.rows}
-          value={coverLetterData[section.id as keyof typeof coverLetterData]}
+          name={section.id}
+          value={coverLetterData[section.id as keyof CoverLetterData]}
           onChange={handleChange}
           placeholder={`${section.label} 내용을 입력하세요.`}
           disabled={isGenerating}
-          variant="outlined"
           sx={glassInputSx}
         />
       </Box>
 
+      {/* 작성 가이드 모달 */}
       <CustomModal
         open={isGuideModalOpen}
         onClose={() => setGuideModalOpen(false)}
@@ -155,9 +267,10 @@ const CoverLetterDirectInputStep = ({ activeStep, coverLetterData, handleChange,
         <WritingGuide section={selectedSection} />
       </CustomModal>
 
+      {/* AI 초안 작성 모달 */}
       <CustomModal
-        open={isAIGenerateSectionModalOpen}
-        onClose={() => setIsAIGenerateSectionModalOpen(false)}
+        open={isAIModalOpen}
+        onClose={() => setAIModalOpen(false)}
         title="AI 초안 작성"
       >
         <AIWriter

@@ -6,7 +6,7 @@ import { AutoAwesome } from '@mui/icons-material';
 
 interface AIWriterProps {
   section: string;
-  onGenerate: (prompt: string) => void;
+  onGenerate: (prompt: string) => void | Promise<void>;
   isGenerating: boolean;
 }
 
@@ -28,8 +28,8 @@ const glassInputSx = {
 const AIWriter = ({ section, onGenerate, isGenerating }: AIWriterProps) => {
   const [prompt, setPrompt] = useState('');
 
-  const handleGenerateClick = () => {
-    onGenerate(prompt);
+  const handleGenerateClick = async () => {
+    await onGenerate(prompt);
   };
 
   return (
