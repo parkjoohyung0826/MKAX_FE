@@ -2,6 +2,8 @@
 import React from 'react';
 import { Box, Paper, Typography } from '@mui/material';
 import { css } from '@emotion/react';
+import { useCoverLetterStore } from '../store';
+import { CoverLetterData } from '../types'; 
 
 // --- 스타일 정의 ---
 const tableContainerStyle = css`
@@ -49,19 +51,13 @@ const contentCellStyle = css`
   justify-content: flex-start; /* 텍스트 상단 정렬 */
 `;
 
-interface CoverLetterData {
-  growthProcess: string;
-  strengthsAndWeaknesses: string;
-  keyExperience: string;
-  motivation: string;
-}
-
 interface Props {
-  data: CoverLetterData; 
   resumeName: string;
 }
 
-const CoverLetterDisplay = React.forwardRef<HTMLDivElement, Props>(({ data, resumeName }, ref) => {
+const CoverLetterDisplay = React.forwardRef<HTMLDivElement, Props>(({ resumeName }, ref) => {
+  const { coverLetterData } = useCoverLetterStore();
+
   const sections = [
     { label: '성장과정', key: 'growthProcess' as keyof CoverLetterData },
     { label: '성격의 장, 단점', key: 'strengthsAndWeaknesses' as keyof CoverLetterData },
@@ -110,7 +106,7 @@ const CoverLetterDisplay = React.forwardRef<HTMLDivElement, Props>(({ data, resu
               {/* 오른쪽 내용 */}
               <div css={contentCellStyle}>
                 
-                {data[section.key] || ''} 
+                {coverLetterData[section.key] || ''} 
               </div>
             </div>
           ))}

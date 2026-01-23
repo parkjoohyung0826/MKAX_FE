@@ -3,10 +3,7 @@
 import { Box, Typography } from '@mui/material';
 import { Create, FavoriteBorder, StarBorder, Flare } from '@mui/icons-material';
 import { CoverLetterData } from '../../types';
-
-interface Props {
-  data: CoverLetterData;
-}
+import { useCoverLetterStore } from '../../store';
 
 const glassBox = {
   backgroundColor: 'rgba(255, 255, 255, 0.6)',
@@ -47,7 +44,8 @@ const SectionContent = ({ content }: { content: string }) => (
   </Typography>
 );
 
-const FinalReviewStep = ({ data }: Props) => {
+const FinalReviewStep = () => {
+  const { coverLetterData } = useCoverLetterStore();
   const sections = [
     { id: 'growthProcess', label: '성장과정', icon: Create },
     { id: 'strengthsAndWeaknesses', label: '성격의 장단점', icon: FavoriteBorder },
@@ -70,7 +68,7 @@ const FinalReviewStep = ({ data }: Props) => {
         {sections.map((section) => (
           <Box sx={glassBox} key={section.id}>
             <SectionHeader icon={section.icon} title={section.label} />
-            <SectionContent content={data[section.id as keyof CoverLetterData]} />
+            <SectionContent content={coverLetterData[section.id as keyof CoverLetterData]} />
           </Box>
         ))}
       </Box>

@@ -90,9 +90,6 @@ export default function Home() {
     coreCompetencies: '',
     certifications: '',
   });
-  const [coverLetterData, setCoverLetterData] = useState<CoverLetterData>({
-    growthProcess: '', strengthsAndWeaknesses: '', keyExperience: '', motivation: ''
-  });
   const [resultData, setResultData] = useState<ResultData | null>(null);
 
   const theme = useTheme();
@@ -345,8 +342,6 @@ export default function Home() {
                                         )}                      
                       {activeTab === 'coverLetter' && (
                         <CoverLetter 
-                          coverLetterData={coverLetterData}
-                          setCoverLetterData={setCoverLetterData}
                           handleGenerate={handleGenerate}
                           isGenerating={isGeneratingApplication}
                         />

@@ -11,6 +11,7 @@ import QuestionPanel from './chat-panels/QuestionPanel';
 import ProgressStepper from '@/shared/components/ProgressStepper';
 
 import { CoverLetterData } from '../types';
+import { useCoverLetterStore } from '../store';
 
 const coverLetterSteps = ['성장과정', '성격의 장단점', '주요 경력 및 업무 강점', '지원 동기 및 포부', '최종 검토'];
 
@@ -48,13 +49,12 @@ const coverLetterConversationSteps: ConversationStep<CoverLetterData>[] = [
 ];
 
 interface Props {
-  coverLetterData: CoverLetterData;
-  setCoverLetterData: React.Dispatch<React.SetStateAction<CoverLetterData>>;
   handleGenerate: () => void;
   isGenerating: boolean;
 }
 
-const CoverLetter = ({ coverLetterData, setCoverLetterData, handleGenerate, isGenerating }: Props) => {
+const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
+  const { coverLetterData, setCoverLetterData } = useCoverLetterStore();
   const [activeStep, setActiveStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isStepComplete, setIsStepComplete] = useState(false);
@@ -97,18 +97,13 @@ const CoverLetter = ({ coverLetterData, setCoverLetterData, handleGenerate, isGe
   const handleModeChange = (step: number, mode: InputMode) => {
     setStepInputModes(prev => ({...prev, [step]: mode}));
   }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setCoverLetterData((prev) => ({ ...prev, [name]: value }));
-  };
   
   const renderContent = () => {
     const isFinalStep = activeStep === coverLetterSteps.length - 1;
     const currentMode = stepInputModes[activeStep] || 'ai';
 
     if (isFinalStep) {
-      return <FinalReviewStep data={coverLetterData} />;
+      return <FinalReviewStep />;
     }
     
     return (
@@ -140,20 +135,23 @@ const CoverLetter = ({ coverLetterData, setCoverLetterData, handleGenerate, isGe
                 ))}
             </ButtonGroup>
             {currentMode === 'ai' ? (
-                <AIChatView 
-                    activeStep={activeStep} 
+                <AIChatView
+                    activeStep={activeStep}
                     steps={coverLetterSteps}
-                    onStepComplete={() => setIsStepComplete(true)} 
+                    onStepComplete={() => setIsStepComplete(true)}
                     data={coverLetterData}
-                    setData={setCoverLetterData}
+                    setData={(update) => {
+                      const newValues =
+                        typeof update === 'function'
+                          ? update(coverLetterData)
+                          : update;
+                      setCoverLetterData({ ...coverLetterData, ...newValues });
+                    }}
                     conversationSteps={coverLetterConversationSteps}
                 />
             ) : (
                 <CoverLetterDirectInputStep
                     activeStep={activeStep}
-                    coverLetterData={coverLetterData}
-                    handleChange={handleChange}
-                    setCoverLetterData={setCoverLetterData}
                     isGenerating={isGenerating}
                 />
             )}

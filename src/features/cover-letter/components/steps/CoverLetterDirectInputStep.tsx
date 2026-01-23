@@ -15,6 +15,7 @@ import CustomModal from '@/shared/components/CustomModal';
 import AIWriter from '../cover-letter/AIWriter';
 import WritingGuide from '../cover-letter/WritingGuide';
 import { CoverLetterData } from '../../types';
+import { useCoverLetterStore } from '../../store';
 
 /* ================= 스타일 ================= */
 
@@ -104,24 +105,13 @@ const SECTION_TO_BACKEND: Record<string, string> = {
 
 interface Props {
   activeStep: number;
-  coverLetterData: CoverLetterData;
-  handleChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => void;
-  setCoverLetterData: React.Dispatch<
-    React.SetStateAction<CoverLetterData>
-  >;
   isGenerating: boolean;
 }
 
 /* ================= Component ================= */
 
-const CoverLetterDirectInputStep = ({
-  activeStep,
-  coverLetterData,
-  handleChange,
-  setCoverLetterData,
-}: Props) => {
+const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
+  const { coverLetterData, setCoverLetterData } = useCoverLetterStore();
   const [isGuideModalOpen, setGuideModalOpen] = useState(false);
   const [isAIModalOpen, setAIModalOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState<string>('');
@@ -129,6 +119,13 @@ const CoverLetterDirectInputStep = ({
 
   const section = coverLetterSections[activeStep];
   if (!section) return null;
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setCoverLetterData({ [name]: value });
+  };
 
   /* ---------- 가이드 ---------- */
   const handleGuideClick = (sectionId: string) => {
@@ -166,10 +163,9 @@ const CoverLetterDirectInputStep = ({
         throw new Error(data?.message ?? 'AI 초안 생성에 실패했습니다.');
       }
 
-      setCoverLetterData((prev) => ({
-        ...prev,
+      setCoverLetterData({
         [selectedSection]: data.fullDescription ?? '',
-      }));
+      });
 
       setAIModalOpen(false);
     } catch (e: any) {

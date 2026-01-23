@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 'use client';
 
-import { useRef, useState, RefObject } from 'react';
+import { useRef, useState, RefObject, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -31,6 +31,7 @@ import CareerAnalysisReport from './CareerAnalysisReport';
 import { JobPosting, ResultData } from '../types';
 import { ResumeData } from '@/features/resume/types';
 import { CoverLetterData } from '@/features/cover-letter/types';
+import { useCoverLetterStore } from '../../cover-letter/store';
 
 interface Props {
   data: ResultData;
@@ -106,10 +107,14 @@ const GenerationResult = ({ data, onReset }: Props) => {
   const resumeRef = useRef<HTMLDivElement>(null);
   const coverLetterRef = useRef<HTMLDivElement>(null);
   const { resumeData } = data;
+  const { setCoverLetterData } = useCoverLetterStore();
   
   const [activeTab, setActiveTab] = useState<'report' | 'resume' | 'coverLetter'>('report');
 
-  const coverLetterData = parseCoverLetter(data.aiCoverLetter);
+  useEffect(() => {
+    const parsedData = parseCoverLetter(data.aiCoverLetter);
+    setCoverLetterData(parsedData);
+  }, [data.aiCoverLetter, setCoverLetterData]);
 
   const handleTabChange = (event: React.MouseEvent<HTMLElement>, newTab: 'report' | 'resume' | 'coverLetter' | null) => {
     if (newTab !== null) {
@@ -270,7 +275,7 @@ const GenerationResult = ({ data, onReset }: Props) => {
                   borderRadius: '4px',
                   overflow: 'hidden'
                 }}>
-                  <CoverLetterDisplay ref={coverLetterRef} data={coverLetterData} resumeName={resumeData.name} />
+                  <CoverLetterDisplay ref={coverLetterRef} resumeName={resumeData.name} />
                 </Box>
               </Box>
             )}
