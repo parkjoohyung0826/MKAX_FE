@@ -20,11 +20,23 @@ const guideBoxSx = {
 
 const getGuidance = (section: string, resumeData?: ResumeData) => {
   const desiredJob = resumeData?.desiredJob || '지원 직무';
-  const workExperience = resumeData?.workExperience || '주요 경력';
-  const coreCompetencies = resumeData?.coreCompetencies || '핵심 역량';
+  
+  const workExperienceNames = resumeData?.workExperience
+    ?.map((exp) => exp.companyName)
+    .filter(Boolean);
+  const workExperience =
+    workExperienceNames && workExperienceNames.length > 0
+      ? workExperienceNames.join(', ')
+      : '주요 경력';
 
-  // 수정 포인트: 여기서 Typography 대신 span을 사용합니다.
-  // 부모 컴포넌트(WritingGuide)에서 이미 Typography로 감싸고 있기 때문입니다.
+  const coreCompetenciesNames = resumeData?.coreCompetencies
+    ?.map((comp) => comp.courseName)
+    .filter(Boolean);
+  const coreCompetencies =
+    coreCompetenciesNames && coreCompetenciesNames.length > 0
+      ? coreCompetenciesNames.join(', ')
+      : '핵심 역량';
+
   switch (section) {
     case 'growthProcess':
       return [
