@@ -3,13 +3,8 @@
 import React, { useState } from 'react';
 import { Box, Typography, TextField, Button } from '@mui/material';
 import { School, AutoAwesome } from '@mui/icons-material';
-import { ResumeData } from '../../types';
+import { useResumeStore } from '../../store';
 import ConversationalAssistant from '@/shared/components/ConversationalAssistant';
-
-interface Props {
-  data: ResumeData;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-}
 
 // 공통 Input 스타일 (Glassmorphism)
 const glassInputSx = {
@@ -29,19 +24,12 @@ const glassInputSx = {
   '& .MuiInputLabel-root': { color: '#64748b' }
 };
 
-const EducationStep = ({ data, handleChange }: Props) => {
+const EducationStep = () => {
+  const { resumeData, setResumeData } = useResumeStore();
   const [isAssistantOpen, setAssistantOpen] = useState(false);
 
   const handleOpenAssistant = () => setAssistantOpen(true);
   const handleCloseAssistant = () => setAssistantOpen(false);
-
-  // const handleAssistantSubmit = (text: string) => {
-  //   const syntheticEvent = {
-  //     target: { name: 'education', value: text },
-  //   } as React.ChangeEvent<HTMLTextAreaElement>;
-  //   handleChange(syntheticEvent);
-  //   handleCloseAssistant();
-  // };
 
   const handleAssistantSubmit = async (text: string): Promise<void> => {
     const res = await fetch("/api/recommend/education", {
@@ -56,13 +44,29 @@ const EducationStep = ({ data, handleChange }: Props) => {
     }
 
     const data = await res.json();
-    // { schoolName, major, period, graduationStatus, details, fullDescription }
+    // API 응답으로 받은 구조화된 데이터를 education 배열에 설정
+    setResumeData({ education: [data] });
+    handleCloseAssistant();
+  };
 
-    const syntheticEvent = {
-      target: { name: "education", value: data.fullDescription ?? "" },
-    } as React.ChangeEvent<HTMLTextAreaElement>;
-
-    handleChange(syntheticEvent);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { value } = e.target;
+    // 사용자가 직접 입력 시, 첫 번째 학력 정보의 fullDescription을 업데이트
+    // 또는 학력 정보가 없다면 새로운 항목으로 생성
+    const newEducation = [...resumeData.education];
+    if (newEducation.length > 0) {
+      newEducation[0] = { ...newEducation[0], fullDescription: value };
+    } else {
+      newEducation.push({
+        schoolName: '',
+        major: '',
+        period: '',
+        graduationStatus: '',
+        details: '',
+        fullDescription: value,
+      });
+    }
+    setResumeData({ education: newEducation });
   };
 
 
@@ -123,7 +127,7 @@ const EducationStep = ({ data, handleChange }: Props) => {
           rows={5}
           name="education"
           placeholder="예: OO대학교 컴퓨터공학과 졸업 (2018.03 ~ 2024.02)&#13;&#10;- 주요 수강 과목: 데이터베이스, 알고리즘, 웹프로그래밍&#13;&#10;- 졸업 프로젝트: AI 기반 추천 시스템 개발"
-          value={data.education}
+          value={resumeData.education.map(edu => edu.fullDescription).join('\n\n')}
           onChange={handleChange}
           variant="outlined"
           sx={glassInputSx}

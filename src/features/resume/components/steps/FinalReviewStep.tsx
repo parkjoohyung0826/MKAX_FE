@@ -2,7 +2,7 @@
 
 import { Box, Typography } from '@mui/material';
 import { PersonOutline, WorkOutline, School, BusinessCenter, WorkspacePremium, Verified } from '@mui/icons-material';
-import { ResumeData } from '../../types';
+import { ResumeData, Education, WorkExperience, CoreCompetencies, Certifications } from '../../types';
 
 interface Props {
   data: ResumeData;
@@ -49,6 +49,11 @@ const SectionContent = ({ content }: { content: string }) => (
 );
 
 const FinalReviewStep = ({ data }: Props) => {
+  const formatArrayContent = (items: (Education | WorkExperience | CoreCompetencies | Certifications)[]) => {
+    if (!items || items.length === 0) return '';
+    return items.map(item => item.fullDescription).join('\n\n');
+  };
+
   return (
     <Box sx={{ py: 2 }}>
       <Box sx={{ mb: 4 }}>
@@ -86,13 +91,13 @@ const FinalReviewStep = ({ data }: Props) => {
         {/* 2. 학력 사항 (전체 너비) */}
         <Box sx={glassBox}>
           <SectionHeader icon={School} title="학력 사항" />
-          <SectionContent content={data.education} />
+          <SectionContent content={formatArrayContent(data.education)} />
         </Box>
 
         {/* 3. 경력 사항 (전체 너비) */}
         <Box sx={glassBox}>
           <SectionHeader icon={BusinessCenter} title="주요 경력" />
-          <SectionContent content={data.workExperience} />
+          <SectionContent content={formatArrayContent(data.workExperience)} />
         </Box>
 
         {/* 4. 기술 및 자격증 */}
@@ -103,11 +108,11 @@ const FinalReviewStep = ({ data }: Props) => {
         }}>
           <Box sx={glassBox}>
             <SectionHeader icon={WorkspacePremium} title="주요 활동 및 역량" />
-            <SectionContent content={data.coreCompetencies} />
+            <SectionContent content={formatArrayContent(data.coreCompetencies)} />
           </Box>
           <Box sx={glassBox}>
             <SectionHeader icon={Verified} title="자격증 및 기타" />
-            <SectionContent content={data.certifications} />
+            <SectionContent content={formatArrayContent(data.certifications)} />
           </Box>
         </Box>
 

@@ -3,7 +3,6 @@ import React from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import { css } from '@emotion/react';
 import { useResumeStore } from '../store';
-import { ResumeData } from '../types';
 
 const borderColor = '#000';
 const headerBg = '#e9ecef';
@@ -154,15 +153,15 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
                     <div css={cellStyle} className="header" style={{ width: '25%' }}>전공</div>
                     <div css={cellStyle} className="header no-border-right" style={{ width: '15%' }}>졸업여부</div>
                 </div>
-                {(resumeData.education || '').split('\n').filter(line => line.trim()).map((line, index) => (
+                {resumeData.education.map((edu, index) => (
                     <div css={rowStyle} key={index}>
-                        <div css={cellStyle} className="data center" style={{ width: '25%' }}></div>
-                        <div css={cellStyle} className="data" style={{ width: '35%' }}>{line}</div>
-                        <div css={cellStyle} className="data center" style={{ width: '25%' }}></div>
-                        <div css={cellStyle} className="data center no-border-right" style={{ width: '15%' }}></div>
+                        <div css={cellStyle} className="data center" style={{ width: '25%' }}>{edu.period}</div>
+                        <div css={cellStyle} className="data" style={{ width: '35%' }}>{edu.schoolName}</div>
+                        <div css={cellStyle} className="data center" style={{ width: '25%' }}>{edu.major}</div>
+                        <div css={cellStyle} className="data center no-border-right" style={{ width: '15%' }}>{edu.graduationStatus}</div>
                     </div>
                 ))}
-                {renderEmptyRows(3 - (resumeData.education || '').split('\n').filter(line => line.trim()).length, [
+                {renderEmptyRows(3 - resumeData.education.length, [
                     { width: '25%' }, { width: '35%' }, { width: '25%' }, { width: '15%', isLast: true }
                 ])}
             </div>
@@ -176,15 +175,15 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
                     <div css={cellStyle} className="header" style={{ width: '30%' }}>담당업무</div>
                     <div css={cellStyle} className="header no-border-right" style={{ width: '20%' }}>퇴사사유</div>
                 </div>
-                 {(resumeData.workExperience || '').split('\n').filter(line => line.trim()).map((line, index) => (
+                 {resumeData.workExperience.map((exp, index) => (
                     <div css={rowStyle} key={index}>
-                        <div css={cellStyle} className="data center" style={{ width: '20%' }}></div>
-                        <div css={cellStyle} className="data" style={{ width: '30%' }}>{line}</div>
-                        <div css={cellStyle} className="data" style={{ width: '30%' }}></div>
-                        <div css={cellStyle} className="data center no-border-right" style={{ width: '20%' }}></div>
+                        <div css={cellStyle} className="data center" style={{ width: '20%' }}>{exp.period}</div>
+                        <div css={cellStyle} className="data" style={{ width: '30%' }}>{exp.companyName}</div>
+                        <div css={cellStyle} className="data" style={{ width: '30%' }}>{exp.mainTask}</div>
+                        <div css={cellStyle} className="data center no-border-right" style={{ width: '20%' }}>{exp.leavingReason}</div>
                     </div>
                 ))}
-                {renderEmptyRows(3 - (resumeData.workExperience || '').split('\n').filter(line => line.trim()).length, [
+                {renderEmptyRows(3 - resumeData.workExperience.length, [
                     { width: '20%' }, { width: '30%' }, { width: '30%' }, { width: '20%', isLast: true }
                 ])}
             </div>
@@ -197,7 +196,14 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
                     <div css={cellStyle} className="header" style={{ width: '45%' }}>교육 과정</div>
                     <div css={cellStyle} className="header no-border-right" style={{ width: '30%' }}>교육 기관</div>
                 </div>
-                {renderEmptyRows(2, [
+                {resumeData.coreCompetencies.map((comp, index) => (
+                    <div css={rowStyle} key={index}>
+                        <div css={cellStyle} className="data center" style={{ width: '25%' }}>{comp.period}</div>
+                        <div css={cellStyle} className="data" style={{ width: '45%' }}>{comp.courseName}</div>
+                        <div css={cellStyle} className="data center no-border-right" style={{ width: '30%' }}>{comp.institution}</div>
+                    </div>
+                ))}
+                {renderEmptyRows(2 - resumeData.coreCompetencies.length, [
                     { width: '25%' }, { width: '45%' }, { width: '30%', isLast: true }
                 ])}
             </div>
@@ -210,14 +216,14 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
                     <div css={cellStyle} className="header" style={{ width: '50%' }}>자격증/면허증/교육이수</div>
                     <div css={cellStyle} className="header no-border-right" style={{ width: '25%' }}>발급 기관</div>
                 </div>
-                 {(resumeData.certifications || '').split('\n').filter(line => line.trim()).map((line, index) => (
+                 {resumeData.certifications.map((cert, index) => (
                     <div css={rowStyle} key={index}>
-                        <div css={cellStyle} className="data center" style={{ width: '25%' }}></div>
-                        <div css={cellStyle} className="data" style={{ width: '50%' }}>{line}</div>
-                        <div css={cellStyle} className="data center no-border-right" style={{ width: '25%' }}></div>
+                        <div css={cellStyle} className="data center" style={{ width: '25%' }}>{cert.period}</div>
+                        <div css={cellStyle} className="data" style={{ width: '50%' }}>{cert.certificationName}</div>
+                        <div css={cellStyle} className="data center no-border-right" style={{ width: '25%' }}>{cert.institution}</div>
                     </div>
                 ))}
-                {renderEmptyRows(2 - (resumeData.certifications || '').split('\n').filter(line => line.trim()).length, [
+                {renderEmptyRows(2 - resumeData.certifications.length, [
                     { width: '25%' }, { width: '50%' }, { width: '25%', isLast: true }
                 ])}
             </div>
@@ -231,15 +237,7 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
                     <div css={cellStyle} className="header" style={{ width: '15%' }}>구분</div>
                     <div css={cellStyle} className="header no-border-right" style={{ width: '35%' }}>활용능력</div>
                 </div>
-                 {(resumeData.coreCompetencies || '').split('\n').filter(line => line.trim()).map((line, index) => (
-                     <div css={rowStyle} key={index}>
-                        <div css={cellStyle} className="data" style={{ width: '15%' }}></div>
-                        <div css={cellStyle} className="data" style={{ width: '35%' }}>{line}</div>
-                        <div css={cellStyle} className="data" style={{ width: '15%' }}></div>
-                        <div css={cellStyle} className="data no-border-right" style={{ width: '35%' }}></div>
-                    </div>
-                 ))}
-                {renderEmptyRows(2 - (resumeData.coreCompetencies || '').split('\n').filter(line => line.trim()).length, [
+                {renderEmptyRows(2, [
                     { width: '15%' }, { width: '35%' }, { width: '15%' }, { width: '35%', isLast: true }
                 ])}
             </div>

@@ -3,13 +3,8 @@
 import React, { useState } from 'react';
 import { Box, Typography, TextField, Button } from '@mui/material';
 import { WorkspacePremium, Verified, AutoAwesome } from '@mui/icons-material';
-import { ResumeData } from '../../types';
+import { useResumeStore } from '../../store';
 import ConversationalAssistant from '@/shared/components/ConversationalAssistant';
-
-interface Props {
-  data: ResumeData;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-}
 
 type AssistantField = 'coreCompetencies' | 'certifications';
 
@@ -43,7 +38,8 @@ const aiButtonSx = {
   '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.2)' }
 };
 
-const CertificationsStep = ({ data, handleChange }: Props) => {
+const CertificationsStep = () => {
+  const { resumeData, setResumeData } = useResumeStore();
   const [assistantFor, setAssistantFor] = useState<AssistantField | null>(null);
 
   const handleOpenAssistant = (field: AssistantField) => setAssistantFor(field);
@@ -61,13 +57,26 @@ const CertificationsStep = ({ data, handleChange }: Props) => {
       throw new Error(err?.message ?? '교육사항/대외활동 생성에 실패했습니다.');
     }
 
-    const result = await res.json();
+    const data = await res.json();
+    setResumeData({ coreCompetencies: [data] });
+      handleCloseAssistant();
+    };
 
-    handleChange({
-      target: { name: 'coreCompetencies', value: result.fullDescription ?? '' },
-    } as React.ChangeEvent<HTMLTextAreaElement>);
-
-    handleCloseAssistant();
+  const handleChangeActivity = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { value } = e.target;
+    const newCoreCompetencies = [...resumeData.coreCompetencies];
+    
+    if (newCoreCompetencies.length > 0) {
+      newCoreCompetencies[0] = { ...newCoreCompetencies[0], fullDescription: value };
+    } else {
+      newCoreCompetencies.push({
+        fullDescription: value,
+        period: '',
+        courseName: '',
+        institution: '',
+      });
+    }
+    setResumeData({ coreCompetencies: newCoreCompetencies });
   };
 
   const submitCertifications = async (text: string): Promise<void> => {
@@ -82,14 +91,27 @@ const CertificationsStep = ({ data, handleChange }: Props) => {
       throw new Error(err?.message ?? "자격증/어학 생성에 실패했습니다.");
     }
 
-    const result = await res.json();
+    const data = await res.json();
     // { fullDescription, period, certificationName, institution }
 
-    handleChange({
-      target: { name: "certifications", value: result.fullDescription ?? "" },
-    } as React.ChangeEvent<HTMLTextAreaElement>);
-
+  setResumeData({ certifications: [data] });
     handleCloseAssistant();
+  };
+
+  const handleChangeCertifacation = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { value } = e.target;
+    const newCertification = [...resumeData.certifications];
+    if (newCertification.length > 0) {
+      newCertification[0] = { ...newCertification[0], fullDescription: value };
+    } else {
+      newCertification.push({
+        fullDescription: value,
+        period: '',
+        certificationName: '',
+        institution: '',
+      });
+    }
+    setResumeData({ certifications: newCertification });
   };
 
 
@@ -145,8 +167,8 @@ const CertificationsStep = ({ data, handleChange }: Props) => {
             rows={4}
             name="coreCompetencies"
             placeholder="예: 삼성 청년 SW 아카데미 (SSAFY) 10기 수료 (2023.07 ~ 2024.01)&#13;&#10;OOO 대외활동 (2022.01 ~ 2022.06) - 프로젝트 관리 및 기획 담당"
-            value={data.coreCompetencies}
-            onChange={handleChange}
+            value={resumeData.coreCompetencies.map(cor => cor.fullDescription).join('\n\n')}
+            onChange={handleChangeActivity}
             variant="outlined"
             sx={glassInputSx}
           />
@@ -176,8 +198,8 @@ const CertificationsStep = ({ data, handleChange }: Props) => {
             rows={3}
             name="certifications"
             placeholder="예: 정보처리기사 (2023.05)&#13;&#10;TOEIC 900 (2023.08)"
-            value={data.certifications}
-            onChange={handleChange}
+            value={resumeData.certifications.map(cor => cor.fullDescription).join('\n\n')}
+            onChange={handleChangeCertifacation}
             variant="outlined"
             sx={glassInputSx}
           />

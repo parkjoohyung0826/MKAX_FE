@@ -3,13 +3,8 @@
 import React, { useState } from 'react';
 import { Box, Typography, TextField, Button } from '@mui/material';
 import { BusinessCenter, AutoAwesome } from '@mui/icons-material';
-import { ResumeData } from '../../types';
+import { useResumeStore } from '../../store';
 import ConversationalAssistant from '@/shared/components/ConversationalAssistant';
-
-interface Props {
-  data: ResumeData;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-}
 
 const glassInputSx = {
   '& .MuiOutlinedInput-root': {
@@ -28,7 +23,8 @@ const glassInputSx = {
   '& .MuiInputLabel-root': { color: '#64748b' }
 };
 
-const WorkExperienceStep = ({ data, handleChange }: Props) => {
+const WorkExperienceStep = () => {
+  const { resumeData, setResumeData } = useResumeStore();
   const [isAssistantOpen, setAssistantOpen] = useState(false);
 
   const handleOpenAssistant = () => setAssistantOpen(true);
@@ -46,14 +42,29 @@ const WorkExperienceStep = ({ data, handleChange }: Props) => {
       throw new Error(err?.message ?? '경력 정보 생성에 실패했습니다.');
     }
 
-    const result = await res.json();
+    const data = await res.json();
     // expected: { fullDescription, companyName, period, mainTask, leavingReason }
+    setResumeData({ workExperience: [data] });
+    handleCloseAssistant();
+  };
 
-    const syntheticEvent = {
-      target: { name: 'workExperience', value: result.fullDescription ?? '' },
-    } as React.ChangeEvent<HTMLTextAreaElement>;
-
-    handleChange(syntheticEvent);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { value } = e.target;
+        // 사용자가 직접 입력 시, 첫 번째 학력 정보의 fullDescription을 업데이트
+        // 또는 학력 정보가 없다면 새로운 항목으로 생성
+    const newWorkExperience = [...resumeData.workExperience];
+    if (newWorkExperience.length > 0) {
+      newWorkExperience[0] = { ...newWorkExperience[0], fullDescription: value };
+    } else {
+      newWorkExperience.push({
+        companyName: '',
+        period: '',
+        mainTask: '',
+        leavingReason: '',
+        fullDescription: value,
+      });
+    }
+    setResumeData({ workExperience: newWorkExperience });
   };
 
   return (
@@ -115,7 +126,7 @@ const WorkExperienceStep = ({ data, handleChange }: Props) => {
           rows={7}
           name="workExperience"
           placeholder="예: (주)테크스타트업 (2021.01 ~ 재직중)&#13;&#10;- 주요 역할: 백엔드 리드 개발자&#13;&#10;- 주요 성과: 레거시 시스템 마이그레이션을 통해 서버 비용 40% 절감&#13;&#10;- 사용 기술: Node.js, AWS, Docker"
-          value={data.workExperience}
+          value={resumeData.workExperience.map(wor => wor.fullDescription).join('\n\n')}
           onChange={handleChange}
           variant="outlined"
           sx={glassInputSx}

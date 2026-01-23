@@ -71,9 +71,9 @@ const Resume = ({ onFinishResume }: Props) => {
 
   const completedSteps = [
     !!(resumeData.name && resumeData.desiredJob && resumeData.email && resumeData.phoneNumber),
-    !!resumeData.education,
-    !!resumeData.workExperience,
-    !!(resumeData.coreCompetencies || resumeData.certifications),
+    resumeData.education.length > 0,
+    resumeData.workExperience.length > 0,
+    (resumeData.coreCompetencies.length > 0 || resumeData.certifications.length > 0),
     false,
   ];
 
