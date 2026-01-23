@@ -2,6 +2,8 @@
 import React from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import { css } from '@emotion/react';
+import { useResumeStore } from '../store';
+import { ResumeData } from '../types';
 
 const borderColor = '#000';
 const headerBg = '#e9ecef';
@@ -66,20 +68,11 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
     </Box>
 );
 
-interface ResumeData {
-    name: string;
-    desiredJob: string;
-    education: string;
-    workExperience: string;
-    coreCompetencies: string;
-    certifications: string;
-}
+interface Props {}
 
-interface Props {
-    data: ResumeData;
-}
-
-const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data: resumeData }, ref) => {
+const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
+    const { resumeData } = useResumeStore();
+    
     // 빈 줄 렌더링을 위한 헬퍼 함수
     const renderEmptyRows = (count: number, cells: { width: string, isLast?: boolean }[]) => {
         return [...Array(Math.max(0, count))].map((_, i) => (
@@ -115,7 +108,11 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data: resumeDat
                         flex-shrink: 0;
                         background-color: #f8f9fa;
                     `}>
-                        <Typography variant="body2" color="text.secondary">사진</Typography>
+                        {resumeData.photo ? (
+                          <img src={resumeData.photo} alt="증명사진" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">사진</Typography>
+                        )}
                     </div>
 
                     <div css={css`width: 100%;`}>
@@ -123,26 +120,26 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data: resumeDat
                             <div css={cellStyle} className="header" style={{ width: '20%' }}>이 름</div>
                             <div css={cellStyle} className="data" style={{ width: '30%' }}>{resumeData.name}</div>
                             <div css={cellStyle} className="header" style={{ width: '20%' }}>영 문</div>
-                            <div css={cellStyle} className="data no-border-right" style={{ width: '30%' }}></div>
+                            <div css={cellStyle} className="data no-border-right" style={{ width: '30%' }}>{resumeData.englishName}</div>
                         </div>
 
                         <div css={rowStyle}>
                             <div css={cellStyle} className="header" style={{ width: '20%' }}>생년월일</div>
-                            <div css={cellStyle} className="data" style={{ width: '30%' }}></div>
+                            <div css={cellStyle} className="data" style={{ width: '30%' }}>{resumeData.dateOfBirth}</div>
                             <div css={cellStyle} className="header" style={{ width: '20%' }}>이메일</div>
-                            <div css={cellStyle} className="data no-border-right" style={{ width: '30%' }}></div>
+                            <div css={cellStyle} className="data no-border-right" style={{ width: '30%' }}>{resumeData.email}</div>
                         </div>
 
                         <div css={rowStyle}>
                             <div css={cellStyle} className="header" style={{ width: '20%' }}>연락처</div>
-                            <div css={cellStyle} className="data" style={{ width: '30%' }}>{resumeData.desiredJob}</div>
+                            <div css={cellStyle} className="data" style={{ width: '30%' }}>{resumeData.phoneNumber}</div>
                             <div css={cellStyle} className="header" style={{ width: '20%' }}>비상연락처</div>
-                            <div css={cellStyle} className="data no-border-right" style={{ width: '30%' }}></div>
+                            <div css={cellStyle} className="data no-border-right" style={{ width: '30%' }}>{resumeData.emergencyContact}</div>
                         </div>
 
                         <div css={rowStyle}>
                             <div css={cellStyle} className="header" style={{ width: '20%' }}>주 소</div>
-                            <div css={cellStyle} className="data no-border-right" style={{ width: '80%' }}></div>
+                            <div css={cellStyle} className="data no-border-right" style={{ width: '80%' }}>{resumeData.address}</div>
                         </div>
                     </div>
                 </div>
@@ -157,7 +154,7 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data: resumeDat
                     <div css={cellStyle} className="header" style={{ width: '25%' }}>전공</div>
                     <div css={cellStyle} className="header no-border-right" style={{ width: '15%' }}>졸업여부</div>
                 </div>
-                {resumeData.education.split('\n').filter(line => line.trim()).map((line, index) => (
+                {(resumeData.education || '').split('\n').filter(line => line.trim()).map((line, index) => (
                     <div css={rowStyle} key={index}>
                         <div css={cellStyle} className="data center" style={{ width: '25%' }}></div>
                         <div css={cellStyle} className="data" style={{ width: '35%' }}>{line}</div>
@@ -165,7 +162,7 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data: resumeDat
                         <div css={cellStyle} className="data center no-border-right" style={{ width: '15%' }}></div>
                     </div>
                 ))}
-                {renderEmptyRows(3 - resumeData.education.split('\n').filter(line => line.trim()).length, [
+                {renderEmptyRows(3 - (resumeData.education || '').split('\n').filter(line => line.trim()).length, [
                     { width: '25%' }, { width: '35%' }, { width: '25%' }, { width: '15%', isLast: true }
                 ])}
             </div>
@@ -179,7 +176,7 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data: resumeDat
                     <div css={cellStyle} className="header" style={{ width: '30%' }}>담당업무</div>
                     <div css={cellStyle} className="header no-border-right" style={{ width: '20%' }}>퇴사사유</div>
                 </div>
-                 {resumeData.workExperience.split('\n').filter(line => line.trim()).map((line, index) => (
+                 {(resumeData.workExperience || '').split('\n').filter(line => line.trim()).map((line, index) => (
                     <div css={rowStyle} key={index}>
                         <div css={cellStyle} className="data center" style={{ width: '20%' }}></div>
                         <div css={cellStyle} className="data" style={{ width: '30%' }}>{line}</div>
@@ -187,7 +184,7 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data: resumeDat
                         <div css={cellStyle} className="data center no-border-right" style={{ width: '20%' }}></div>
                     </div>
                 ))}
-                {renderEmptyRows(3 - resumeData.workExperience.split('\n').filter(line => line.trim()).length, [
+                {renderEmptyRows(3 - (resumeData.workExperience || '').split('\n').filter(line => line.trim()).length, [
                     { width: '20%' }, { width: '30%' }, { width: '30%' }, { width: '20%', isLast: true }
                 ])}
             </div>
@@ -213,14 +210,14 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data: resumeDat
                     <div css={cellStyle} className="header" style={{ width: '50%' }}>자격증/면허증/교육이수</div>
                     <div css={cellStyle} className="header no-border-right" style={{ width: '25%' }}>발급 기관</div>
                 </div>
-                 {resumeData.certifications.split('\n').filter(line => line.trim()).map((line, index) => (
+                 {(resumeData.certifications || '').split('\n').filter(line => line.trim()).map((line, index) => (
                     <div css={rowStyle} key={index}>
                         <div css={cellStyle} className="data center" style={{ width: '25%' }}></div>
                         <div css={cellStyle} className="data" style={{ width: '50%' }}>{line}</div>
                         <div css={cellStyle} className="data center no-border-right" style={{ width: '25%' }}></div>
                     </div>
                 ))}
-                {renderEmptyRows(2 - resumeData.certifications.split('\n').filter(line => line.trim()).length, [
+                {renderEmptyRows(2 - (resumeData.certifications || '').split('\n').filter(line => line.trim()).length, [
                     { width: '25%' }, { width: '50%' }, { width: '25%', isLast: true }
                 ])}
             </div>
@@ -234,7 +231,7 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data: resumeDat
                     <div css={cellStyle} className="header" style={{ width: '15%' }}>구분</div>
                     <div css={cellStyle} className="header no-border-right" style={{ width: '35%' }}>활용능력</div>
                 </div>
-                 {resumeData.coreCompetencies.split('\n').filter(line => line.trim()).map((line, index) => (
+                 {(resumeData.coreCompetencies || '').split('\n').filter(line => line.trim()).map((line, index) => (
                      <div css={rowStyle} key={index}>
                         <div css={cellStyle} className="data" style={{ width: '15%' }}></div>
                         <div css={cellStyle} className="data" style={{ width: '35%' }}>{line}</div>
@@ -242,7 +239,7 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data: resumeDat
                         <div css={cellStyle} className="data no-border-right" style={{ width: '35%' }}></div>
                     </div>
                  ))}
-                {renderEmptyRows(2 - resumeData.coreCompetencies.split('\n').filter(line => line.trim()).length, [
+                {renderEmptyRows(2 - (resumeData.coreCompetencies || '').split('\n').filter(line => line.trim()).length, [
                     { width: '15%' }, { width: '35%' }, { width: '15%' }, { width: '35%', isLast: true }
                 ])}
             </div>

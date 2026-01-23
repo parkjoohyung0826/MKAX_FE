@@ -27,13 +27,12 @@ import GenerationResult from '@/features/report/components/GenerationResult';
 import Resume from '@/features/resume/components/Resume';
 import { mockJobPostings } from '@/features/report/services/mockJobPostings';
 
-import { ResumeData } from '@/features/resume/types';
-import { CoverLetterData } from '@/features/cover-letter/types';
+import { useResumeStore } from '@/features/resume/store';
+import { useCoverLetterStore } from '@/features/cover-letter/store';
 import { ResultData } from '@/features/report/types';
 
 type AppState = 'form' | 'loading' | 'result';
 type TabValue = 'resume' | 'coverLetter';
-type InputMode = 'direct' | 'ai';
 
 const particleVariant = (i: number) => ({
   animate: {
@@ -62,41 +61,23 @@ const glassInputSx = {
   }
 };
 
-export default function Home() {
-  const [mounted, setMounted] = useState(false);
+function HomePageContent() {
   const [appState, setAppState] = useState<AppState>('form');
   const [activeTab, setActiveTab] = useState<TabValue>('resume');
-  const [resumeInputMode, setResumeInputMode] = useState<InputMode>('ai');
   
   const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
   const [accessCode, setAccessCode] = useState('');
 
-  // --- 상태 추가: 유효성 검사 알림 ---
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  const [resumeData, setResumeData] = useState<ResumeData>({
-    name: '',
-    englishName: '',
-    dateOfBirth: '',
-    email: '',
-    phoneNumber: '',
-    emergencyContact: '',
-    address: '',
-    photo: '',
-    desiredJob: '',
-    education: '',
-    workExperience: '',
-    coreCompetencies: '',
-    certifications: '',
-  });
+  const { resumeData, resetResumeData } = useResumeStore();
+  const { resetCoverLetterData } = useCoverLetterStore();
   const [resultData, setResultData] = useState<ResultData | null>(null);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  useEffect(() => { setMounted(true); }, []);
-  
   const isResumeComplete = !!resumeData.name && !!resumeData.desiredJob;
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: TabValue) => {
@@ -133,28 +114,13 @@ export default function Home() {
   const handleReset = () => {
     setAppState('form');
     setResultData(null);
-    setResumeData({
-      name: '',
-      englishName: '',
-      dateOfBirth: '',
-      email: '',
-      phoneNumber: '',
-      emergencyContact: '',
-      address: '',
-      photo: '',
-      desiredJob: '',
-      education: '',
-      workExperience: '',
-      coreCompetencies: '',
-      certifications: '',
-    });
+    resetResumeData();
+    resetCoverLetterData();
     setActiveTab('resume');
   };
 
   const isGeneratingApplication = appState === 'loading';
-
-  if (!mounted) return null;
-
+  
   return (
     <Box sx={{ 
       position: 'relative', 
@@ -333,13 +299,11 @@ export default function Home() {
                       exit={{ opacity: 0, x: -20 }}
                       transition={{ duration: 0.3 }}
                     >
-                                        {activeTab === 'resume' && (
-                                          <Resume
-                                            resumeData={resumeData}
-                                            setResumeData={setResumeData}
-                                            onFinishResume={() => setActiveTab('coverLetter')}
-                                          />
-                                        )}                      
+                      {activeTab === 'resume' && (
+                        <Resume
+                          onFinishResume={() => setActiveTab('coverLetter')}
+                        />
+                      )}                      
                       {activeTab === 'coverLetter' && (
                         <CoverLetter 
                           handleGenerate={handleGenerate}
@@ -447,4 +411,13 @@ export default function Home() {
 
     </Box>
   );
+}
+
+export default function Home() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  if (!mounted) return null;
+
+  return <HomePageContent />;
 }

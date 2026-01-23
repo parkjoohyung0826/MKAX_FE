@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Box, Typography, Container } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion'; 
 
@@ -10,21 +10,20 @@ import WorkExperienceStep from './steps/WorkExperienceStep';
 import CertificationsStep from './steps/CertificationsStep';
 import FinalReviewStep from './steps/FinalReviewStep';
 
-import { ResumeData } from '../types';
+import { useResumeStore } from '../store';
 
 interface Props {
   activeStep: number;
   direction: number;
   steps: string[];
-  resumeData: ResumeData;
-  setResumeData: React.Dispatch<React.SetStateAction<ResumeData>>;
 }
 
-const ConversationalForm = ({ activeStep, direction, steps, resumeData, setResumeData }: Props) => {
+const ConversationalForm = ({ activeStep, direction, steps }: Props) => {
+  const { resumeData, setResumeData } = useResumeStore();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setResumeData((prev) => ({ ...prev, [name]: value }));
+    setResumeData({ [name]: value });
   };
   
   const getStepContent = (step: number) => {
@@ -65,3 +64,4 @@ const ConversationalForm = ({ activeStep, direction, steps, resumeData, setResum
 };
 
 export default ConversationalForm;
+

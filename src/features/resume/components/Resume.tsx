@@ -7,6 +7,7 @@ import FinalReviewStep from './steps/FinalReviewStep';
 import AIChatView, { ConversationStep } from './AIChatView';
 import ConversationalForm from './ConversationalForm';
 import { ResumeData } from '../types';
+import { useResumeStore } from '../store';
 
 import BasicInfoPanel from '@/features/resume/components/chat-panels/BasicInfoPanel';
 import EducationPanel from '@/features/resume/components/chat-panels/EducationPanel';
@@ -57,16 +58,11 @@ const resumeConversationSteps: ConversationStep<ResumeData>[] = [
 const resumeSteps = ['기본 정보', '학력 사항', '경력 사항', '자격증/주요활동', '최종 검토'];
 
 interface Props {
-  resumeData: ResumeData;
-  setResumeData: React.Dispatch<React.SetStateAction<ResumeData>>;
   onFinishResume: () => void;
 }
 
-const Resume = ({
-  resumeData,
-  setResumeData,
-  onFinishResume,
-}: Props) => {
+const Resume = ({ onFinishResume }: Props) => {
+  const { resumeData, setResumeData } = useResumeStore();
   const [activeStep, setActiveStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isStepComplete, setIsStepComplete] = useState(false);
@@ -157,7 +153,13 @@ const Resume = ({
             steps={resumeSteps}
             onStepComplete={() => setIsStepComplete(true)}
             data={resumeData}
-            setData={setResumeData}
+            setData={(update) => {
+              const newValues =
+                typeof update === 'function'
+                  ? update(resumeData)
+                  : update;
+              setResumeData({ ...resumeData, ...newValues });
+            }}
             conversationSteps={resumeConversationSteps}
           />
         ) : (
@@ -165,8 +167,6 @@ const Resume = ({
             activeStep={activeStep}
             direction={direction}
             steps={resumeSteps}
-            resumeData={resumeData}
-            setResumeData={setResumeData}
           />
         )}
       </Box>
