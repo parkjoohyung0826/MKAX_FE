@@ -67,17 +67,18 @@ const ConversationalAssistant = ({ open, onClose, onSubmit, title, prompt }: Pro
 
     try {
       const result = await onSubmit(text);
+      const info = typeof result?.missingInfo === 'string' ? result.missingInfo : '';
       const isComplete = result?.isComplete;
-      const info = result?.missingInfo ?? '';
 
-      if (isComplete === false) {
-        setMissingInfo(info);
+      if (isComplete === true) {
+        onClose();
+        setSuccessOpen(true);
         return;
       }
 
-      onClose();
-      if (isComplete === true) {
-        setSuccessOpen(true);
+      if (isComplete === false || info.trim().length > 0) {
+        setMissingInfo(info);
+        return;
       }
     } catch (e: any) {
       setError(e?.message ?? 'AI 생성에 실패했습니다.');

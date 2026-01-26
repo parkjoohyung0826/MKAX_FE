@@ -10,7 +10,9 @@ import StepHeader from './StepHeader';
 const CertificationsStep = () => {
   const { resumeData, setResumeData } = useResumeStore();
 
-  const submitCoreCompetencies = async (text: string): Promise<void> => {
+  const submitCoreCompetencies = async (
+    text: string
+  ): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
     const res = await fetch('/api/recommend/activity', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -23,7 +25,19 @@ const CertificationsStep = () => {
     }
 
     const data = await res.json();
-    setResumeData({ coreCompetencies: [data] });
+    const missingInfo = String(data?.missingInfo ?? '');
+    const isComplete =
+      typeof data?.isComplete === 'boolean'
+        ? data.isComplete
+        : missingInfo.trim().length === 0;
+    if (isComplete) {
+      const fullDescription = String(data?.fullDescription ?? '');
+      setResumeData({ coreCompetencies: [{ fullDescription }] });
+    }
+    return {
+      missingInfo,
+      isComplete,
+    };
   };
 
   const handleChangeActivity = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -33,17 +47,14 @@ const CertificationsStep = () => {
     if (newCoreCompetencies.length > 0) {
       newCoreCompetencies[0] = { ...newCoreCompetencies[0], fullDescription: value };
     } else {
-      newCoreCompetencies.push({
-        fullDescription: value,
-        period: '',
-        courseName: '',
-        institution: '',
-      });
+      newCoreCompetencies.push({ fullDescription: value });
     }
     setResumeData({ coreCompetencies: newCoreCompetencies });
   };
 
-  const submitCertifications = async (text: string): Promise<void> => {
+  const submitCertifications = async (
+    text: string
+  ): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
     const res = await fetch("/api/recommend/certification", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -56,9 +67,19 @@ const CertificationsStep = () => {
     }
 
     const data = await res.json();
-    // { fullDescription, period, certificationName, institution }
-
-    setResumeData({ certifications: [data] });
+    const missingInfo = String(data?.missingInfo ?? '');
+    const isComplete =
+      typeof data?.isComplete === 'boolean'
+        ? data.isComplete
+        : missingInfo.trim().length === 0;
+    if (isComplete) {
+      const fullDescription = String(data?.fullDescription ?? '');
+      setResumeData({ certifications: [{ fullDescription }] });
+    }
+    return {
+      missingInfo,
+      isComplete,
+    };
   };
 
   const handleChangeCertifacation = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -67,12 +88,7 @@ const CertificationsStep = () => {
     if (newCertification.length > 0) {
       newCertification[0] = { ...newCertification[0], fullDescription: value };
     } else {
-      newCertification.push({
-        fullDescription: value,
-        period: '',
-        certificationName: '',
-        institution: '',
-      });
+      newCertification.push({ fullDescription: value });
     }
     setResumeData({ certifications: newCertification });
   };

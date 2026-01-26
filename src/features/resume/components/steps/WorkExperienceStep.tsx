@@ -10,7 +10,9 @@ import StepHeader from './StepHeader';
 const WorkExperienceStep = () => {
   const { resumeData, setResumeData } = useResumeStore();
 
-  const handleAssistantSubmit = async (text: string): Promise<void> => {
+  const handleAssistantSubmit = async (
+    text: string
+  ): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
     const res = await fetch('/api/recommend/career', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -23,8 +25,19 @@ const WorkExperienceStep = () => {
     }
 
     const data = await res.json();
-    // expected: { fullDescription, companyName, period, mainTask, leavingReason }
-    setResumeData({ workExperience: [data] });
+    const missingInfo = String(data?.missingInfo ?? '');
+    const isComplete =
+      typeof data?.isComplete === 'boolean'
+        ? data.isComplete
+        : missingInfo.trim().length === 0;
+    if (isComplete) {
+      const fullDescription = String(data?.fullDescription ?? '');
+      setResumeData({ workExperience: [{ fullDescription }] });
+    }
+    return {
+      missingInfo,
+      isComplete,
+    };
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -35,13 +48,7 @@ const WorkExperienceStep = () => {
     if (newWorkExperience.length > 0) {
       newWorkExperience[0] = { ...newWorkExperience[0], fullDescription: value };
     } else {
-      newWorkExperience.push({
-        companyName: '',
-        period: '',
-        mainTask: '',
-        leavingReason: '',
-        fullDescription: value,
-      });
+      newWorkExperience.push({ fullDescription: value });
     }
     setResumeData({ workExperience: newWorkExperience });
   };

@@ -78,7 +78,9 @@ const BasicInfoStep = ({ data, handleChange }: Props) => {
     }
   };
 
-  const handleAssistantSubmit = async (text: string): Promise<void> => {
+  const handleAssistantSubmit = async (
+    text: string
+  ): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
     const res = await fetch("/api/recommend/jobs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -93,11 +95,23 @@ const BasicInfoStep = ({ data, handleChange }: Props) => {
     const data = await res.json();
     // { recommendedJob, reason }
 
-    const syntheticEvent = {
-      target: { name: "desiredJob", value: data.recommendedJob },
-    } as React.ChangeEvent<HTMLInputElement>;
+    const missingInfo = String(data?.missingInfo ?? "");
+    const isComplete =
+      typeof data?.isComplete === "boolean"
+        ? data.isComplete
+        : missingInfo.trim().length === 0;
 
-    handleChange(syntheticEvent);
+    if (isComplete) {
+      const syntheticEvent = {
+        target: { name: "desiredJob", value: data.recommendedJob ?? "" },
+      } as React.ChangeEvent<HTMLInputElement>;
+      handleChange(syntheticEvent);
+    }
+
+    return {
+      missingInfo,
+      isComplete,
+    };
   };
 
   return (
