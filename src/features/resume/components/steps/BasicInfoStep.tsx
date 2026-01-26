@@ -17,6 +17,7 @@ import {
 } from '@mui/icons-material';
 import { ResumeData } from '../../types';
 import ConversationalAssistant from '@/shared/components/ConversationalAssistant';
+import StepHeader from './StepHeader';
 
 interface Props {
   data: ResumeData;
@@ -109,15 +110,11 @@ const BasicInfoStep = ({ data, handleChange }: Props) => {
         prompt="본인의 경험이나 관심사를 자유롭게 말씀해주세요. AI가 적합한 직무명을 추천해드립니다."
       />
 
-      {/* 헤더 영역 */}
-      <Box sx={{ mb: 5, textAlign: 'left' }}>
-        <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e293b', mb: 1 }}>
-          기본 정보 입력
-        </Typography>
-        <Typography variant="body1" sx={{ color: '#64748b' }}>
-          면접관에게 가장 먼저 보여지는 핵심 정보입니다.
-        </Typography>
-      </Box>
+      <StepHeader
+        title="기본 정보 입력"
+        subtitle="면접관에게 가장 먼저 보여지는 핵심 정보입니다."
+        marginBottom={5}
+      />
       
       {/* 메인 레이아웃 (Flex & CSS Grid) */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

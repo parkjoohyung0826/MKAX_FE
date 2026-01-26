@@ -3,6 +3,7 @@
 import { Box, Typography } from '@mui/material';
 import { PersonOutline, WorkOutline, School, BusinessCenter, WorkspacePremium, Verified } from '@mui/icons-material';
 import { ResumeData, Education, WorkExperience, CoreCompetencies, Certifications } from '../../types';
+import StepHeader from './StepHeader';
 
 interface Props {
   data: ResumeData;
@@ -56,14 +57,10 @@ const FinalReviewStep = ({ data }: Props) => {
 
   return (
     <Box sx={{ py: 2 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h5" gutterBottom sx={{ fontWeight: 800, color: '#1e293b' }}>
-          최종 검토
-        </Typography>
-        <Typography variant="body1" sx={{ color: '#64748b' }}>
-          작성하신 이력서 내용을 마지막으로 확인해주세요. 수정이 필요하면 이전 단계로 돌아갈 수 있습니다.
-        </Typography>
-      </Box>
+      <StepHeader
+        title="최종 검토"
+        subtitle="작성하신 이력서 내용을 마지막으로 확인해주세요. 수정이 필요하면 이전 단계로 돌아갈 수 있습니다."
+      />
 
       {/* 전체 컨텐츠를 감싸는 Flex 컨테이너 */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
