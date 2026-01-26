@@ -8,7 +8,7 @@ import ResumeAssistantTextSection from './AssistantTextSection';
 import StepHeader from './StepHeader';
 
 const WorkExperienceStep = () => {
-  const { resumeData, setResumeData } = useResumeStore();
+  const { resumeData, setResumeData, setResumeValidation } = useResumeStore();
 
   const handleAssistantSubmit = async (
     text: string
@@ -30,14 +30,42 @@ const WorkExperienceStep = () => {
       typeof data?.isComplete === 'boolean'
         ? data.isComplete
         : missingInfo.trim().length === 0;
-    if (isComplete) {
-      const fullDescription = String(data?.fullDescription ?? '');
+    const fullDescription = String(data?.fullDescription ?? '');
+    if (fullDescription.trim().length > 0) {
       setResumeData({ workExperience: fullDescription });
     }
+    setResumeValidation({ workExperience: isComplete });
     return {
       missingInfo,
       isComplete,
     };
+  };
+
+  const handleValidate = async (): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
+    const text = resumeData.workExperience.trim();
+    const res = await fetch('/api/recommend/career', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userInput: text }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.message ?? '경력 정보 검증에 실패했습니다.');
+    }
+
+    const data = await res.json();
+    const missingInfo = String(data?.missingInfo ?? '');
+    const isComplete =
+      typeof data?.isComplete === 'boolean'
+        ? data.isComplete
+        : missingInfo.trim().length === 0;
+    const fullDescription = String(data?.fullDescription ?? '');
+    if (fullDescription.trim().length > 0) {
+      setResumeData({ workExperience: fullDescription });
+    }
+    setResumeValidation({ workExperience: isComplete });
+    return { missingInfo, isComplete };
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -45,6 +73,7 @@ const WorkExperienceStep = () => {
     // 사용자가 직접 입력 시, 첫 번째 학력 정보의 fullDescription을 업데이트
     // 또는 학력 정보가 없다면 새로운 항목으로 생성
     setResumeData({ workExperience: value });
+    setResumeValidation({ workExperience: false });
   };
 
   return (
@@ -61,6 +90,7 @@ const WorkExperienceStep = () => {
         assistantTitle="경력 상세 AI"
         assistantPrompt="주요 경력, 담당했던 프로젝트, 역할, 그리고 성과(수치 등)에 대해 자유롭게 이야기해주세요. AI가 내용을 구조화해드립니다."
         onAssistantSubmit={handleAssistantSubmit}
+        onValidate={handleValidate}
         value={resumeData.workExperience}
         onChange={handleChange}
         rows={7}

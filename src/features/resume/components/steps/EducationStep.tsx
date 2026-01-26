@@ -8,7 +8,7 @@ import ResumeAssistantTextSection from './AssistantTextSection';
 import StepHeader from './StepHeader';
 
 const EducationStep = () => {
-  const { resumeData, setResumeData } = useResumeStore();
+  const { resumeData, setResumeData, setResumeValidation } = useResumeStore();
 
   const handleAssistantSubmit = async (
     text: string
@@ -30,14 +30,42 @@ const EducationStep = () => {
       typeof data?.isComplete === 'boolean'
         ? data.isComplete
         : missingInfo.trim().length === 0;
-    if (isComplete) {
-      const fullDescription = String(data?.fullDescription ?? '');
+    const fullDescription = String(data?.fullDescription ?? '');
+    if (fullDescription.trim().length > 0) {
       setResumeData({ education: fullDescription });
     }
+    setResumeValidation({ education: isComplete });
     return {
       missingInfo,
       isComplete,
     };
+  };
+
+  const handleValidate = async (): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
+    const text = resumeData.education.trim();
+    const res = await fetch("/api/recommend/education", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description: text }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.message ?? "학력 정보 검증에 실패했습니다.");
+    }
+
+    const data = await res.json();
+    const missingInfo = String(data?.missingInfo ?? '');
+    const isComplete =
+      typeof data?.isComplete === 'boolean'
+        ? data.isComplete
+        : missingInfo.trim().length === 0;
+    const fullDescription = String(data?.fullDescription ?? '');
+    if (fullDescription.trim().length > 0) {
+      setResumeData({ education: fullDescription });
+    }
+    setResumeValidation({ education: isComplete });
+    return { missingInfo, isComplete };
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -45,6 +73,7 @@ const EducationStep = () => {
     // 사용자가 직접 입력 시, 첫 번째 학력 정보의 fullDescription을 업데이트
     // 또는 학력 정보가 없다면 새로운 항목으로 생성
     setResumeData({ education: value });
+    setResumeValidation({ education: false });
   };
 
 
@@ -62,6 +91,7 @@ const EducationStep = () => {
         assistantTitle="학력 정보 AI"
         assistantPrompt="최종 학력, 학교명, 전공, 재학 기간, 주요 수강 과목이나 학점 등을 자유롭게 이야기해주세요. AI가 깔끔하게 정리해드립니다."
         onAssistantSubmit={handleAssistantSubmit}
+        onValidate={handleValidate}
         value={resumeData.education}
         onChange={handleChange}
         rows={5}

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Box, Button, ButtonGroup } from '@mui/material';
+import { Alert, Snackbar } from '@mui/material';
 import ProgressStepper from '@/shared/components/ProgressStepper';
 import FinalReviewStep from './steps/FinalReviewStep';
 import AIChatView, { ConversationStep } from './AIChatView';
@@ -49,8 +50,8 @@ const resumeConversationSteps: ConversationStep<ResumeData>[] = [
     title: '자격증/주요활동',
     panel: (data: Partial<ResumeData>) => <SkillsPanel data={data} />,
     fields: [
-      { field: 'coreCompetencies', question: '보유하신 핵심 역량이나 기술 스택을 자유롭게 말씀해주세요.' },
-      { field: 'certifications', question: '자격증, 어학 성적, 또는 주요 대외활동 경험이 있다면 알려주세요.' },
+      { field: 'coreCompetencies', question: '참여했던 교육 프로그램, 대외 활동, 동아리 활동 등에 대해 자유롭게 이야기해주세요.' },
+      { field: 'certifications', question: '자격증 또는 어학 성적이 있다면 알려주세요.' },
     ]
   }
 ];
@@ -62,23 +63,43 @@ interface Props {
 }
 
 const Resume = ({ onFinishResume }: Props) => {
-  const { resumeData, setResumeData } = useResumeStore();
+  const { resumeData, setResumeData, resumeValidation } = useResumeStore();
   const [activeStep, setActiveStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isStepComplete, setIsStepComplete] = useState(false);
   const [stepInputModes, setStepInputModes] = useState<Record<number, InputMode>>({});
+  const [aiCompletedSteps, setAiCompletedSteps] = useState<Record<number, boolean>>({});
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const currentMode = stepInputModes[activeStep] || 'ai';
 
-  const completedSteps = [
+  const directCompletedSteps = [
     !!(resumeData.name && resumeData.desiredJob && resumeData.email && resumeData.phoneNumber),
-    !!resumeData.education,
-    !!resumeData.workExperience,
-    !!(resumeData.coreCompetencies || resumeData.certifications),
+    resumeValidation.education,
+    resumeValidation.workExperience,
+    resumeValidation.coreCompetencies && resumeValidation.certifications,
     false,
   ];
 
+  const completedSteps = directCompletedSteps.map((completed, index) => {
+    const mode = stepInputModes[index] ?? 'ai';
+    return mode === 'ai' ? !!aiCompletedSteps[index] : completed;
+  });
+
   const handleNextStep = () => {
     if (activeStep === resumeSteps.length - 1) {
+      const incomplete = completedSteps
+        .slice(0, resumeSteps.length - 1)
+        .map((done, index) => ({ done, label: resumeSteps[index] }))
+        .filter((item) => !item.done)
+        .map((item) => item.label);
+
+      if (incomplete.length > 0) {
+        setToastMessage(`${incomplete.join(', ')} 내용을 먼저 작성해주세요.`);
+        setToastOpen(true);
+        return;
+      }
+
       onFinishResume();
     } else {
       setDirection(1);
@@ -109,49 +130,53 @@ const Resume = ({ onFinishResume }: Props) => {
   const renderResumeContent = () => {
     const isFinalStep = activeStep === resumeSteps.length - 1;
 
-    if (isFinalStep) {
-      return <FinalReviewStep data={resumeData} />;
-    }
-
     return (
       <Box>
-        <ButtonGroup
-          fullWidth
-          sx={{
-            mb: 5,
-            p: 0.5,
-            bgcolor: '#f1f5f9',
-            borderRadius: '16px',
-            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)',
-          }}
-        >
-          {(['ai', 'direct'] as InputMode[]).map((mode) => (
-            <Button
-              key={mode}
-              variant={currentMode === mode ? 'contained' : 'text'}
-              onClick={() => handleModeChange(activeStep, mode)}
-              sx={{
-                borderRadius: '12px !important',
-                py: 1.5,
-                boxShadow: currentMode === mode ? '0 4px 12px rgba(37,99,235,0.2)' : 'none',
-                bgcolor: currentMode === mode ? '#2563EB' : 'transparent',
-                color: currentMode === mode ? 'white' : '#64748b',
-                border: 'none',
-                '&:hover': {
-                  bgcolor: currentMode === mode ? '#1d4ed8' : 'rgba(0,0,0,0.05)',
+        {!isFinalStep && (
+          <ButtonGroup
+            fullWidth
+            sx={{
+              mb: 5,
+              p: 0.5,
+              bgcolor: '#f1f5f9',
+              borderRadius: '16px',
+              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)',
+            }}
+          >
+            {(['ai', 'direct'] as InputMode[]).map((mode) => (
+              <Button
+                key={mode}
+                variant={currentMode === mode ? 'contained' : 'text'}
+                onClick={() => handleModeChange(activeStep, mode)}
+                sx={{
+                  borderRadius: '12px !important',
+                  py: 1.5,
+                  boxShadow: currentMode === mode ? '0 4px 12px rgba(37,99,235,0.2)' : 'none',
+                  bgcolor: currentMode === mode ? '#2563EB' : 'transparent',
+                  color: currentMode === mode ? 'white' : '#64748b',
                   border: 'none',
-                },
-              }}
-            >
-              {mode === 'ai' ? 'AI 챗봇으로 작성' : '단계별로 직접 입력'}
-            </Button>
-          ))}
-        </ButtonGroup>
-        {currentMode === 'ai' ? (
+                  '&:hover': {
+                    bgcolor: currentMode === mode ? '#1d4ed8' : 'rgba(0,0,0,0.05)',
+                    border: 'none',
+                  },
+                }}
+              >
+                {mode === 'ai' ? 'AI 챗봇으로 작성' : '단계별로 직접 입력'}
+              </Button>
+            ))}
+          </ButtonGroup>
+        )}
+
+        {isFinalStep && <FinalReviewStep data={resumeData} />}
+
+        <Box sx={{ display: currentMode === 'ai' ? (isFinalStep ? 'none' : 'block') : 'none' }}>
           <AIChatView
             activeStep={activeStep}
             steps={resumeSteps}
-            onStepComplete={() => setIsStepComplete(true)}
+            onStepComplete={() => {
+              setIsStepComplete(true);
+              setAiCompletedSteps((prev) => ({ ...prev, [activeStep]: true }));
+            }}
             data={resumeData}
             setData={(update) => {
               const newValues =
@@ -162,13 +187,14 @@ const Resume = ({ onFinishResume }: Props) => {
             }}
             conversationSteps={resumeConversationSteps}
           />
-        ) : (
+        </Box>
+        <Box sx={{ display: currentMode === 'direct' ? (isFinalStep ? 'none' : 'block') : 'none' }}>
           <ConversationalForm
             activeStep={activeStep}
             direction={direction}
             steps={resumeSteps}
           />
-        )}
+        </Box>
       </Box>
     );
   };
@@ -224,6 +250,22 @@ const Resume = ({ onFinishResume }: Props) => {
           {activeStep === resumeSteps.length - 1 ? '자기소개서 작성' : '다음'}
         </Button>
       </Box>
+
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={3000}
+        onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setToastOpen(false)}
+          severity="warning"
+          variant="filled"
+          sx={{ width: '100%', borderRadius: '12px', fontWeight: 600 }}
+        >
+          {toastMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
