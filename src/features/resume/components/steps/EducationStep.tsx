@@ -10,7 +10,9 @@ import StepHeader from './StepHeader';
 const EducationStep = () => {
   const { resumeData, setResumeData } = useResumeStore();
 
-  const handleAssistantSubmit = async (text: string): Promise<void> => {
+  const handleAssistantSubmit = async (
+    text: string
+  ): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
     const res = await fetch("/api/recommend/education", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -23,8 +25,21 @@ const EducationStep = () => {
     }
 
     const data = await res.json();
-    // API 응답으로 받은 구조화된 데이터를 education 배열에 설정
-    setResumeData({ education: [data] });
+    const missingInfo = String(data?.missingInfo ?? '');
+    const isComplete =
+      typeof data?.isComplete === 'boolean'
+        ? data.isComplete
+        : missingInfo.trim().length === 0;
+    if (isComplete) {
+      const fullDescription = String(data?.fullDescription ?? '');
+      setResumeData({
+        education: [{ fullDescription } as any],
+      });
+    }
+    return {
+      missingInfo,
+      isComplete,
+    };
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -35,14 +50,7 @@ const EducationStep = () => {
     if (newEducation.length > 0) {
       newEducation[0] = { ...newEducation[0], fullDescription: value };
     } else {
-      newEducation.push({
-        schoolName: '',
-        major: '',
-        period: '',
-        graduationStatus: '',
-        details: '',
-        fullDescription: value,
-      });
+      newEducation.push({ fullDescription: value } as any);
     }
     setResumeData({ education: newEducation });
   };

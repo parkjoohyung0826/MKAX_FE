@@ -40,7 +40,7 @@ type ResumeAssistantTextSectionProps = {
   icon: React.ReactNode;
   assistantTitle: string;
   assistantPrompt: string;
-  onAssistantSubmit: (text: string) => Promise<void>;
+  onAssistantSubmit: (text: string) => Promise<{ missingInfo?: string; isComplete?: boolean } | void>;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   rows: number;
@@ -68,9 +68,10 @@ const ResumeAssistantTextSection = ({
   const handleOpenAssistant = () => setAssistantOpen(true);
   const handleCloseAssistant = () => setAssistantOpen(false);
 
-  const handleAssistantSubmit = async (text: string): Promise<void> => {
-    await onAssistantSubmit(text);
-    handleCloseAssistant();
+  const handleAssistantSubmit = async (
+    text: string
+  ): Promise<{ missingInfo?: string; isComplete?: boolean } | void> => {
+    return onAssistantSubmit(text);
   };
 
   return (
