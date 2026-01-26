@@ -17,10 +17,10 @@ const initialResumeData: ResumeData = {
   address: '',
   photo: '',
   desiredJob: '',
-  education: [],
-  workExperience: [],
-  coreCompetencies: [],
-  certifications: [],
+  education: '',
+  workExperience: '',
+  coreCompetencies: '',
+  certifications: '',
 };
 
 export const useResumeStore = create<ResumeStore>((set) => ({

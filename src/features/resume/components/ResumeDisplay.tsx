@@ -148,84 +148,52 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
             <SectionTitle>학력사항</SectionTitle>
             <div css={tableContainerStyle}>
                 <div css={rowStyle}>
-                    <div css={cellStyle} className="header" style={{ width: '25%' }}>기간</div>
-                    <div css={cellStyle} className="header" style={{ width: '35%' }}>학교명</div>
-                    <div css={cellStyle} className="header" style={{ width: '25%' }}>전공</div>
-                    <div css={cellStyle} className="header no-border-right" style={{ width: '15%' }}>졸업여부</div>
+                    <div css={cellStyle} className="header no-border-right" style={{ width: '100%' }}>학력 상세</div>
                 </div>
-                {resumeData.education.map((edu, index) => (
-                    <div css={rowStyle} key={index}>
-                        <div css={cellStyle} className="data center" style={{ width: '25%' }}>{edu.period}</div>
-                        <div css={cellStyle} className="data" style={{ width: '35%' }}>{edu.schoolName}</div>
-                        <div css={cellStyle} className="data center" style={{ width: '25%' }}>{edu.major}</div>
-                        <div css={cellStyle} className="data center no-border-right" style={{ width: '15%' }}>{edu.graduationStatus}</div>
+                <div css={rowStyle}>
+                    <div css={cellStyle} className="data no-border-right" style={{ width: '100%' }}>
+                        {resumeData.education}
                     </div>
-                ))}
-                {renderEmptyRows(3 - resumeData.education.length, [
-                    { width: '25%' }, { width: '35%' }, { width: '25%' }, { width: '15%', isLast: true }
-                ])}
+                </div>
             </div>
 
             {/* 3. 경력사항 */}
             <SectionTitle>경력사항</SectionTitle>
             <div css={tableContainerStyle}>
                 <div css={rowStyle}>
-                    <div css={cellStyle} className="header" style={{ width: '20%' }}>근무날짜</div>
-                    <div css={cellStyle} className="header" style={{ width: '30%' }}>직장명 / 부서</div>
-                    <div css={cellStyle} className="header" style={{ width: '30%' }}>담당업무</div>
-                    <div css={cellStyle} className="header no-border-right" style={{ width: '20%' }}>퇴사사유</div>
+                    <div css={cellStyle} className="header no-border-right" style={{ width: '100%' }}>경력 상세</div>
                 </div>
-                 {resumeData.workExperience.map((exp, index) => (
-                    <div css={rowStyle} key={index}>
-                        <div css={cellStyle} className="data center" style={{ width: '20%' }}>{exp.period}</div>
-                        <div css={cellStyle} className="data" style={{ width: '30%' }}>{exp.companyName}</div>
-                        <div css={cellStyle} className="data" style={{ width: '30%' }}>{exp.mainTask}</div>
-                        <div css={cellStyle} className="data center no-border-right" style={{ width: '20%' }}>{exp.leavingReason}</div>
+                <div css={rowStyle}>
+                    <div css={cellStyle} className="data no-border-right" style={{ width: '100%' }}>
+                        {resumeData.workExperience}
                     </div>
-                ))}
-                {renderEmptyRows(3 - resumeData.workExperience.length, [
-                    { width: '20%' }, { width: '30%' }, { width: '30%' }, { width: '20%', isLast: true }
-                ])}
+                </div>
             </div>
             
             {/* 4. 교육사항 / 대외활동 */}
             <SectionTitle>교육사항 / 대외활동</SectionTitle>
             <div css={tableContainerStyle}>
                 <div css={rowStyle}>
-                    <div css={cellStyle} className="header" style={{ width: '25%' }}>활동/근무기간</div>
-                    <div css={cellStyle} className="header" style={{ width: '45%' }}>교육 과정</div>
-                    <div css={cellStyle} className="header no-border-right" style={{ width: '30%' }}>교육 기관</div>
+                    <div css={cellStyle} className="header no-border-right" style={{ width: '100%' }}>활동 상세</div>
                 </div>
-                {resumeData.coreCompetencies.map((comp, index) => (
-                    <div css={rowStyle} key={index}>
-                        <div css={cellStyle} className="data center" style={{ width: '25%' }}>{comp.period}</div>
-                        <div css={cellStyle} className="data" style={{ width: '45%' }}>{comp.courseName}</div>
-                        <div css={cellStyle} className="data center no-border-right" style={{ width: '30%' }}>{comp.institution}</div>
+                <div css={rowStyle}>
+                    <div css={cellStyle} className="data no-border-right" style={{ width: '100%' }}>
+                        {resumeData.coreCompetencies}
                     </div>
-                ))}
-                {renderEmptyRows(2 - resumeData.coreCompetencies.length, [
-                    { width: '25%' }, { width: '45%' }, { width: '30%', isLast: true }
-                ])}
+                </div>
             </div>
 
             {/* 5. 자격증 */}
             <SectionTitle>자격증</SectionTitle>
             <div css={tableContainerStyle}>
                 <div css={rowStyle}>
-                    <div css={cellStyle} className="header" style={{ width: '25%' }}>취득일(년월)</div>
-                    <div css={cellStyle} className="header" style={{ width: '50%' }}>자격증/면허증/교육이수</div>
-                    <div css={cellStyle} className="header no-border-right" style={{ width: '25%' }}>발급 기관</div>
+                    <div css={cellStyle} className="header no-border-right" style={{ width: '100%' }}>자격증 상세</div>
                 </div>
-                 {resumeData.certifications.map((cert, index) => (
-                    <div css={rowStyle} key={index}>
-                        <div css={cellStyle} className="data center" style={{ width: '25%' }}>{cert.period}</div>
-                        <div css={cellStyle} className="data" style={{ width: '50%' }}>{cert.certificationName}</div>
-                        <div css={cellStyle} className="data center no-border-right" style={{ width: '25%' }}>{cert.institution}</div>
+                <div css={rowStyle}>
+                    <div css={cellStyle} className="data no-border-right" style={{ width: '100%' }}>
+                        {resumeData.certifications}
                     </div>
-                ))}
-                {renderEmptyRows(2 - resumeData.certifications.length, [
-                    { width: '25%' }, { width: '50%' }, { width: '25%', isLast: true }
-                ])}
+                </div>
             </div>
 
             {/* 6. 기타사항 */}

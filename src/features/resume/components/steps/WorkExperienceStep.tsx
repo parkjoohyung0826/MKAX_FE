@@ -32,7 +32,7 @@ const WorkExperienceStep = () => {
         : missingInfo.trim().length === 0;
     if (isComplete) {
       const fullDescription = String(data?.fullDescription ?? '');
-      setResumeData({ workExperience: [{ fullDescription }] });
+      setResumeData({ workExperience: fullDescription });
     }
     return {
       missingInfo,
@@ -44,13 +44,7 @@ const WorkExperienceStep = () => {
     const { value } = e.target;
     // 사용자가 직접 입력 시, 첫 번째 학력 정보의 fullDescription을 업데이트
     // 또는 학력 정보가 없다면 새로운 항목으로 생성
-    const newWorkExperience = [...resumeData.workExperience];
-    if (newWorkExperience.length > 0) {
-      newWorkExperience[0] = { ...newWorkExperience[0], fullDescription: value };
-    } else {
-      newWorkExperience.push({ fullDescription: value });
-    }
-    setResumeData({ workExperience: newWorkExperience });
+    setResumeData({ workExperience: value });
   };
 
   return (
@@ -67,7 +61,7 @@ const WorkExperienceStep = () => {
         assistantTitle="경력 상세 AI"
         assistantPrompt="주요 경력, 담당했던 프로젝트, 역할, 그리고 성과(수치 등)에 대해 자유롭게 이야기해주세요. AI가 내용을 구조화해드립니다."
         onAssistantSubmit={handleAssistantSubmit}
-        value={resumeData.workExperience.map((wor) => wor.fullDescription).join('\n\n')}
+        value={resumeData.workExperience}
         onChange={handleChange}
         rows={7}
         name="workExperience"

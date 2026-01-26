@@ -32,7 +32,7 @@ const CertificationsStep = () => {
         : missingInfo.trim().length === 0;
     if (isComplete) {
       const fullDescription = String(data?.fullDescription ?? '');
-      setResumeData({ coreCompetencies: [{ fullDescription }] });
+      setResumeData({ coreCompetencies: fullDescription });
     }
     return {
       missingInfo,
@@ -42,14 +42,7 @@ const CertificationsStep = () => {
 
   const handleChangeActivity = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { value } = e.target;
-    const newCoreCompetencies = [...resumeData.coreCompetencies];
-    
-    if (newCoreCompetencies.length > 0) {
-      newCoreCompetencies[0] = { ...newCoreCompetencies[0], fullDescription: value };
-    } else {
-      newCoreCompetencies.push({ fullDescription: value });
-    }
-    setResumeData({ coreCompetencies: newCoreCompetencies });
+    setResumeData({ coreCompetencies: value });
   };
 
   const submitCertifications = async (
@@ -74,7 +67,7 @@ const CertificationsStep = () => {
         : missingInfo.trim().length === 0;
     if (isComplete) {
       const fullDescription = String(data?.fullDescription ?? '');
-      setResumeData({ certifications: [{ fullDescription }] });
+      setResumeData({ certifications: fullDescription });
     }
     return {
       missingInfo,
@@ -84,13 +77,7 @@ const CertificationsStep = () => {
 
   const handleChangeCertifacation = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { value } = e.target;
-    const newCertification = [...resumeData.certifications];
-    if (newCertification.length > 0) {
-      newCertification[0] = { ...newCertification[0], fullDescription: value };
-    } else {
-      newCertification.push({ fullDescription: value });
-    }
-    setResumeData({ certifications: newCertification });
+    setResumeData({ certifications: value });
   };
 
   return (
@@ -108,7 +95,7 @@ const CertificationsStep = () => {
           assistantTitle="교육사항/대외활동 AI"
           assistantPrompt="참여했던 교육 프로그램, 대외 활동, 동아리 활동 등에 대해 자유롭게 이야기해주세요."
           onAssistantSubmit={submitCoreCompetencies}
-          value={resumeData.coreCompetencies.map((cor) => cor.fullDescription).join('\n\n')}
+          value={resumeData.coreCompetencies}
           onChange={handleChangeActivity}
           rows={4}
           name="coreCompetencies"
@@ -122,7 +109,7 @@ const CertificationsStep = () => {
           assistantTitle="자격증/어학 AI"
           assistantPrompt="취득한 자격증, 면허, 어학 성적 등에 대해 자유롭게 이야기해주세요."
           onAssistantSubmit={submitCertifications}
-          value={resumeData.certifications.map((cor) => cor.fullDescription).join('\n\n')}
+          value={resumeData.certifications}
           onChange={handleChangeCertifacation}
           rows={3}
           name="certifications"

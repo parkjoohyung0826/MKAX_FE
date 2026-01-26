@@ -32,9 +32,7 @@ const EducationStep = () => {
         : missingInfo.trim().length === 0;
     if (isComplete) {
       const fullDescription = String(data?.fullDescription ?? '');
-      setResumeData({
-        education: [{ fullDescription } as any],
-      });
+      setResumeData({ education: fullDescription });
     }
     return {
       missingInfo,
@@ -46,13 +44,7 @@ const EducationStep = () => {
     const { value } = e.target;
     // 사용자가 직접 입력 시, 첫 번째 학력 정보의 fullDescription을 업데이트
     // 또는 학력 정보가 없다면 새로운 항목으로 생성
-    const newEducation = [...resumeData.education];
-    if (newEducation.length > 0) {
-      newEducation[0] = { ...newEducation[0], fullDescription: value };
-    } else {
-      newEducation.push({ fullDescription: value } as any);
-    }
-    setResumeData({ education: newEducation });
+    setResumeData({ education: value });
   };
 
 
@@ -70,7 +62,7 @@ const EducationStep = () => {
         assistantTitle="학력 정보 AI"
         assistantPrompt="최종 학력, 학교명, 전공, 재학 기간, 주요 수강 과목이나 학점 등을 자유롭게 이야기해주세요. AI가 깔끔하게 정리해드립니다."
         onAssistantSubmit={handleAssistantSubmit}
-        value={resumeData.education.map((edu) => edu.fullDescription).join('\n\n')}
+        value={resumeData.education}
         onChange={handleChange}
         rows={5}
         name="education"

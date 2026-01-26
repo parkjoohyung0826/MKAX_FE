@@ -2,7 +2,7 @@
 
 import { Box, Typography } from '@mui/material';
 import { PersonOutline, WorkOutline, School, BusinessCenter, WorkspacePremium, Verified } from '@mui/icons-material';
-import { ResumeData, Education, WorkExperience, CoreCompetencies, Certifications } from '../../types';
+import { ResumeData } from '../../types';
 import StepHeader from './StepHeader';
 
 interface Props {
@@ -50,10 +50,7 @@ const SectionContent = ({ content }: { content: string }) => (
 );
 
 const FinalReviewStep = ({ data }: Props) => {
-  const formatArrayContent = (items: (Education | WorkExperience | CoreCompetencies | Certifications)[]) => {
-    if (!items || items.length === 0) return '';
-    return items.map(item => item.fullDescription).join('\n\n');
-  };
+  const formatContent = (value?: string) => value ?? '';
 
   return (
     <Box sx={{ py: 2 }}>
@@ -88,13 +85,13 @@ const FinalReviewStep = ({ data }: Props) => {
         {/* 2. 학력 사항 (전체 너비) */}
         <Box sx={glassBox}>
           <SectionHeader icon={School} title="학력 사항" />
-          <SectionContent content={formatArrayContent(data.education)} />
+          <SectionContent content={formatContent(data.education)} />
         </Box>
 
         {/* 3. 경력 사항 (전체 너비) */}
         <Box sx={glassBox}>
           <SectionHeader icon={BusinessCenter} title="주요 경력" />
-          <SectionContent content={formatArrayContent(data.workExperience)} />
+          <SectionContent content={formatContent(data.workExperience)} />
         </Box>
 
         {/* 4. 기술 및 자격증 */}
@@ -105,11 +102,11 @@ const FinalReviewStep = ({ data }: Props) => {
         }}>
           <Box sx={glassBox}>
             <SectionHeader icon={WorkspacePremium} title="주요 활동 및 역량" />
-            <SectionContent content={formatArrayContent(data.coreCompetencies)} />
+            <SectionContent content={formatContent(data.coreCompetencies)} />
           </Box>
           <Box sx={glassBox}>
             <SectionHeader icon={Verified} title="자격증 및 기타" />
-            <SectionContent content={formatArrayContent(data.certifications)} />
+            <SectionContent content={formatContent(data.certifications)} />
           </Box>
         </Box>
 
