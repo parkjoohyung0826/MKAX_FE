@@ -266,7 +266,7 @@ const Resume = ({ onFinishResume }: Props) => {
             background: 'linear-gradient(45deg, #2563EB, #1d4ed8)',
           }}
         >
-          {activeStep === resumeSteps.length - 1 ? '자기소개서 작성' : '다음'}
+          {activeStep === resumeSteps.length - 1 ? '이력서 작성 완료' : '다음'}
         </Button>
       </Box>
 

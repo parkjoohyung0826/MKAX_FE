@@ -37,7 +37,14 @@ interface AIChatViewProps<T> {
   data: T;
   setData: React.Dispatch<React.SetStateAction<T>>;
   conversationSteps: ConversationStep<T>[];
+  fieldApiConfigs?: Partial<Record<keyof T, FieldApiConfig<T>>>;
 }
+
+type FieldApiConfig<T> = {
+  endpoint: string;
+  summaryField?: keyof T;
+  buildBody?: (args: { userInput: string; currentSummary: string; data: T }) => Record<string, unknown>;
+};
 
 const AIChatView = <T extends Record<string, any>>({
   activeStep,
@@ -46,6 +53,7 @@ const AIChatView = <T extends Record<string, any>>({
   data,
   setData,
   conversationSteps,
+  fieldApiConfigs,
 }: AIChatViewProps<T>) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
@@ -55,6 +63,7 @@ const AIChatView = <T extends Record<string, any>>({
   const [isTyping, setIsTyping] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [hasUnreadChanges, setHasUnreadChanges] = useState(false);
+  const [pendingIntro, setPendingIntro] = useState<string | null>(null);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -74,8 +83,10 @@ const AIChatView = <T extends Record<string, any>>({
   const currentStepConfig = conversationSteps[activeStep];
   const panelRenderer = currentStepConfig?.panel;
   const currentField = currentStepConfig?.fields?.[questionIndex]?.field;
+  const fieldApiConfig = currentField ? fieldApiConfigs?.[currentField] : undefined;
   const isProfileStep = activeStep === 0 && currentField === 'name';
   const isApiStep =
+    Boolean(fieldApiConfig) ||
     isProfileStep ||
     currentField === 'education' ||
     currentField === 'workExperience' ||
@@ -83,6 +94,10 @@ const AIChatView = <T extends Record<string, any>>({
     currentField === 'certifications';
 
   useEffect(() => {
+    if (prevStepRef.current === activeStep) {
+      return;
+    }
+
     if (prevStepRef.current !== null) {
       stepStateRef.current[prevStepRef.current] = {
         messages,
@@ -106,6 +121,7 @@ const AIChatView = <T extends Record<string, any>>({
       setIsDrawerOpen(savedState.isDrawerOpen);
       setHasUnreadChanges(savedState.hasUnreadChanges);
       setApiDraft(savedState.apiDraft);
+      setPendingIntro(null);
       prevStepRef.current = activeStep;
       return;
     }
@@ -116,13 +132,20 @@ const AIChatView = <T extends Record<string, any>>({
     if (currentStepConfig && currentStepConfig.fields.length > 0) {
       setMessages([]);
       setIsTyping(true);
-      setTimeout(() => {
-        setMessages([{ id: 0, sender: 'ai', text: currentStepConfig.fields[0].question }]);
-        setIsTyping(false);
-      }, 800);
+      setPendingIntro(currentStepConfig.fields[0].question);
     }
     prevStepRef.current = activeStep;
   }, [activeStep, currentStepConfig]);
+
+  useEffect(() => {
+    if (!pendingIntro) return;
+    const timer = setTimeout(() => {
+      setMessages([{ id: 0, sender: 'ai', text: pendingIntro }]);
+      setIsTyping(false);
+      setPendingIntro(null);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [pendingIntro]);
 
   useEffect(() => {
     if (isApiStep) {
@@ -162,6 +185,71 @@ const AIChatView = <T extends Record<string, any>>({
     setIsTyping(true);
 
     if (isApiStep) {
+      if (fieldApiConfig && currentField) {
+        const summaryField = fieldApiConfig.summaryField ?? currentField;
+        const currentSummary = String(data?.[summaryField] ?? '');
+        const body = fieldApiConfig.buildBody
+          ? fieldApiConfig.buildBody({ userInput, currentSummary, data })
+          : { userInput, currentSummary };
+
+        try {
+          const res = await fetch(fieldApiConfig.endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err?.message ?? 'AI 응답 생성에 실패했습니다.');
+          }
+
+          const responseData = await res.json();
+          const nextQuestion = String(responseData?.nextQuestion ?? '추가 정보를 알려주세요.').trim();
+          const summary = String(responseData?.summary ?? '').trim();
+          const finalDraft = String(responseData?.finalDraft ?? '').trim();
+          const isComplete = Boolean(responseData?.isComplete);
+
+          if (summary.length > 0 || finalDraft.length > 0) {
+            let hasDiff = false;
+            setData((prev) => {
+              const next = { ...prev };
+              if (summary.length > 0) {
+                hasDiff = summary !== String(prev?.[summaryField] ?? '') || hasDiff;
+                next[summaryField] = summary as T[keyof T];
+              }
+              if (finalDraft.length > 0 && currentField) {
+                hasDiff = finalDraft !== String(prev?.[currentField] ?? '') || hasDiff;
+                next[currentField] = finalDraft as T[keyof T];
+              }
+              return next;
+            });
+            if (hasDiff) {
+              setHasUnreadChanges(true);
+            }
+          }
+
+          if (isComplete) {
+            setIsCurrentStepComplete(true);
+            onStepComplete();
+            setIsDrawerOpen(true);
+          }
+
+          setMessages((prev) => [
+            ...prev,
+            { id: Date.now() + 1, sender: 'ai', text: nextQuestion },
+          ]);
+        } catch (e: any) {
+          setMessages((prev) => [
+            ...prev,
+            { id: Date.now() + 1, sender: 'ai', text: e?.message ?? '응답 처리 중 문제가 발생했습니다.' },
+          ]);
+        } finally {
+          setIsTyping(false);
+        }
+        return;
+      }
+
       const combinedInput = apiDraft ? `${apiDraft}\n${userInput}` : userInput;
       setApiDraft(combinedInput);
       try {

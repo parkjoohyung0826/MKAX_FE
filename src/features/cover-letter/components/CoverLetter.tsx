@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Box, Button, ButtonGroup } from '@mui/material';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import AIChatView, { ConversationStep } from '@/features/resume/components/AIChatView';
 import CoverLetterDirectInputStep from './steps/CoverLetterDirectInputStep';
@@ -59,7 +59,6 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
   const [direction, setDirection] = useState(0);
   const [isStepComplete, setIsStepComplete] = useState(false);
   const [stepInputModes, setStepInputModes] = useState<Record<number, InputMode>>({});
-  const currentMode = stepInputModes[activeStep] || 'ai';
 
   const coverLetterCompletedSteps = [
     !!coverLetterData.growthProcess,
@@ -98,66 +97,8 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
     setStepInputModes(prev => ({...prev, [step]: mode}));
   }
   
-  const renderContent = () => {
-    const isFinalStep = activeStep === coverLetterSteps.length - 1;
-    const currentMode = stepInputModes[activeStep] || 'ai';
-
-    if (isFinalStep) {
-      return <FinalReviewStep />;
-    }
-    
-    return (
-        <Box>
-            <ButtonGroup fullWidth sx={{ 
-                mb: 5, 
-                p: 0.5, 
-                bgcolor: '#f1f5f9', 
-                borderRadius: '16px',
-                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
-              }}>
-                {['ai', 'direct'].map((mode) => (
-                  <Button 
-                    key={mode}
-                    variant={currentMode === mode ? 'contained' : 'text'}
-                    onClick={() => handleModeChange(activeStep, mode as InputMode)}
-                    sx={{ 
-                      borderRadius: '12px !important',
-                      py: 1.5,
-                      boxShadow: currentMode === mode ? '0 4px 12px rgba(37,99,235,0.2)' : 'none',
-                      bgcolor: currentMode === mode ? '#2563EB' : 'transparent',
-                      color: currentMode === mode ? 'white' : '#64748b',
-                      border: 'none',
-                      '&:hover': { bgcolor: currentMode === mode ? '#1d4ed8' : 'rgba(0,0,0,0.05)', border: 'none' }
-                    }}
-                  >
-                    {mode === 'ai' ? 'AI 챗봇으로 작성' : '단계별로 직접 입력'}
-                  </Button>
-                ))}
-            </ButtonGroup>
-            {currentMode === 'ai' ? (
-                <AIChatView
-                    activeStep={activeStep}
-                    steps={coverLetterSteps}
-                    onStepComplete={() => setIsStepComplete(true)}
-                    data={coverLetterData}
-                    setData={(update) => {
-                      const newValues =
-                        typeof update === 'function'
-                          ? update(coverLetterData)
-                          : update;
-                      setCoverLetterData({ ...coverLetterData, ...newValues });
-                    }}
-                    conversationSteps={coverLetterConversationSteps}
-                />
-            ) : (
-                <CoverLetterDirectInputStep
-                    activeStep={activeStep}
-                    isGenerating={isGenerating}
-                />
-            )}
-        </Box>
-    );
-  };
+  const isFinalStep = activeStep === coverLetterSteps.length - 1;
+  const currentMode = stepInputModes[activeStep] || 'ai';
 
   return (
     <Box>
@@ -169,17 +110,81 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
           completedSteps={coverLetterCompletedSteps}
         />
       </Box>
-       <AnimatePresence mode="wait">
-        <motion.div
-          key={activeStep}
-          initial={{ opacity: 0, x: direction > 0 ? 30 : -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: direction > 0 ? -30 : 30 }}
-          transition={{ duration: 0.3 }}
-        >
-          {renderContent()}
-        </motion.div>
-      </AnimatePresence>
+      {!isFinalStep && (
+        <ButtonGroup fullWidth sx={{ 
+            mb: 5, 
+            p: 0.5, 
+            bgcolor: '#f1f5f9', 
+            borderRadius: '16px',
+            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
+          }}>
+            {['ai', 'direct'].map((mode) => (
+              <Button 
+                key={mode}
+                variant={currentMode === mode ? 'contained' : 'text'}
+                onClick={() => handleModeChange(activeStep, mode as InputMode)}
+                sx={{ 
+                  borderRadius: '12px !important',
+                  py: 1.5,
+                  boxShadow: currentMode === mode ? '0 4px 12px rgba(37,99,235,0.2)' : 'none',
+                  bgcolor: currentMode === mode ? '#2563EB' : 'transparent',
+                  color: currentMode === mode ? 'white' : '#64748b',
+                  border: 'none',
+                  '&:hover': { bgcolor: currentMode === mode ? '#1d4ed8' : 'rgba(0,0,0,0.05)', border: 'none' }
+                }}
+              >
+                {mode === 'ai' ? 'AI 챗봇으로 작성' : '단계별로 직접 입력'}
+              </Button>
+            ))}
+        </ButtonGroup>
+      )}
+      <motion.div
+        initial={{ opacity: 0, x: direction > 0 ? 30 : -30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        {isFinalStep && <FinalReviewStep />}
+        <Box sx={{ display: currentMode === 'ai' ? (isFinalStep ? 'none' : 'block') : 'none' }}>
+          <AIChatView
+              activeStep={activeStep}
+              steps={coverLetterSteps}
+              onStepComplete={() => setIsStepComplete(true)}
+              data={coverLetterData}
+              setData={(update) => {
+                const newValues =
+                  typeof update === 'function'
+                    ? update(coverLetterData)
+                    : update;
+                setCoverLetterData({ ...coverLetterData, ...newValues });
+              }}
+              conversationSteps={coverLetterConversationSteps}
+              fieldApiConfigs={{
+                growthProcess: {
+                  endpoint: '/api/cover-letter/growth-process',
+                  summaryField: 'growthProcessSummary',
+                },
+                strengthsAndWeaknesses: {
+                  endpoint: '/api/cover-letter/personality',
+                  summaryField: 'strengthsAndWeaknessesSummary',
+                },
+                keyExperience: {
+                  endpoint: '/api/cover-letter/career-strength',
+                  summaryField: 'keyExperienceSummary',
+                },
+                motivation: {
+                  endpoint: '/api/cover-letter/motivation-aspiration',
+                  summaryField: 'motivationSummary',
+                },
+              }}
+          />
+        </Box>
+        <Box sx={{ display: currentMode === 'direct' ? (isFinalStep ? 'none' : 'block') : 'none' }}>
+          <CoverLetterDirectInputStep
+              activeStep={activeStep}
+              isGenerating={isGenerating}
+          />
+        </Box>
+      </motion.div>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 6, pt: 3, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
         <Button disabled={activeStep === 0} onClick={handleBackStep} sx={{ color: '#64748b', fontWeight: 600, px: 3, py: 1, borderRadius: '20px', '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' } }} >

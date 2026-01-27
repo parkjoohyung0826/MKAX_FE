@@ -9,9 +9,13 @@ interface CoverLetterState {
 
 const initialState: CoverLetterData = {
   growthProcess: '',
+  growthProcessSummary: '',
   strengthsAndWeaknesses: '',
+  strengthsAndWeaknessesSummary: '',
   keyExperience: '',
+  keyExperienceSummary: '',
   motivation: '',
+  motivationSummary: '',
 };
 
 export const useCoverLetterStore = create<CoverLetterState>((set) => ({

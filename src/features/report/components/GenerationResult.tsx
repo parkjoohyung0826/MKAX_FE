@@ -107,16 +107,20 @@ const GenerationResult = ({ data, onReset }: Props) => {
   const resumeRef = useRef<HTMLDivElement>(null);
   const coverLetterRef = useRef<HTMLDivElement>(null);
   const { resumeData } = data;
-  const { setCoverLetterData } = useCoverLetterStore();
+  const { coverLetterData, setCoverLetterData } = useCoverLetterStore();
   const { setResumeData } = useResumeStore();
   
   const [activeTab, setActiveTab] = useState<'report' | 'resume' | 'coverLetter'>('report');
 
   useEffect(() => {
     const parsedData = parseCoverLetter(data.aiCoverLetter);
-    setCoverLetterData(parsedData);
+    const hasParsedContent = Object.values(parsedData).some((value) => String(value ?? '').trim().length > 0);
+    const hasStoredContent = Object.values(coverLetterData).some((value) => String(value ?? '').trim().length > 0);
+    if (hasParsedContent && !hasStoredContent) {
+      setCoverLetterData(parsedData);
+    }
     setResumeData(data.resumeData);
-  }, [data.aiCoverLetter, data.resumeData, setCoverLetterData, setResumeData]);
+  }, [coverLetterData, data.aiCoverLetter, data.resumeData, setCoverLetterData, setResumeData]);
 
   const handleTabChange = (event: React.MouseEvent<HTMLElement>, newTab: 'report' | 'resume' | 'coverLetter' | null) => {
     if (newTab !== null) {
