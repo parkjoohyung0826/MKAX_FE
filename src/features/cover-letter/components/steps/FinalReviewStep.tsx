@@ -68,7 +68,7 @@ const FinalReviewStep = () => {
         {sections.map((section) => (
           <Box sx={glassBox} key={section.id}>
             <SectionHeader icon={section.icon} title={section.label} />
-            <SectionContent content={coverLetterData[section.id as keyof CoverLetterData]} />
+            <SectionContent content={String(coverLetterData[section.id as keyof CoverLetterData] ?? '')} />
           </Box>
         ))}
       </Box>

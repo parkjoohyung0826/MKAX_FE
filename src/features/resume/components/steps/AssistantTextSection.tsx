@@ -103,7 +103,7 @@ const ResumeAssistantTextSection = ({
     if (missingInfo) {
       setMissingInfo('');
     }
-  }, [value]);
+  }, [value, missingInfo]);
 
   const handleOpenAssistant = () => setAssistantOpen(true);
   const handleCloseAssistant = () => setAssistantOpen(false);
