@@ -65,20 +65,22 @@ const toggleBtnSx = {
   }
 };
 
+type CoverLetterSectionKey = 'growthProcess' | 'strengthsAndWeaknesses' | 'keyExperience' | 'motivation';
+
 const parseCoverLetter = (text: string): CoverLetterData => {
   const data: CoverLetterData = {
     growthProcess: '', strengthsAndWeaknesses: '', keyExperience: '', motivation: '',
   };
   if (!text) return data;
 
-  const sectionTitles = {
+  const sectionTitles: Record<CoverLetterSectionKey, string> = {
     growthProcess: '[성장과정]',
     strengthsAndWeaknesses: '[성격의 장, 단점]',
     keyExperience: '[주요 경력 및 업무 강점]',
     motivation: '[지원 동기 및 입사 포부]',
   };
 
-  const foundSections = (Object.keys(sectionTitles) as Array<keyof CoverLetterData>)
+  const foundSections = (Object.keys(sectionTitles) as CoverLetterSectionKey[])
     .map(key => ({
       key,
       title: sectionTitles[key],

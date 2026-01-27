@@ -2,12 +2,12 @@
 
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { ResumeData } from '@/features/resume/types';
+import { ResumeData, ResumeFormatResult } from '@/features/resume/types';
 import { LightbulbOutlined } from '@mui/icons-material';
 
 interface WritingGuideProps {
   section: string;
-  resumeData?: ResumeData;
+  resumeData?: ResumeData | ResumeFormatResult;
 }
 
 const guideBoxSx = {
@@ -18,24 +18,27 @@ const guideBoxSx = {
   border: '1px solid rgba(0,0,0,0.05)',
 };
 
-const getGuidance = (section: string, resumeData?: ResumeData) => {
+const getGuidance = (section: string, resumeData?: ResumeData | ResumeFormatResult) => {
   const desiredJob = resumeData?.desiredJob || '지원 직무';
   
-  const workExperienceNames = resumeData?.workExperience
-    ?.map((exp) => exp.companyName)
-    .filter(Boolean);
-  const workExperience =
-    workExperienceNames && workExperienceNames.length > 0
-      ? workExperienceNames.join(', ')
-      : '주요 경력';
-
-  const coreCompetenciesNames = resumeData?.coreCompetencies
-    ?.map((comp) => comp.courseName)
-    .filter(Boolean);
-  const coreCompetencies =
-    coreCompetenciesNames && coreCompetenciesNames.length > 0
-      ? coreCompetenciesNames.join(', ')
-      : '핵심 역량';
+  const workExperience = Array.isArray(resumeData?.workExperience)
+    ? resumeData?.workExperience
+        .map((exp) => exp?.companyName)
+        .filter(Boolean)
+        .join(', ')
+    : typeof resumeData?.workExperience === 'string'
+      ? resumeData.workExperience.trim()
+      : '';
+  const coreCompetencies = Array.isArray(resumeData?.coreCompetencies)
+    ? resumeData?.coreCompetencies
+        .map((comp) => comp?.courseName)
+        .filter(Boolean)
+        .join(', ')
+    : typeof resumeData?.coreCompetencies === 'string'
+      ? resumeData.coreCompetencies.trim()
+      : '';
+  const workExperienceLabel = workExperience || '주요 경력';
+  const coreCompetenciesLabel = coreCompetencies || '핵심 역량';
 
   switch (section) {
     case 'growthProcess':
@@ -50,7 +53,7 @@ const getGuidance = (section: string, resumeData?: ResumeData) => {
     case 'strengthsAndWeaknesses':
       return [
         <span key="1">
-          <strong>{desiredJob}</strong> 업무를 수행하는 데 있어 가장 강력한 무기가 될 본인의 장점을 <strong>{coreCompetencies}</strong>와 연결해보세요.
+          <strong>{desiredJob}</strong> 업무를 수행하는 데 있어 가장 강력한 무기가 될 본인의 장점을 <strong>{coreCompetenciesLabel}</strong>와 연결해보세요.
         </span>,
         <span key="2">
           단점은 솔직하게 언급하되, 치명적인 단점보다는 극복 가능한 것을 선택하고 <strong>구체적인 개선 노력</strong>을 함께 적어야 합니다.
@@ -59,7 +62,7 @@ const getGuidance = (section: string, resumeData?: ResumeData) => {
     case 'keyExperience':
       return [
         <span key="1">
-          <strong>{workExperience}</strong> 경험 중에서 지원하는 직무와 가장 연관성 높은 프로젝트 1~2개를 선정하세요.
+          <strong>{workExperienceLabel}</strong> 경험 중에서 지원하는 직무와 가장 연관성 높은 프로젝트 1~2개를 선정하세요.
         </span>,
         <span key="2">
           {"'역할 - 행동 - 결과'"} 구조로 작성하며, 가능하다면 <strong>수치화된 성과</strong>(예: 효율 20% 개선)를 포함하는 것이 신뢰도를 높입니다.
