@@ -63,7 +63,7 @@ interface Props {
 }
 
 const Resume = ({ onFinishResume }: Props) => {
-  const { resumeData, setResumeData, resumeValidation } = useResumeStore();
+  const { resumeData, setResumeData, resumeValidation, setFormattedResume } = useResumeStore();
   const [activeStep, setActiveStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isStepComplete, setIsStepComplete] = useState(false);
@@ -86,7 +86,7 @@ const Resume = ({ onFinishResume }: Props) => {
     return mode === 'ai' ? !!aiCompletedSteps[index] : completed;
   });
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (activeStep === resumeSteps.length - 1) {
       const incomplete = completedSteps
         .slice(0, resumeSteps.length - 1)
@@ -100,7 +100,26 @@ const Resume = ({ onFinishResume }: Props) => {
         return;
       }
 
-      onFinishResume();
+      try {
+        const res = await fetch('/api/recommend/format', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(resumeData),
+        });
+        console.log(resumeData);
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err?.message ?? '이력서 포맷 정리에 실패했습니다.');
+        }
+
+        const formatted = await res.json();
+        setFormattedResume(formatted);
+        onFinishResume();
+      } catch (error: any) {
+        setToastMessage(error?.message ?? '이력서 포맷 정리에 실패했습니다.');
+        setToastOpen(true);
+      }
     } else {
       setDirection(1);
       setActiveStep((prev) => prev + 1);

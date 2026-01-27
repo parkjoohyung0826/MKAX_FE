@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ResumeData } from './types';
+import { ResumeData, ResumeFormatResult } from './types';
 
 interface ResumeStore {
   resumeData: ResumeData;
@@ -12,6 +12,8 @@ interface ResumeStore {
     certifications: boolean;
   };
   setResumeValidation: (data: Partial<ResumeStore['resumeValidation']>) => void;
+  formattedResume: ResumeFormatResult | null;
+  setFormattedResume: (data: ResumeFormatResult | null) => void;
 }
 
 const initialResumeData: ResumeData = {
@@ -48,6 +50,8 @@ export const useResumeStore = create<ResumeStore>((set) => ({
     set((state) => ({
       resumeValidation: { ...state.resumeValidation, ...data },
     })),
+  formattedResume: null,
+  setFormattedResume: (data) => set({ formattedResume: data }),
   resetResumeData: () =>
-    set({ resumeData: initialResumeData, resumeValidation: initialResumeValidation }),
+    set({ resumeData: initialResumeData, resumeValidation: initialResumeValidation, formattedResume: null }),
 }));
