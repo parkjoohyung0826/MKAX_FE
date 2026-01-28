@@ -29,9 +29,9 @@ const ConversationalForm = ({ activeStep, direction, steps }: Props) => {
   const getStepContent = (step: number) => {
     switch (step) {
       case 0: return <BasicInfoStep data={resumeData} handleChange={handleChange} />;
-      case 1: return <EducationStep data={resumeData} handleChange={handleChange} />;
-      case 2: return <WorkExperienceStep data={resumeData} handleChange={handleChange} />;
-      case 3: return <CertificationsStep data={resumeData} handleChange={handleChange} />;
+      case 1: return <EducationStep />;
+      case 2: return <WorkExperienceStep />;
+      case 3: return <CertificationsStep />;
       case 4: return <FinalReviewStep data={resumeData} />;
       default: return <Typography>알 수 없는 단계</Typography>;
     }
@@ -64,4 +64,3 @@ const ConversationalForm = ({ activeStep, direction, steps }: Props) => {
 };
 
 export default ConversationalForm;
-

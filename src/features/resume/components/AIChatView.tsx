@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Box } from '@mui/material';
+import { Box, Button } from '@mui/material';
+import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 import { AnimatePresence, motion } from 'framer-motion';
 import MessageList from './ai-chat/MessageList';
 import ChatInputBar from './ai-chat/ChatInputBar';
@@ -34,6 +35,7 @@ interface AIChatViewProps<T> {
   activeStep: number;
   steps: string[];
   onStepComplete: () => void;
+  onResetChat?: (args?: { section?: string }) => void | Promise<void>;
   data: T;
   setData: React.Dispatch<React.SetStateAction<T>>;
   conversationSteps: ConversationStep<T>[];
@@ -43,6 +45,7 @@ interface AIChatViewProps<T> {
 type FieldApiConfig<T> = {
   endpoint: string;
   summaryField?: keyof T;
+  resetSection?: string;
   buildBody?: (args: { userInput: string; currentSummary: string; data: T }) => Record<string, unknown>;
 };
 
@@ -50,6 +53,7 @@ const AIChatView = <T extends Record<string, any>>({
   activeStep,
   steps,
   onStepComplete,
+  onResetChat,
   data,
   setData,
   conversationSteps,
@@ -192,10 +196,19 @@ const AIChatView = <T extends Record<string, any>>({
           ? fieldApiConfig.buildBody({ userInput, currentSummary, data })
           : { userInput, currentSummary };
 
+        if (fieldApiConfig.endpoint.startsWith('/api/cover-letter/')) {
+          console.info('[cover-letter chat] sending request with cookies', {
+            endpoint: fieldApiConfig.endpoint,
+            credentials: 'include',
+            hasDocumentCookie: typeof document !== 'undefined' && Boolean(document.cookie),
+          });
+        }
+
         try {
           const res = await fetch(fieldApiConfig.endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(body),
           });
 
@@ -270,6 +283,7 @@ const AIChatView = <T extends Record<string, any>>({
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(body),
         });
 
@@ -396,9 +410,74 @@ const AIChatView = <T extends Record<string, any>>({
     }
   };
 
+  const resetCurrentStepState = () => {
+    stepStateRef.current[activeStep] = undefined as unknown as typeof stepStateRef.current[number];
+    setMessages([]);
+    setUserInput('');
+    setQuestionIndex(0);
+    setIsCurrentStepComplete(false);
+    setIsTyping(true);
+    setIsDrawerOpen(false);
+    setHasUnreadChanges(false);
+    setApiDraft('');
+    setPendingIntro(currentStepConfig?.fields?.[0]?.question ?? null);
+  };
+
+  const handleResetChat = async () => {
+    try {
+      const resetSection = fieldApiConfig?.resetSection;
+      await onResetChat?.(resetSection ? { section: resetSection } : undefined);
+    } finally {
+      if (fieldApiConfig && currentField) {
+        const summaryField = fieldApiConfig.summaryField ?? currentField;
+        setData((prev) => ({
+          ...prev,
+          [summaryField]: '' as T[keyof T],
+          [currentField]: '' as T[keyof T],
+        }));
+      }
+      resetCurrentStepState();
+    }
+  };
+
   return (
     <Box sx={{ maxWidth: '800px', mx: 'auto', p: 0, position: 'relative' }}>
       <Box sx={mainContainerSx}>
+        {onResetChat && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              pr: 1, 
+            }}
+          >
+            <Button
+              onClick={handleResetChat}
+              startIcon={<RefreshRoundedIcon sx={{ fontSize: '1.1rem' }} />} 
+              size="small"
+              sx={{
+                color: 'text.secondary', 
+                fontSize: '0.8rem',
+                fontWeight: 500,
+                textTransform: 'none', 
+                borderRadius: '20px',
+                bgcolor: 'action.hover', 
+                px: 2,
+                py: 0.5,
+                border: '1px solid transparent',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  bgcolor: 'action.selected',
+                  color: 'error.main', 
+                  borderColor: 'error.light',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                },
+              }}
+            >
+              처음부터 다시 쓰기
+            </Button>
+          </Box>
+        )}
         <AnimatePresence mode="wait">
           <motion.div
             key={activeStep}

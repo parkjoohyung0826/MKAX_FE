@@ -149,6 +149,15 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
               activeStep={activeStep}
               steps={coverLetterSteps}
               onStepComplete={() => setIsStepComplete(true)}
+              onResetChat={async (args) => {
+                if (!args?.section) return;
+                await fetch('/api/cover-letter/chat/reset', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({ section: args.section }),
+                });
+              }}
               data={coverLetterData}
               setData={(update) => {
                 const newValues =
@@ -162,18 +171,22 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
                 growthProcess: {
                   endpoint: '/api/cover-letter/growth-process',
                   summaryField: 'growthProcessSummary',
+                  resetSection: 'GROWTH_PROCESS',
                 },
                 strengthsAndWeaknesses: {
                   endpoint: '/api/cover-letter/personality',
                   summaryField: 'strengthsAndWeaknessesSummary',
+                  resetSection: 'PERSONALITY',
                 },
                 keyExperience: {
                   endpoint: '/api/cover-letter/career-strength',
                   summaryField: 'keyExperienceSummary',
+                  resetSection: 'CAREER_STRENGTH',
                 },
                 motivation: {
                   endpoint: '/api/cover-letter/motivation-aspiration',
                   summaryField: 'motivationSummary',
+                  resetSection: 'MOTIVATION_ASPIRATION',
                 },
               }}
           />
@@ -190,7 +203,7 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
         <Button disabled={activeStep === 0} onClick={handleBackStep} sx={{ color: '#64748b', fontWeight: 600, px: 3, py: 1, borderRadius: '20px', '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' } }} >
           이전 단계
         </Button>
-        <Button variant="contained" onClick={handleNextStep} disabled={currentMode === 'ai' && !isStepComplete && activeStep < coverLetterSteps.length -1 } sx={{ px: 4, py: 1.2, borderRadius: '30px', fontWeight: 700, boxShadow: '0 8px 16px rgba(37, 99, 235, 0.25)', background: 'linear-gradient(45deg, #2563EB, #1d4ed8)' }} >
+        <Button variant="contained" onClick={handleNextStep} sx={{ px: 4, py: 1.2, borderRadius: '30px', fontWeight: 700, boxShadow: '0 8px 16px rgba(37, 99, 235, 0.25)', background: 'linear-gradient(45deg, #2563EB, #1d4ed8)' }} >
           {activeStep === coverLetterSteps.length - 1 ? '자기소개서 완성하기' : '다음'}
         </Button>
       </Box>

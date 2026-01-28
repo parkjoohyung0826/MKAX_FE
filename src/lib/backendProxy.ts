@@ -6,8 +6,6 @@ type ProxyOptions = {
 
 export async function proxyPostToBackend(req: Request, opts: ProxyOptions) {
   try {
-    const body = await req.json();
-
     const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     if (!backendUrl) {
       return NextResponse.json(
@@ -16,22 +14,39 @@ export async function proxyPostToBackend(req: Request, opts: ProxyOptions) {
       );
     }
 
+    const rawBody = await req.text();
+    const hasBody = rawBody.trim().length > 0;
+    const cookieHeader = req.headers.get("cookie");
+
     const res = await fetch(`${backendUrl}${opts.backendPath}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      headers: {
+        ...(hasBody ? { "Content-Type": "application/json" } : {}),
+        ...(cookieHeader ? { cookie: cookieHeader } : {}),
+      },
+      body: hasBody ? rawBody : undefined,
     });
 
     const text = await res.text();
 
     if (!res.ok) {
-      return NextResponse.json(
+      const nextRes = NextResponse.json(
         { message: "Backend error", detail: text },
         { status: res.status }
       );
+      const setCookie = res.headers.get("set-cookie");
+      if (setCookie) {
+        nextRes.headers.set("set-cookie", setCookie);
+      }
+      return nextRes;
     }
 
-    return NextResponse.json(JSON.parse(text));
+    const nextRes = NextResponse.json(JSON.parse(text));
+    const setCookie = res.headers.get("set-cookie");
+    if (setCookie) {
+      nextRes.headers.set("set-cookie", setCookie);
+    }
+    return nextRes;
   } catch (e: any) {
     return NextResponse.json(
       { message: e?.message ?? "Internal Server Error" },
