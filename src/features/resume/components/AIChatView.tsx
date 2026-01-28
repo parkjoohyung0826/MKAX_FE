@@ -36,6 +36,7 @@ interface AIChatViewProps<T> {
   steps: string[];
   onStepComplete: () => void;
   onResetChat?: (args?: { section?: string }) => void | Promise<void>;
+  resetSectionMap?: Partial<Record<keyof T, string>>;
   data: T;
   setData: React.Dispatch<React.SetStateAction<T>>;
   conversationSteps: ConversationStep<T>[];
@@ -54,6 +55,7 @@ const AIChatView = <T extends Record<string, any>>({
   steps,
   onStepComplete,
   onResetChat,
+  resetSectionMap,
   data,
   setData,
   conversationSteps,
@@ -425,7 +427,7 @@ const AIChatView = <T extends Record<string, any>>({
 
   const handleResetChat = async () => {
     try {
-      const resetSection = fieldApiConfig?.resetSection;
+      const resetSection = fieldApiConfig?.resetSection ?? (currentField ? resetSectionMap?.[currentField] : undefined);
       await onResetChat?.(resetSection ? { section: resetSection } : undefined);
     } finally {
       if (fieldApiConfig && currentField) {

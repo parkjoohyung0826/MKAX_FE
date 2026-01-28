@@ -196,6 +196,15 @@ const Resume = ({ onFinishResume }: Props) => {
               setIsStepComplete(true);
               setAiCompletedSteps((prev) => ({ ...prev, [activeStep]: true }));
             }}
+            onResetChat={async (args) => {
+              if (!args?.section) return;
+              await fetch('/api/recommend/chat/reset', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ section: args.section }),
+              });
+            }}
             data={resumeData}
             setData={(update) => {
               const newValues =
@@ -203,6 +212,20 @@ const Resume = ({ onFinishResume }: Props) => {
                   ? update(resumeData)
                   : update;
               setResumeData({ ...resumeData, ...newValues });
+            }}
+            resetSectionMap={{
+              name: 'PROFILE',
+              englishName: 'PROFILE',
+              desiredJob: 'PROFILE',
+              dateOfBirth: 'PROFILE',
+              email: 'PROFILE',
+              phoneNumber: 'PROFILE',
+              address: 'PROFILE',
+              emergencyContact: 'PROFILE',
+              education: 'EDUCATION',
+              workExperience: 'CAREER',
+              coreCompetencies: 'ACTIVITY',
+              certifications: 'CERTIFICATION',
             }}
             conversationSteps={resumeConversationSteps}
           />
