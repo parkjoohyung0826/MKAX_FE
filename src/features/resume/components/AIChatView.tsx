@@ -35,7 +35,7 @@ interface AIChatViewProps<T> {
   activeStep: number;
   steps: string[];
   onStepComplete: () => void;
-  onResetChat?: (args?: { section?: string }) => void | Promise<void>;
+  onResetChat?: (args?: { section?: string; sections?: string[] }) => void | Promise<void>;
   resetSectionMap?: Partial<Record<keyof T, string>>;
   data: T;
   setData: React.Dispatch<React.SetStateAction<T>>;
@@ -427,15 +427,35 @@ const AIChatView = <T extends Record<string, any>>({
 
   const handleResetChat = async () => {
     try {
-      const resetSection = fieldApiConfig?.resetSection ?? (currentField ? resetSectionMap?.[currentField] : undefined);
-      await onResetChat?.(resetSection ? { section: resetSection } : undefined);
+      const resetSections = new Set<string>();
+      (currentStepConfig?.fields ?? []).forEach((fieldConfig) => {
+        const field = fieldConfig.field;
+        const fieldConfigApi = fieldApiConfigs?.[field];
+        const resetSection = fieldConfigApi?.resetSection ?? resetSectionMap?.[field];
+        if (resetSection) {
+          resetSections.add(resetSection);
+        }
+      });
+
+      if (resetSections.size > 1) {
+        await onResetChat?.({ sections: Array.from(resetSections) });
+      } else {
+        const [section] = Array.from(resetSections);
+        await onResetChat?.(section ? { section } : undefined);
+      }
     } finally {
-      if (fieldApiConfig && currentField) {
-        const summaryField = fieldApiConfig.summaryField ?? currentField;
+      if (currentStepConfig?.fields?.length) {
+        const updates: Partial<T> = {};
+        currentStepConfig.fields.forEach((fieldConfig) => {
+          const field = fieldConfig.field;
+          const fieldConfigApi = fieldApiConfigs?.[field];
+          const summaryField = fieldConfigApi?.summaryField ?? field;
+          updates[summaryField] = '' as T[keyof T];
+          updates[field] = '' as T[keyof T];
+        });
         setData((prev) => ({
           ...prev,
-          [summaryField]: '' as T[keyof T],
-          [currentField]: '' as T[keyof T],
+          ...updates,
         }));
       }
       resetCurrentStepState();

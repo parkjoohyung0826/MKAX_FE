@@ -49,7 +49,7 @@ const coverLetterConversationSteps: ConversationStep<CoverLetterData>[] = [
 ];
 
 interface Props {
-  handleGenerate: () => void;
+  handleGenerate: () => void | Promise<void>;
   isGenerating: boolean;
 }
 
@@ -150,13 +150,22 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
               steps={coverLetterSteps}
               onStepComplete={() => setIsStepComplete(true)}
               onResetChat={async (args) => {
-                if (!args?.section) return;
-                await fetch('/api/cover-letter/chat/reset', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  credentials: 'include',
-                  body: JSON.stringify({ section: args.section }),
-                });
+                const sections = args?.sections?.length
+                  ? args.sections
+                  : args?.section
+                    ? [args.section]
+                    : [];
+                if (sections.length === 0) return;
+                await Promise.all(
+                  sections.map((section) =>
+                    fetch('/api/cover-letter/chat/reset', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      credentials: 'include',
+                      body: JSON.stringify({ section }),
+                    })
+                  )
+                );
               }}
               data={coverLetterData}
               setData={(update) => {

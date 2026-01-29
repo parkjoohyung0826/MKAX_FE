@@ -99,11 +99,12 @@ const ResumeAssistantTextSection = ({
 
   const abortControllerRef = useRef(false);
 
-  useEffect(() => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (missingInfo) {
       setMissingInfo('');
     }
-  }, [value, missingInfo]);
+    onChange(event);
+  };
 
   const handleOpenAssistant = () => setAssistantOpen(true);
   const handleCloseAssistant = () => setAssistantOpen(false);
@@ -222,7 +223,7 @@ const ResumeAssistantTextSection = ({
         name={name}
         placeholder={placeholder}
         value={value}
-        onChange={onChange}
+        onChange={handleChange}
         variant="outlined"
         disabled={isValidating}
         InputProps={{

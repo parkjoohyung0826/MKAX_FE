@@ -16,16 +16,30 @@ const ResumePage = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'resume' | 'coverLetter'>('resume');
   const [isGenerating, setIsGenerating] = useState(false);
-  const { resumeData } = useResumeStore();
+  const { resumeData, setFormattedResume } = useResumeStore();
   const { setResultData } = useReportStore();
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: 'resume' | 'coverLetter') => {
     setActiveTab(newValue);
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     setIsGenerating(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/recommend/format', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(resumeData),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.message ?? '이력서 포맷 정리에 실패했습니다.');
+      }
+
+      const formatted = await res.json();
+      setFormattedResume(formatted);
+
       const mockResult: ResultData = {
         aiCoverLetter: `[AI 생성 자소서 예시]...`,
         aiResumeSummary: `${resumeData.name}님의 경력 분석...`,
@@ -34,7 +48,16 @@ const ResumePage = () => {
       };
       setResultData(mockResult);
       router.push('/report');
-    }, 2000);
+    } catch (error) {
+      console.error(error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : '이력서 포맷 정리에 실패했습니다.'
+      );
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (

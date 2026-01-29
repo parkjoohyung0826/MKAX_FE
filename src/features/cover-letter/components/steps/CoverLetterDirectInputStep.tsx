@@ -9,6 +9,8 @@ import {
   Stack,
   IconButton,
   Tooltip,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import { AutoAwesome, HelpOutline } from '@mui/icons-material';
 import CustomModal from '@/shared/components/CustomModal';
@@ -116,6 +118,11 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
   const [isAIModalOpen, setAIModalOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [isGenerating, setIsGenerating] = React.useState(false);
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastSeverity, setToastSeverity] = useState<'success' | 'error'>(
+    'success'
+  );
 
   const section = coverLetterSections[activeStep];
   if (!section) return null;
@@ -168,9 +175,14 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
       });
 
       setAIModalOpen(false);
+      setToastMessage('AI 작성이 완료되었습니다.');
+      setToastSeverity('success');
+      setToastOpen(true);
     } catch (e: any) {
       console.error(e);
-      alert(e?.message ?? 'AI 생성 중 오류가 발생했습니다.');
+      setToastMessage('AI 작성에 실패했습니다.');
+      setToastSeverity('error');
+      setToastOpen(true);
     } finally {
       setIsGenerating(false);
     }
@@ -179,7 +191,7 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
   /* ================= Render ================= */
 
   return (
-    <Box sx={{ py: 2 }}>
+    <Box sx={{ py: 2, mb: -5 }}>
       <Box sx={glassSectionSx}>
         {/* 헤더 */}
         <Box
@@ -275,6 +287,22 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
           isGenerating={isGenerating}
         />
       </CustomModal>
+
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={3000}
+        onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setToastOpen(false)}
+          severity={toastSeverity}
+          variant="filled"
+          sx={{ width: '100%', borderRadius: '12px', fontWeight: 600 }}
+        >
+          {toastMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
