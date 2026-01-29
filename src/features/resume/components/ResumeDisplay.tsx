@@ -150,7 +150,7 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
             {Array.isArray((displayData as any).education) ? (
               <div css={tableContainerStyle}>
                   <div css={rowStyle}>
-                      <div css={cellStyle} className="header" style={{ width: '25%' }}>기간이약</div>
+                      <div css={cellStyle} className="header" style={{ width: '25%' }}>기간</div>
                       <div css={cellStyle} className="header" style={{ width: '35%' }}>학교명</div>
                       <div css={cellStyle} className="header" style={{ width: '25%' }}>전공</div>
                       <div css={cellStyle} className="header no-border-right" style={{ width: '15%' }}>졸업여부</div>

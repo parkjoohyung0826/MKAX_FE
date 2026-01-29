@@ -29,6 +29,7 @@ const ResumePage = () => {
       const res = await fetch('/api/recommend/format', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(resumeData),
       });
 
@@ -37,14 +38,15 @@ const ResumePage = () => {
         throw new Error(err?.message ?? '이력서 포맷 정리에 실패했습니다.');
       }
 
-      const formatted = await res.json();
-      setFormattedResume(formatted);
+      const { resume, coverLetter, code } = await res.json();
+      setFormattedResume(resume);
 
       const mockResult: ResultData = {
-        aiCoverLetter: `[AI 생성 자소서 예시]...`,
+        aiCoverLetter: coverLetter ?? `[AI 생성 자소서 예시]...`,
         aiResumeSummary: `${resumeData.name}님의 경력 분석...`,
         jobPostings: mockJobPostings,
-        resumeData: resumeData,
+        resumeData: resume ?? resumeData,
+        accessCode: code,
       };
       setResultData(mockResult);
       router.push('/report');

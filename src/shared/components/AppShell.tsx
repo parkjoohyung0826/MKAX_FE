@@ -1,21 +1,18 @@
 'use client';
 
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode } from 'react';
 import {
   AppBar,
   Box,
   Button,
   Container,
-  Dialog,
-  DialogContent,
-  IconButton,
-  TextField,
   Typography,
   useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { AutoAwesome, Close, Restore, VpnKey } from '@mui/icons-material';
+import { AutoAwesome, Restore } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { usePathname, useRouter } from 'next/navigation';
 
 const particleVariant = (i: number) => ({
   animate: {
@@ -30,39 +27,18 @@ const particleVariant = (i: number) => ({
   },
 });
 
-const glassInputSx = {
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    borderRadius: '16px',
-    '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' },
-    '&:hover fieldset': { borderColor: 'rgba(37, 99, 235, 0.3)' },
-    '&.Mui-focused': {
-      backgroundColor: '#fff',
-      boxShadow: '0 4px 20px rgba(37, 99, 235, 0.1)',
-      '& fieldset': { borderColor: '#2563EB' },
-    },
-  },
-};
-
 interface Props {
   children: ReactNode;
   showParticles?: boolean;
 }
 
 const AppShell = ({ children, showParticles = false }: Props) => {
-  const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
-  const [accessCode, setAccessCode] = useState('');
-
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const handleLoadData = () => {
-    if (!accessCode.trim()) return;
-    console.log(`Loading data for code: ${accessCode}`);
-    alert(`${accessCode} 코드로 저장된 이력서를 불러왔습니다.`);
-    setIsLoadModalOpen(false);
-    setAccessCode('');
-  };
+  const router = useRouter();
+  const pathname = usePathname();
+  const isResumePage = pathname === '/resume';
+  const isDocumentsPage = pathname === '/documents';
 
   return (
     <Box
@@ -117,22 +93,41 @@ const AppShell = ({ children, showParticles = false }: Props) => {
               </Typography>
             </Box>
 
-            <Button
-              startIcon={<Restore />}
-              onClick={() => setIsLoadModalOpen(true)}
-              sx={{
-                color: '#64748b',
-                fontWeight: 600,
-                borderRadius: '20px',
-                px: 2,
-                '&:hover': {
-                  backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                  color: '#2563EB',
-                },
-              }}
-            >
-              {isMobile ? '불러오기' : '기록 불러오기'}
-            </Button>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                onClick={() => router.push('/resume')}
+                sx={{
+                  color: isResumePage ? '#2563EB' : '#64748b',
+                  fontWeight: 700,
+                  borderRadius: '20px',
+                  px: 2.5,
+                  bgcolor: isResumePage ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: 'rgba(37, 99, 235, 0.12)',
+                    color: '#2563EB',
+                  },
+                }}
+              >
+                {isMobile ? '작성' : '문서 작성'}
+              </Button>
+              <Button
+                startIcon={<Restore />}
+                onClick={() => router.push('/documents')}
+                sx={{
+                  color: isDocumentsPage ? '#2563EB' : '#64748b',
+                  fontWeight: 700,
+                  borderRadius: '20px',
+                  px: 2.5,
+                  bgcolor: isDocumentsPage ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: 'rgba(37, 99, 235, 0.12)',
+                    color: '#2563EB',
+                  },
+                }}
+              >
+                {isMobile ? '조회' : '문서 조회'}
+              </Button>
+            </Box>
           </Box>
         </Container>
       </AppBar>
@@ -140,80 +135,6 @@ const AppShell = ({ children, showParticles = false }: Props) => {
       <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1, pt: 15, pb: 8 }}>
         {children}
       </Container>
-
-      <Dialog
-        open={isLoadModalOpen}
-        onClose={() => setIsLoadModalOpen(false)}
-        PaperProps={{
-          sx: {
-            borderRadius: '24px',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(20px)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            width: '100%',
-            maxWidth: '400px',
-            p: 1,
-          },
-        }}
-      >
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', pr: 1, pt: 1 }}>
-          <IconButton onClick={() => setIsLoadModalOpen(false)} size="small">
-            <Close fontSize="small" />
-          </IconButton>
-        </Box>
-        <DialogContent sx={{ px: 4, pb: 4, pt: 0, textAlign: 'center' }}>
-          <Box
-            sx={{
-              width: 50,
-              height: 50,
-              bgcolor: 'rgba(37, 99, 235, 0.1)',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              mx: 'auto',
-              mb: 2,
-            }}
-          >
-            <VpnKey sx={{ color: '#2563EB' }} />
-          </Box>
-          <Typography variant="h6" fontWeight={800} gutterBottom>
-            이전 기록 불러오기
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            이전에 발급받은 인증 코드를 입력하면
-            <br />
-            작성 중이던 이력서와 자기소개서를 불러옵니다.
-          </Typography>
-
-          <TextField
-            fullWidth
-            placeholder="인증 코드 입력 (예: AB12-CD34)"
-            value={accessCode}
-            onChange={(e) => setAccessCode(e.target.value)}
-            sx={glassInputSx}
-            InputProps={{
-              sx: { textAlign: 'center' },
-            }}
-          />
-
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={handleLoadData}
-            disabled={!accessCode}
-            sx={{
-              mt: 3,
-              py: 1.4,
-              borderRadius: '16px',
-              fontWeight: 700,
-              background: 'linear-gradient(45deg, #2563EB, #1d4ed8)',
-            }}
-          >
-            불러오기
-          </Button>
-        </DialogContent>
-      </Dialog>
     </Box>
   );
 };

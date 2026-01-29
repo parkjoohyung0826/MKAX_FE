@@ -6,6 +6,7 @@ export interface ResultData {
   aiResumeSummary: string;
   jobPostings: JobPosting[];
   resumeData: ResumeData;
+  accessCode?: string;
 }
 
 export type { JobPosting };

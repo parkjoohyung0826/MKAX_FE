@@ -58,6 +58,17 @@ interface Props {
 const CoverLetterDisplay = React.forwardRef<HTMLDivElement, Props>(({ resumeName }, ref) => {
   const { coverLetterData } = useCoverLetterStore();
 
+  const normalizeContent = (value: unknown) => {
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number') return String(value);
+    if (value && typeof value === 'object') {
+      const maybe = value as { finalDraft?: string; summary?: string };
+      if (typeof maybe.finalDraft === 'string') return maybe.finalDraft;
+      if (typeof maybe.summary === 'string') return maybe.summary;
+    }
+    return '';
+  };
+
   const sections = [
     { label: '성장과정', key: 'growthProcess' as keyof CoverLetterData },
     { label: '성격의 장, 단점', key: 'strengthsAndWeaknesses' as keyof CoverLetterData },
@@ -106,7 +117,7 @@ const CoverLetterDisplay = React.forwardRef<HTMLDivElement, Props>(({ resumeName
               {/* 오른쪽 내용 */}
               <div css={contentCellStyle}>
                 
-                {coverLetterData[section.key] || ''} 
+                {normalizeContent(coverLetterData[section.key])}
               </div>
             </div>
           ))}
