@@ -54,7 +54,6 @@ const ChatInputBar = ({
   onChange,
   onSend,
   isTyping,
-  isComplete,
   inputRef,
 }: ChatInputBarProps) => {
   const isDisabled = isTyping;
