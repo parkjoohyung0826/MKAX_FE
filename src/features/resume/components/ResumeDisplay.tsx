@@ -249,7 +249,7 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
             )}
 
             {/* 5. 자격증 */}
-            <SectionTitle>자격증</SectionTitle>
+            <SectionTitle>자격증/어학성적</SectionTitle>
             {Array.isArray((displayData as any).certifications) ? (
               <div css={tableContainerStyle}>
                   <div css={rowStyle}>
@@ -280,20 +280,6 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
                   </div>
               </div>
             )}
-
-            {/* 6. 기타사항 */}
-            <SectionTitle>기타사항(외국어, OA활용능력 등)</SectionTitle>
-            <div css={tableContainerStyle}>
-                <div css={rowStyle}>
-                    <div css={cellStyle} className="header" style={{ width: '15%' }}>구분</div>
-                    <div css={cellStyle} className="header" style={{ width: '35%' }}>활용능력</div>
-                    <div css={cellStyle} className="header" style={{ width: '15%' }}>구분</div>
-                    <div css={cellStyle} className="header no-border-right" style={{ width: '35%' }}>활용능력</div>
-                </div>
-                {renderEmptyRows(2, [
-                    { width: '15%' }, { width: '35%' }, { width: '15%' }, { width: '35%', isLast: true }
-                ])}
-            </div>
 
             <Box sx={{ mt: 4, textAlign: 'center' }}>
                 <Typography variant="body1" fontWeight={600}>위 기재사항은 사실과 다름이 없습니다.</Typography>
