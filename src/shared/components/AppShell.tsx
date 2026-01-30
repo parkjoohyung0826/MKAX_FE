@@ -49,6 +49,7 @@ const AppShell = ({ children, showParticles = false }: Props) => {
   useEffect(() => {
     const [navEntry] = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
     if (navEntry?.type !== 'reload') return;
+    if (pathname === '/report') return;
 
     resetResultData();
     resetResumeData();
