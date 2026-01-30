@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import {
   AppBar,
   Box,
@@ -13,6 +13,9 @@ import { useTheme } from '@mui/material/styles';
 import { AutoAwesome, Restore } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { usePathname, useRouter } from 'next/navigation';
+import { useCoverLetterStore } from '@/features/cover-letter/store';
+import { useReportStore } from '@/features/report/store';
+import { useResumeStore } from '@/features/resume/store';
 
 const particleVariant = (i: number) => ({
   animate: {
@@ -39,6 +42,33 @@ const AppShell = ({ children, showParticles = false }: Props) => {
   const pathname = usePathname();
   const isResumePage = pathname === '/resume';
   const isDocumentsPage = pathname === '/documents';
+  const { resetResultData } = useReportStore();
+  const { resetResumeData } = useResumeStore();
+  const { resetCoverLetterData } = useCoverLetterStore();
+
+  useEffect(() => {
+    const [navEntry] = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+    if (navEntry?.type !== 'reload') return;
+
+    resetResultData();
+    resetResumeData();
+    resetCoverLetterData();
+
+    void Promise.all([
+      fetch('/api/recommend/chat/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({}),
+      }).catch(() => undefined),
+      fetch('/api/cover-letter/chat/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({}),
+      }).catch(() => undefined),
+    ]);
+  }, [pathname, resetCoverLetterData, resetResultData, resetResumeData]);
 
   return (
     <Box
