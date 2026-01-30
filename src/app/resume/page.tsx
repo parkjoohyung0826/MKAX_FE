@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Box } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
 import FormPageLayout from '@/shared/components/FormPageLayout';
@@ -69,11 +70,12 @@ const ResumePage = () => {
       isLoading={isGenerating}
       loadingFallback={<LoadingIndicator />}
     >
-      {activeTab === 'resume' ? (
+      <Box sx={{ display: activeTab === 'resume' ? 'block' : 'none' }}>
         <Resume onFinishResume={() => setActiveTab('coverLetter')} />
-      ) : (
+      </Box>
+      <Box sx={{ display: activeTab === 'coverLetter' ? 'block' : 'none' }}>
         <CoverLetter handleGenerate={handleGenerate} isGenerating={isGenerating} />
-      )}
+      </Box>
     </FormPageLayout>
   );
 };
