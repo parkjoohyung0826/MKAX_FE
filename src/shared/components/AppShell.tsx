@@ -117,7 +117,22 @@ const AppShell = ({ children, showParticles = false }: Props) => {
               border: '1px solid rgba(255, 255, 255, 0.18)',
             }}
           >
-            <Box display="flex" alignItems="center">
+            <Box
+              display="flex"
+              alignItems="center"
+              onClick={() => router.push('/resume')}
+              sx={{
+                cursor: 'pointer',
+                borderRadius: '999px',
+                px: 1,
+                py: 0.5,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                  transform: 'translateY(-1px)',
+                },
+              }}
+            >
               <AutoAwesome sx={{ mr: 1.5, color: '#2563EB', fontSize: '1.8rem' }} />
               <Typography variant="h6" sx={{ fontWeight: 800, color: '#1e293b', letterSpacing: '-0.5px' }}>
                 Naeil<span style={{ color: '#2563EB' }}>Ro</span>
