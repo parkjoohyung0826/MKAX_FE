@@ -103,10 +103,11 @@ const CareerAnalysisReport = ({ analysisReport }: Props) => {
     (typeof raw?.totalScore === 'number' ? `${raw.totalScore} / 100점` : raw?.totalScore) ||
     defaultReport.totalScoreText;
   const summary =
-    raw?.summary ||
-    raw?.oneLineSummary ||
-    (raw as Record<string, unknown>)?.summaryText ||
-    defaultReport.summary;
+    resolveTextBlock(
+      (raw?.summary as string | string[] | undefined) ||
+        (raw?.oneLineSummary as string | string[] | undefined) ||
+        ((raw as Record<string, unknown>)?.summaryText as string | string[] | undefined)
+    ) || defaultReport.summary;
   const overallEvaluation =
     resolveTextBlock(raw?.overallEvaluation) ||
     resolveTextBlock(raw?.evaluation as string | string[] | undefined) ||
