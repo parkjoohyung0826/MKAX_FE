@@ -12,12 +12,15 @@ import { useResumeStore } from '@/features/resume/store';
 import { useReportStore } from '@/features/report/store';
 import { mockJobPostings } from '@/features/report/services/mockJobPostings';
 import { ResultData } from '@/features/report/types';
+import { requestAnalysisReport } from '@/features/report/services/requestAnalysisReport';
+import { useCoverLetterStore } from '@/features/cover-letter/store';
 
 const ResumePage = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'resume' | 'coverLetter'>('resume');
   const [isGenerating, setIsGenerating] = useState(false);
   const { resumeData, setFormattedResume } = useResumeStore();
+  const { coverLetterData } = useCoverLetterStore();
   const { setResultData } = useReportStore();
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: 'resume' | 'coverLetter') => {
@@ -42,12 +45,32 @@ const ResumePage = () => {
       const { resume, coverLetter, code } = await res.json();
       setFormattedResume(resume);
 
+      let analysisReport = null;
+      if (resume && code) {
+        try {
+          const coverLetterPayload = {
+            growthProcess: coverLetterData.growthProcess,
+            strengthsAndWeaknesses: coverLetterData.strengthsAndWeaknesses,
+            keyExperience: coverLetterData.keyExperience,
+            motivation: coverLetterData.motivation,
+          };
+          analysisReport = await requestAnalysisReport({
+            resume,
+            coverLetter: coverLetterPayload,
+            code,
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
       const mockResult: ResultData = {
         aiCoverLetter: coverLetter ?? `[AI 생성 자소서 예시]...`,
         aiResumeSummary: `${resumeData.name}님의 경력 분석...`,
         jobPostings: mockJobPostings,
         resumeData: resume ?? resumeData,
         accessCode: code,
+        analysisReport,
       };
       setResultData(mockResult);
       router.push('/report');

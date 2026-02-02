@@ -321,7 +321,7 @@ const GenerationResult = ({ data, onReset }: Props) => {
             {/* 탭 1: 분석 리포트 & 채용 */}
             {activeTab === 'report' && (
               <Box>
-                <CareerAnalysisReport summaryText={data.aiResumeSummary} />
+                <CareerAnalysisReport analysisReport={data.analysisReport} />
                 
                 <Divider sx={{ my: 8, borderBottomWidth: 2, borderColor: 'rgba(0,0,0,0.06)' }} />
 

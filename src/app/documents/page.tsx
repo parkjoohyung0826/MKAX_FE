@@ -69,6 +69,7 @@ const DocumentsPage = () => {
         jobPostings: mockJobPostings,
         resumeData: data.resume ?? {},
         accessCode: code,
+        analysisReport: data.analysisReport ?? null,
       };
       if (data.resume) {
         setFormattedResume(data.resume);
