@@ -25,6 +25,51 @@ export interface AnalysisReport {
     deductionReason?: string;
   }>;
   scoreBreakdownTotal?: { score?: number; maxScore?: number; scoreText?: string };
+  sentenceFeedback?: {
+    resume?: Array<{
+      title: string;
+      deductionItems?: string[];
+      before: string;
+      deductionReason?: string;
+      improvement?: string[];
+      after?: string;
+    }>;
+    coverLetter?: Array<{
+      title: string;
+      deductionItems?: string[];
+      before: string;
+      deductionReason?: string;
+      improvement?: string[];
+      after?: string;
+    }>;
+    commonPatterns?: Array<{
+      pattern: string;
+      description: string;
+    }>;
+  };
+  improvementGuide?: {
+    gapSummary?: Array<{
+      category: string;
+      gap: string;
+      description: string;
+    }>;
+    categoryGuides?: Array<{
+      title: string;
+      currentState?: string[];
+      direction?: string[];
+      examples?: string[];
+    }>;
+    roadmap?: Array<{
+      week: string;
+      title: string;
+      tasks?: string[];
+    }>;
+    priorityStrategy?: Array<{
+      priority: number;
+      item: string;
+      reason: string;
+    }>;
+  };
   oneLineSummary?: string;
   evaluation?: string | string[];
   overallDescription?: string;
