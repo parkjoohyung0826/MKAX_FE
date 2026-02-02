@@ -110,12 +110,12 @@ const CareerAnalysisReport = ({ analysisReport }: Props) => {
   const priorityStrategy = improvementGuide?.priorityStrategy ?? [];
 
   return (
-    <Box sx={{ mt: 4 }}>
+    <Box>
       <Box sx={{ mb: 4, textAlign: 'center' }}>
         <Typography variant="h4" fontWeight={800} sx={{ color: '#1e293b', mb: 1 }}>
           종합 커리어 분석 리포트
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="body1" color="text.secondary" sx={{mb: 5}}>
           AI가 진단한 지원자님의 직무 역량과 취업 전략입니다.
         </Typography>
       </Box>
