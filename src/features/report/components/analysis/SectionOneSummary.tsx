@@ -18,6 +18,7 @@ import {
   Typography,
   useTheme,
   alpha,
+  Divider
 } from '@mui/material';
 import {
   AutoAwesome,
@@ -197,79 +198,194 @@ const SectionOneSummary = ({
         </Paper>
       </Box>
 
-      {/* 3. 강점 & 보완점 (Modern Cards) */}
-      <Grid container spacing={3} sx={{ mb: 4, position: 'relative', zIndex: 1 }}>
-        <Grid item xs={12} md={6}>
-          <Paper elevation={0} sx={{ ...STYLES.glassCard, p: 0, height: '100%' }}>
-            <Box sx={{ p: 2, borderBottom: '1px solid rgba(0,0,0,0.05)', bgcolor: alpha('#EFF6FF', 0.5), display: 'flex', alignItems: 'center', gap: 1 }}>
-              <TrendingUp sx={{ color: '#2563EB', fontSize: 20 }} />
-              <Typography variant="subtitle2" fontWeight={800} color="#1e293b">강점 포인트</Typography>
+      {/* 3. 강점 & 보완점 (Clean Vertical Split) */}
+      <Box sx={{ mb: 4, position: 'relative', zIndex: 1 }}>
+        <Paper elevation={0} sx={{ ...STYLES.glassCard, p: 0, overflow: 'hidden' }}>
+          
+          {/* 🔵 강점 섹션 */}
+          <Box sx={{ p: { xs: 3, md: 4 } }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <Box 
+                sx={{ 
+                  width: 40, 
+                  height: 40, 
+                  borderRadius: '12px', 
+                  bgcolor: '#EFF6FF', // 아주 연한 블루
+                  color: '#2563EB',   // 블루 텍스트
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.1)'
+                }}
+              >
+                <TrendingUp sx={{ fontSize: 22 }} />
+              </Box>
+              <Typography variant="h6" fontWeight={800} color="#1e293b" sx={{ letterSpacing: '-0.5px' }}>
+                강점 포인트
+              </Typography>
             </Box>
-            <List dense sx={{ p: 2 }}>
+            <List dense disablePadding sx={{ pl: 1 }}>
               {strengths.map((text, i) => (
-                <ListItem key={i} sx={{ px: 0, py: 0.5, alignItems: 'flex-start' }}>
-                  <CheckCircle sx={{ fontSize: 16, color: '#3B82F6', mt: 0.5, mr: 1.5, flexShrink: 0 }} />
-                  <Typography variant="body2" color="#475569" sx={{ lineHeight: 1.5 }}>{text}</Typography>
+                <ListItem key={i} sx={{ px: 0, py: 1, alignItems: 'flex-start' }}>
+                  <CheckCircle sx={{ fontSize: 18, color: '#3B82F6', mt: 0.5, mr: 2, flexShrink: 0 }} />
+                  <Typography variant="body1" sx={{ color: '#475569', lineHeight: 1.7, fontSize: '0.95rem' }}>
+                    {text}
+                  </Typography>
                 </ListItem>
               ))}
             </List>
-          </Paper>
-        </Grid>
+          </Box>
 
-        <Grid item xs={12} md={6}>
-          <Paper elevation={0} sx={{ ...STYLES.glassCard, p: 0, height: '100%' }}>
-             <Box sx={{ p: 2, borderBottom: '1px solid rgba(0,0,0,0.05)', bgcolor: alpha('#FEF2F2', 0.5), display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ErrorOutline sx={{ color: '#EF4444', fontSize: 20 }} />
-              <Typography variant="subtitle2" fontWeight={800} color="#1e293b">보완 포인트</Typography>
+          {/* 구분선 (점선으로 세련되게) */}
+          <Divider sx={{ borderStyle: 'dashed', borderColor: 'rgba(0,0,0,0.08)', mx: 4 }} />
+
+          {/* 🔴 보완점 섹션 (배경색 제거, 화이트 유지) */}
+          <Box sx={{ p: { xs: 3, md: 4 } }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <Box 
+                sx={{ 
+                  width: 40, 
+                  height: 40, 
+                  borderRadius: '12px', 
+                  bgcolor: '#FEF2F2', // 아주 연한 레드 (아이콘 배경만)
+                  color: '#EF4444',   // 레드 텍스트
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.1)'
+                }}
+              >
+                <ErrorOutline sx={{ fontSize: 22 }} />
+              </Box>
+              <Typography variant="h6" fontWeight={800} color="#1e293b" sx={{ letterSpacing: '-0.5px' }}>
+                보완 포인트
+              </Typography>
             </Box>
-            <List dense sx={{ p: 2 }}>
+            <List dense disablePadding sx={{ pl: 1 }}>
               {improvements.map((text, i) => (
-                <ListItem key={i} sx={{ px: 0, py: 0.5, alignItems: 'flex-start' }}>
-                  <Lens sx={{ fontSize: 8, color: '#EF4444', mt: 0.8, mr: 2, flexShrink: 0 }} />
-                  <Typography variant="body2" color="#475569" sx={{ lineHeight: 1.5 }}>{text}</Typography>
+                <ListItem key={i} sx={{ px: 0, py: 1, alignItems: 'flex-start' }}>
+                  <Lens sx={{ fontSize: 8, color: '#EF4444', mt: 1, mr: 2.5, flexShrink: 0 }} />
+                  <Typography variant="body1" sx={{ color: '#475569', lineHeight: 1.7, fontSize: '0.95rem' }}>
+                    {text}
+                  </Typography>
                 </ListItem>
               ))}
             </List>
-          </Paper>
-        </Grid>
-      </Grid>
+          </Box>
 
-      {/* 4. 점수 상세 테이블 (Clean Grid) */}
-      <Box sx={{ position: 'relative', zIndex: 1 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b', mb: 2, pl: 1, textTransform: 'uppercase', letterSpacing: '1px' }}>
-          세부 평가 항목별 점수 및 감점 사유
-        </Typography>
-        <TableContainer component={Paper} elevation={0} sx={{ ...STYLES.glassCard, borderRadius: '16px' }}>
-          <Table size="small">
+        </Paper>
+      </Box>
+{/* 4. 점수 상세 테이블 (High-Quality Borderless Style) */}
+      <Box sx={{ position: 'relative', zIndex: 1, px: 1 }}> {/* px: 1 추가하여 여백 확보 */}
+        
+        {/* 제목: 아이콘 대신 둥근 선(Accent Bar) 적용 */}
+        <Stack direction="row" alignItems="center" gap={2} sx={{ mb: 3 }}>
+          <Box 
+            sx={{ 
+              width: 6, 
+              height: 28, 
+              borderRadius: 4, 
+              bgcolor: '#3B82F6', // 메인 블루
+              flexShrink: 0 
+            }} 
+          />
+          <Typography variant="h6" fontWeight={800} sx={{ color: '#1e293b' }}>
+            세부 평가 항목별 점수 및 감점 사유
+          </Typography>
+        </Stack>
+        
+        {/* 테이블: Paper 제거 -> Box로 변경 (투명 배경, 무테) */}
+        <TableContainer 
+          component={Box} 
+          sx={{ 
+            bgcolor: 'transparent', 
+            p: 0,
+            border: 'none' 
+          }}
+        >
+          <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: alpha('#F1F5F9', 0.5) }}>
-                <TableCell sx={{ color: '#64748b', fontWeight: 700, fontSize: '0.75rem', py: 2 }}>평가 항목</TableCell>
-                <TableCell sx={{ color: '#64748b', fontWeight: 700, fontSize: '0.75rem', py: 2 }}>점수</TableCell>
-                <TableCell sx={{ color: '#64748b', fontWeight: 700, fontSize: '0.75rem', py: 2 }}>감점 사유</TableCell>
+              {/* 헤더: 하단 굵은 선 (2px), 대문자, 자간 넓힘 */}
+              <TableRow sx={{ borderBottom: '2px solid #E2E8F0' }}>
+                <TableCell sx={{ 
+                  color: '#64748b', 
+                  fontWeight: 800, 
+                  fontSize: '0.75rem', 
+                  py: 2, 
+                  pl: 0, 
+                  width: '25%',
+                  letterSpacing: '1px'
+                }}>
+                  평가 항목
+                </TableCell>
+                <TableCell sx={{ 
+                  color: '#64748b', 
+                  fontWeight: 800, 
+                  fontSize: '0.75rem', 
+                  py: 2, 
+                  pl: 0,
+                  width: '15%',
+                  letterSpacing: '1px'
+                }}>
+                  점수
+                </TableCell>
+                <TableCell sx={{ 
+                  color: '#64748b', 
+                  fontWeight: 800, 
+                  fontSize: '0.75rem', 
+                  py: 2, 
+                  pl: 0,
+                  letterSpacing: '1px'
+                }}>
+                  감점 사유
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {scoreRows.map((row, index) => {
                 const isTotal = row.category === '총점';
                 return (
-                  <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                    <TableCell sx={{ fontWeight: isTotal ? 800 : 600, color: '#1e293b' }}>
+                  <TableRow 
+                    key={index} 
+                    sx={{ 
+                      borderBottom: '1px solid #E2E8F0', // 행 사이 얇은 선
+                      '&:last-child': { borderBottom: 'none' }, // 마지막 행 선 제거
+                      '&:hover': { bgcolor: 'transparent' } // 호버 효과 제거
+                    }}
+                  >
+                    <TableCell sx={{ 
+                      fontWeight: isTotal ? 800 : 700, 
+                      color: isTotal ? '#1e293b' : '#334155',
+                      fontSize: isTotal ? '1.05rem' : '0.95rem',
+                      py: 3,
+                      pl: 0
+                    }}>
                       {row.category}
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ py: 3, pl: 0 }}>
                       <Chip 
                         label={row.score} 
                         size="small"
                         sx={{ 
                           fontWeight: 800, 
-                          bgcolor: isTotal ? '#3B82F6' : alpha('#E2E8F0', 0.5), 
-                          color: isTotal ? '#fff' : '#475569',
-                          height: '24px',
-                          minWidth: '40px'
+                          bgcolor: isTotal ? '#3B82F6' : alpha('#3B82F6', 0.08), 
+                          color: isTotal ? '#fff' : '#3B82F6',
+                          height: '28px',
+                          minWidth: '48px',
+                          borderRadius: '8px',
+                          fontSize: '0.9rem'
                         }} 
                       />
                     </TableCell>
-                    <TableCell sx={{ color: '#475569', fontSize: '0.875rem', py: 2 }}>{row.reason}</TableCell>
+                    <TableCell sx={{ 
+                      color: '#475569', 
+                      fontSize: '0.95rem', 
+                      py: 3, 
+                      pl: 0,
+                      lineHeight: 1.7
+                    }}>
+                      {row.reason}
+                    </TableCell>
                   </TableRow>
                 );
               })}

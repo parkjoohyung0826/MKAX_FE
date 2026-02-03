@@ -352,7 +352,7 @@ const SectionTwoSentenceFeedback = ({
                 <TableRow sx={{ borderBottom: `2px solid ${COLORS.border}` }}>
                   <TableCell 
                     sx={{ 
-                      fontWeight: 800, 
+                      fontWeight: 700, 
                       color: COLORS.textLight, 
                       py: 2, 
                       pl: 0, 
@@ -366,7 +366,7 @@ const SectionTwoSentenceFeedback = ({
                   </TableCell>
                   <TableCell 
                     sx={{ 
-                      fontWeight: 800, 
+                      fontWeight: 700, 
                       color: COLORS.textLight, 
                       py: 2, 
                       pl: 0, 
@@ -392,7 +392,7 @@ const SectionTwoSentenceFeedback = ({
                     <TableCell 
                       sx={{ 
                         color: COLORS.textTitle, 
-                        fontWeight: 700, 
+                        fontWeight: 600, 
                         py: 3.5, 
                         pl: 0, 
                         fontSize: '1rem', 
