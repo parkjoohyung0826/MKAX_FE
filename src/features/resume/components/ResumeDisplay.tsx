@@ -151,20 +151,20 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
               <div css={tableContainerStyle}>
                   <div css={rowStyle}>
                       <div css={cellStyle} className="header" style={{ width: '25%' }}>기간</div>
-                      <div css={cellStyle} className="header" style={{ width: '35%' }}>학교명</div>
-                      <div css={cellStyle} className="header" style={{ width: '25%' }}>전공</div>
+                      <div css={cellStyle} className="header" style={{ width: '30%' }}>학교명</div>
+                      <div css={cellStyle} className="header" style={{ width: '30%' }}>전공</div>
                       <div css={cellStyle} className="header no-border-right" style={{ width: '15%' }}>졸업여부</div>
                   </div>
                   {(displayData as any).education.map((edu: any, index: number) => (
                       <div css={rowStyle} key={index}>
                           <div css={cellStyle} className="data center" style={{ width: '25%' }}>{edu.period}</div>
-                          <div css={cellStyle} className="data" style={{ width: '35%' }}>{edu.schoolName}</div>
-                          <div css={cellStyle} className="data center" style={{ width: '25%' }}>{edu.major}</div>
+                          <div css={cellStyle} className="data" style={{ width: '30%' }}>{edu.schoolName}</div>
+                          <div css={cellStyle} className="data center" style={{ width: '30%' }}>{edu.major}</div>
                           <div css={cellStyle} className="data center no-border-right" style={{ width: '15%' }}>{edu.graduationStatus}</div>
                       </div>
                   ))}
                   {renderEmptyRows(3 - (displayData as any).education.length, [
-                      { width: '25%' }, { width: '35%' }, { width: '25%' }, { width: '15%', isLast: true }
+                      { width: '25%' }, { width: '30%' }, { width: '30%' }, { width: '15%', isLast: true }
                   ])}
               </div>
             ) : (
