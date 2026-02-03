@@ -236,16 +236,16 @@ const SectionOneSummary = ({
 
       {/* 4. 점수 상세 테이블 (Clean Grid) */}
       <Box sx={{ position: 'relative', zIndex: 1 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#64748b', mb: 2, pl: 1, textTransform: 'uppercase', letterSpacing: '1px' }}>
-          Detailed Breakdown
+        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e293b', mb: 2, pl: 1, textTransform: 'uppercase', letterSpacing: '1px' }}>
+          세부 평가 항목별 점수 및 감점 사유
         </Typography>
         <TableContainer component={Paper} elevation={0} sx={{ ...STYLES.glassCard, borderRadius: '16px' }}>
           <Table size="small">
             <TableHead>
               <TableRow sx={{ bgcolor: alpha('#F1F5F9', 0.5) }}>
-                <TableCell sx={{ color: '#64748b', fontWeight: 700, fontSize: '0.75rem', py: 2 }}>CATEGORY</TableCell>
-                <TableCell sx={{ color: '#64748b', fontWeight: 700, fontSize: '0.75rem', py: 2 }}>SCORE</TableCell>
-                <TableCell sx={{ color: '#64748b', fontWeight: 700, fontSize: '0.75rem', py: 2 }}>ANALYSIS</TableCell>
+                <TableCell sx={{ color: '#64748b', fontWeight: 700, fontSize: '0.75rem', py: 2 }}>평가 항목</TableCell>
+                <TableCell sx={{ color: '#64748b', fontWeight: 700, fontSize: '0.75rem', py: 2 }}>점수</TableCell>
+                <TableCell sx={{ color: '#64748b', fontWeight: 700, fontSize: '0.75rem', py: 2 }}>감점 사유</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
