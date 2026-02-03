@@ -83,7 +83,7 @@ const SectionOneSummary = ({
   return (
     <Box>
       {/* 배경 장식 (Ambient Light) */}
-      <Box
+      {/* <Box
         sx={{
           position: 'absolute',
           top: -100,
@@ -94,10 +94,10 @@ const SectionOneSummary = ({
           filter: 'blur(40px)',
           zIndex: 0,
         }}
-      />
+      /> */}
 
       {/* 1. Hero Section: 점수와 요약의 결합 */}
-      <Grid container spacing={3} sx={{ position: 'relative', zIndex: 1, mb: 4 }}>
+      <Grid container spacing={3} sx={{ position: 'relative', zIndex: 1, mb: 4, mt: 3}}>
         {/* 점수 영역 (왼쪽) */}
         <Grid item xs={12} md={4.5}>
           <Paper

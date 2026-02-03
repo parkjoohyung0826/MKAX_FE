@@ -21,6 +21,8 @@ export const globalStyles = (theme: AppTheme) => css`
     // color: ${theme.semantic.text.primary};
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
   }
 
   img,

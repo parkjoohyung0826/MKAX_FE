@@ -168,7 +168,7 @@ const FeedbackCard = ({ item, index }: { item: FeedbackItem; index: number }) =>
                 fontStyle: 'italic',
               }}
             >
-              "{item.before}"
+              &ldquo;{item.before}&rdquo;
             </Typography>
           </Box>
 
