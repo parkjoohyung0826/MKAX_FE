@@ -429,7 +429,7 @@ const SectionThreeImprovementGuide = ({
             <Table>
               <TableHead>
                 <TableRow sx={{ borderBottom: `2px solid ${COLORS.border}` }}>
-                  <TableCell sx={{ fontWeight: 800, color: COLORS.textLight, py: 2, pl: 0, width: '15%', fontSize: '0.75rem', letterSpacing: '1.5px', textTransform: 'uppercase' }}>
+                  <TableCell sx={{ fontWeight: 800, color: COLORS.textLight, py: 2, pl: 0, width: '15%', fontSize: '0.75rem', letterSpacing: '1.5px', textTransform: 'uppercase', textAlign: 'center' }}>
                     Priority
                   </TableCell>
                   <TableCell sx={{ fontWeight: 800, color: COLORS.textLight, py: 2, pl: 0, width: '30%', fontSize: '0.75rem', letterSpacing: '1.5px', textTransform: 'uppercase' }}>
@@ -450,8 +450,8 @@ const SectionThreeImprovementGuide = ({
                       '&:hover': { bgcolor: 'transparent' }
                     }}
                   >
-                    <TableCell sx={{ py: 3, pl: 0 }}>
-                       <Box 
+                    <TableCell sx={{ py: 3, pl: 0, textAlign: 'center' }}>
+                      <Box 
                         sx={{ 
                           display: 'inline-flex',
                           alignItems: 'center',
