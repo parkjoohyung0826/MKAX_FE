@@ -311,7 +311,7 @@ const GenerationResult = ({ data, onReset }: Props) => {
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255, 255, 255, 0.6)',
           boxShadow: '0 20px 50px rgba(0,0,0,0.03)',
-          p: { xs: 3, md: 8 }, 
+          p: { xs: 3, md: 6 }, 
           position: 'relative',
           overflow: 'hidden'
         }}
@@ -321,14 +321,10 @@ const GenerationResult = ({ data, onReset }: Props) => {
             {/* 탭 1: 분석 리포트 & 채용 */}
             {activeTab === 'report' && (
               <Box>
-                <CareerAnalysisReport analysisReport={data.analysisReport} />
-                
-                <Divider sx={{ my: 8, borderBottomWidth: 2, borderColor: 'rgba(0,0,0,0.06)' }} />
-
-                <Typography variant="h5" fontWeight={800} gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 4, color: '#1e293b' }}>
-                  <Work sx={{ mr: 1.5, color: '#2563EB' }} /> 맞춤 채용 정보
-                </Typography>
-                <JobPostingList jobPostings={data.jobPostings} />
+                <CareerAnalysisReport
+                  analysisReport={data.analysisReport}
+                  jobPostings={data.jobPostings}
+                />
               </Box>
             )}
 
@@ -401,7 +397,7 @@ const GenerationResult = ({ data, onReset }: Props) => {
         </Fade>
 
         {/* 하단 공통 버튼 */}
-        <Box sx={{ textAlign: 'center', mt: 10, pt: 4, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+        <Box sx={{ textAlign: 'center', mt: 3, pt: 4, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
           <Button 
             onClick={onReset} 
             variant="text" 

@@ -136,7 +136,7 @@ const SectionThreeImprovementGuide = ({
 
   return (
     <Box sx={{ width: '100%', maxWidth: '860px', mx: 'auto' }}>
-      {showDivider && <Divider sx={{ my: 8, borderColor: 'transparent' }} />}
+      {showDivider && <Divider sx={{ my: 3.5, borderColor: 'transparent' }} />}
 
       {/* 1. Header with Accent Bar */}
       <Box sx={{ mb: 7, px: 2 }}>
@@ -355,7 +355,7 @@ const SectionThreeImprovementGuide = ({
         </Box>
       )}
 
-      {/* 4. 실행 로드맵 (Modern Timeline Cards) */}
+      {/* 4. 실행 로드맵 (Simple Vertical Flow) */}
       {roadmap.length > 0 && (
         <Box sx={{ mb: 8, px: 2 }}>
            <Stack direction="row" alignItems="center" gap={2} sx={{ mb: 4 }}>
@@ -365,30 +365,41 @@ const SectionThreeImprovementGuide = ({
             </Typography>
           </Stack>
 
-          <Grid container spacing={3}>
+          <Stack spacing={3}>
             {roadmap.map((step, idx) => (
-              <Grid item xs={12} md={6} key={`${step.week}-${idx}`}>
-                <Paper elevation={0} sx={{ ...STYLES.card, mb: 0, height: '100%', display: 'flex', flexDirection: 'column', p: 4 }}>
-                  <Box sx={{ mb: 2.5 }}>
-                    <Chip 
-                      label={step.week} 
-                      size="small" 
-                      sx={{ 
-                        bgcolor: alpha(COLORS.primary, 0.08), 
-                        color: COLORS.primary, 
-                        fontWeight: 700, 
-                        borderRadius: '8px',
-                        mb: 1.5,
-                        height: '28px'
-                      }} 
-                    />
-                    <Typography variant="h6" fontWeight={800} color={COLORS.textTitle} sx={{ fontSize: '1.2rem', lineHeight: 1.4 }}>
-                      {step.title}
-                    </Typography>
-                  </Box>
-                  
-                  {step.tasks && step.tasks.length > 0 && (
-                    <List dense disablePadding sx={{ mt: 'auto' }}>
+              <Paper 
+                key={`${step.week}-${idx}`} 
+                elevation={0} 
+                sx={{ 
+                  ...STYLES.card, 
+                  mb: 0, 
+                  p: 4 
+                }}
+              >
+                {/* 상단: 주차 및 타이틀 */}
+                <Box sx={{ mb: 3 }}>
+                  <Chip 
+                    label={step.week} 
+                    size="small" 
+                    sx={{ 
+                      bgcolor: alpha(COLORS.primary, 0.08), 
+                      color: COLORS.primary, 
+                      fontWeight: 700, 
+                      borderRadius: '6px',
+                      mb: 1.5,
+                      height: '26px',
+                      fontSize: '0.8rem'
+                    }} 
+                  />
+                  <Typography variant="h6" fontWeight={800} color={COLORS.textTitle} sx={{ fontSize: '1.2rem', lineHeight: 1.4 }}>
+                    {step.title}
+                  </Typography>
+                </Box>
+                
+                {/* 하단: 할 일 목록 */}
+                {step.tasks && step.tasks.length > 0 && (
+                  <Box>
+                    <List dense disablePadding>
                       {step.tasks.map((task, i) => (
                         <ListItem key={i} sx={{ px: 0, py: 0.5, alignItems: 'flex-start' }}>
                            <PlaylistAddCheckCircleOutlined sx={{ fontSize: 18, color: COLORS.textLight, mt: 0.3, mr: 1.5, flexShrink: 0 }} />
@@ -396,11 +407,11 @@ const SectionThreeImprovementGuide = ({
                         </ListItem>
                       ))}
                     </List>
-                  )}
-                </Paper>
-              </Grid>
+                  </Box>
+                )}
+              </Paper>
             ))}
-          </Grid>
+          </Stack>
         </Box>
       )}
 

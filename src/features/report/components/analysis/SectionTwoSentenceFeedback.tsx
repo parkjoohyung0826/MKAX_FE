@@ -252,7 +252,7 @@ const SectionTwoSentenceFeedback = ({
 
   return (
     <Box sx={{ width: '100%', maxWidth: '800px', mx: 'auto' }}>
-      {showDivider && <Divider sx={{ my: 8, borderColor: 'transparent' }} />}
+      {showDivider && <Divider sx={{ my: 3.5, borderColor: 'transparent' }} />}
 
       {/* 섹션 인트로: Antigravity Title */}
       <Box sx={{ mb: 6, px: 1, textAlign: 'left' }}>
