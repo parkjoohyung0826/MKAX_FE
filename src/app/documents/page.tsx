@@ -6,6 +6,7 @@ import AppShell from '@/shared/components/AppShell';
 import { useRouter } from 'next/navigation';
 import { useReportStore } from '@/features/report/store';
 import { useResumeStore } from '@/features/resume/store';
+import { useCoverLetterStore } from '@/features/cover-letter/store';
 import { mockJobPostings } from '@/features/report/services/mockJobPostings';
 import { ResultData } from '@/features/report/types';
 
@@ -31,6 +32,34 @@ const DocumentsPage = () => {
   const router = useRouter();
   const { setResultData } = useReportStore();
   const { setFormattedResume } = useResumeStore();
+  const { setCoverLetterData } = useCoverLetterStore();
+
+  const toCoverLetterData = () => ({
+    growthProcess: '',
+    strengthsAndWeaknesses: '',
+    keyExperience: '',
+    motivation: '',
+  });
+
+  const toCoverLetterText = (data: ReturnType<typeof toCoverLetterData>) =>
+    `[성장과정]\n${data.growthProcess}\n\n[성격의 장, 단점]\n${data.strengthsAndWeaknesses}\n\n[주요 경력 및 업무 강점]\n${data.keyExperience}\n\n[지원 동기 및 입사 포부]\n${data.motivation}`.trim();
+
+  const normalizeCoverLetter = (coverLetter: any) => {
+    if (!Array.isArray(coverLetter)) return null;
+    const sectionMap: Record<string, keyof ReturnType<typeof toCoverLetterData>> = {
+      GROWTH_PROCESS: 'growthProcess',
+      STRENGTHS_AND_WEAKNESSES: 'strengthsAndWeaknesses',
+      KEY_EXPERIENCE: 'keyExperience',
+      MOTIVATION: 'motivation',
+    };
+    const base = toCoverLetterData();
+    coverLetter.forEach((item: any) => {
+      const key = sectionMap[item?.section];
+      if (!key) return;
+      base[key] = item?.finalDraft ?? item?.summary ?? '';
+    });
+    return base;
+  };
 
   const fetchByCode = async (code: string) => {
     const res = await fetch('/api/archive/fetch', {
@@ -63,8 +92,13 @@ const DocumentsPage = () => {
 
     try {
       const data = await fetchByCode(code);
+      const normalizedCoverLetter = normalizeCoverLetter(data.coverLetter);
+      if (normalizedCoverLetter) {
+        setCoverLetterData(normalizedCoverLetter);
+      }
+
       const mockResult: ResultData = {
-        aiCoverLetter: data.coverLetter ?? '',
+        aiCoverLetter: normalizedCoverLetter ? toCoverLetterText(normalizedCoverLetter) : (data.coverLetter ?? ''),
         aiResumeSummary: `${data?.resume?.name ?? ''}님의 경력 분석...`,
         jobPostings: mockJobPostings,
         resumeData: data.resume ?? {},

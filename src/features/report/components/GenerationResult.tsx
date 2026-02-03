@@ -40,12 +40,45 @@ interface Props {
 }
 
 type CoverLetterSectionKey = 'growthProcess' | 'strengthsAndWeaknesses' | 'keyExperience' | 'motivation';
+type CoverLetterSectionApiKey = 'GROWTH_PROCESS' | 'STRENGTHS_AND_WEAKNESSES' | 'KEY_EXPERIENCE' | 'MOTIVATION';
 
-const parseCoverLetter = (text: string): CoverLetterData => {
-  const data: CoverLetterData = {
-    growthProcess: '', strengthsAndWeaknesses: '', keyExperience: '', motivation: '',
-  };
+const toEmptyCoverLetterData = (): CoverLetterData => ({
+  growthProcess: '',
+  strengthsAndWeaknesses: '',
+  keyExperience: '',
+  motivation: '',
+});
+
+const parseCoverLetter = (text: unknown): CoverLetterData => {
+  const data = toEmptyCoverLetterData();
   if (!text) return data;
+
+  if (Array.isArray(text)) {
+    const sectionMap: Record<CoverLetterSectionApiKey, CoverLetterSectionKey> = {
+      GROWTH_PROCESS: 'growthProcess',
+      STRENGTHS_AND_WEAKNESSES: 'strengthsAndWeaknesses',
+      KEY_EXPERIENCE: 'keyExperience',
+      MOTIVATION: 'motivation',
+    };
+    text.forEach((item: any) => {
+      const key = sectionMap[item?.section as CoverLetterSectionApiKey];
+      if (!key) return;
+      data[key] = item?.finalDraft ?? item?.summary ?? '';
+    });
+    return data;
+  }
+
+  if (typeof text === 'object') {
+    const obj = text as Partial<CoverLetterData>;
+    return {
+      growthProcess: obj.growthProcess ?? '',
+      strengthsAndWeaknesses: obj.strengthsAndWeaknesses ?? '',
+      keyExperience: obj.keyExperience ?? '',
+      motivation: obj.motivation ?? '',
+    };
+  }
+
+  if (typeof text !== 'string') return data;
 
   const sectionTitles: Record<CoverLetterSectionKey, string> = {
     growthProcess: '[성장과정]',
@@ -55,12 +88,12 @@ const parseCoverLetter = (text: string): CoverLetterData => {
   };
 
   const foundSections = (Object.keys(sectionTitles) as CoverLetterSectionKey[])
-    .map(key => ({
+    .map((key) => ({
       key,
       title: sectionTitles[key],
       index: text.indexOf(sectionTitles[key]),
     }))
-    .filter(section => section.index !== -1)
+    .filter((section) => section.index !== -1)
     .sort((a, b) => a.index - b.index);
 
   if (foundSections.length === 0) {
@@ -107,6 +140,9 @@ const GenerationResult = ({ data, onReset }: Props) => {
 
   const handleTabChange = (event: React.MouseEvent<HTMLElement>, newTab: 'report' | 'resume' | 'coverLetter' | null) => {
     if (newTab !== null) {
+      if (newTab === 'coverLetter') {
+        console.log('[report] coverLetterData', coverLetterData);
+      }
       setActiveTab(newTab);
     }
   };

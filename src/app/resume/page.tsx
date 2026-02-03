@@ -34,7 +34,7 @@ const ResumePage = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(resumeData),
+        body: JSON.stringify({ ...resumeData, coverLetter: coverLetterData }),
       });
 
       if (!res.ok) {
