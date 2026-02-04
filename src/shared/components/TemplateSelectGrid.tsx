@@ -219,4 +219,6 @@ const TemplateSelectGrid = <T extends string>({ items, selectedId, onSelect }: P
   );
 };
 
+export type TemplateSelectGridProps<T extends string> = Props<T>;
+
 export default TemplateSelectGrid;

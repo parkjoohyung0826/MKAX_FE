@@ -1,9 +1,8 @@
 import React from 'react';
-import { Box } from '@mui/material';
-import StepHeader from '@/features/resume/components/steps/StepHeader';
 import { useCoverLetterStore } from '../../store';
 import { CoverLetterTemplateId } from '../../types';
-import TemplateSelectGrid, { TemplateSelectItem } from '@/shared/components/TemplateSelectGrid';
+import TemplateSelectSection from '@/shared/components/TemplateSelectSection';
+import { TemplateSelectItem } from '@/shared/components/TemplateSelectGrid';
 
 const templates: Array<TemplateSelectItem & { id: CoverLetterTemplateId }> = [
   {
@@ -28,17 +27,13 @@ const CoverLetterTemplateSelectStep = () => {
   const { selectedTemplate, setSelectedTemplate } = useCoverLetterStore();
 
   return (
-    <Box sx={{ py: 2 }}>
-      <StepHeader
-        title="템플릿 선택"
-        subtitle="작성 전에 자기소개서 스타일을 선택해주세요."
-      />
-      <TemplateSelectGrid
-        items={templates}
-        selectedId={selectedTemplate}
-        onSelect={setSelectedTemplate}
-      />
-    </Box>
+    <TemplateSelectSection
+      title="템플릿 선택"
+      subtitle="작성 전에 자기소개서 스타일을 선택해주세요."
+      items={templates}
+      selectedId={selectedTemplate}
+      onSelect={setSelectedTemplate}
+    />
   );
 };
 

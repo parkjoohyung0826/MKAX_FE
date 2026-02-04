@@ -90,7 +90,7 @@ const ResumeAssistantTextSection = ({
   name,
   placeholder,
   buttonLabel = 'AI 작성 도우미',
-  validateLabel = 'AI 검증하기',
+  validateLabel = '내용 검증하기',
 }: ResumeAssistantTextSectionProps) => {
   const [isAssistantOpen, setAssistantOpen] = useState(false);
   const [missingInfo, setMissingInfo] = useState('');
@@ -176,12 +176,15 @@ const ResumeAssistantTextSection = ({
           ) : null}
         </Box>
         <Box display="flex" gap={1}>
+          <Button size="small" onClick={handleOpenAssistant} startIcon={<AutoAwesome />} sx={aiButtonSx}>
+            {buttonLabel}
+          </Button>
           {onValidate && (
             <Button
               size="small"
               onClick={isValidating ? handleCancelValidate : handleValidate}
               sx={{
-                fontWeight: 700,
+                fontWeight: 600,
                 textTransform: 'none',
                 borderRadius: '20px',
                 px: 2,
@@ -204,9 +207,6 @@ const ResumeAssistantTextSection = ({
               {isValidating ? '검증 취소하기' : validateLabel}
             </Button>
           )}
-          <Button size="small" onClick={handleOpenAssistant} startIcon={<AutoAwesome />} sx={aiButtonSx}>
-            {buttonLabel}
-          </Button>
         </Box>
       </Box>
 

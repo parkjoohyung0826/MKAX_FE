@@ -1,9 +1,8 @@
 import React from 'react';
-import { Box } from '@mui/material';
-import StepHeader from './StepHeader';
 import { useResumeStore } from '../../store';
 import { ResumeTemplateId } from '../../types';
-import TemplateSelectGrid, { TemplateSelectItem } from '@/shared/components/TemplateSelectGrid';
+import TemplateSelectSection from '@/shared/components/TemplateSelectSection';
+import { TemplateSelectItem } from '@/shared/components/TemplateSelectGrid';
 
 const templateCards: Array<TemplateSelectItem & { id: ResumeTemplateId }> = [
   {
@@ -28,17 +27,13 @@ const TemplateSelectStep = () => {
   const { selectedTemplate, setSelectedTemplate } = useResumeStore();
 
   return (
-    <Box sx={{ py: 2 }}>
-      <StepHeader
-        title="템플릿 선택"
-        subtitle="작성 전에 원하는 이력서 디자인을 골라주세요. 이후에도 변경할 수 있습니다."
-      />
-      <TemplateSelectGrid
-        items={templateCards}
-        selectedId={selectedTemplate}
-        onSelect={setSelectedTemplate}
-      />
-    </Box>
+    <TemplateSelectSection
+      title="템플릿 선택"
+      subtitle="작성 전에 원하는 이력서 디자인을 골라주세요. 이후에도 변경할 수 있습니다."
+      items={templateCards}
+      selectedId={selectedTemplate}
+      onSelect={setSelectedTemplate}
+    />
   );
 };
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Box, Button } from '@mui/material';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import AIChatView, { ConversationStep, AIChatViewHandle } from '@/features/resume/components/AIChatView';
 import CoverLetterDirectInputStep from './steps/CoverLetterDirectInputStep';
@@ -133,78 +133,82 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
           resetDisabled={currentMode !== 'ai'}
         />
       )}
-      <motion.div
-        initial={{ opacity: 0, x: direction > 0 ? 30 : -30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        {isTemplateStep && <CoverLetterTemplateSelectStep />}
-        {isFinalStep && <FinalReviewStep />}
-        <Box sx={{ display: currentMode === 'ai' ? (isFinalStep || isTemplateStep ? 'none' : 'block') : 'none' }}>
-          <AIChatView
-              ref={aiChatRef}
-              activeStep={contentStepIndex}
-              steps={contentSteps}
-              onStepComplete={() => setIsStepComplete(true)}
-              onResetChat={async (args) => {
-                const sections = args?.sections?.length
-                  ? args.sections
-                  : args?.section
-                    ? [args.section]
-                    : [];
-                if (sections.length === 0) return;
-                await Promise.all(
-                  sections.map((section) =>
-                    fetch('/api/cover-letter/chat/reset', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      credentials: 'include',
-                      body: JSON.stringify({ section }),
-                    })
-                  )
-                );
-              }}
-              data={coverLetterData}
-              setData={(update) => {
-                const newValues =
-                  typeof update === 'function'
-                    ? update(coverLetterData)
-                    : update;
-                setCoverLetterData({ ...coverLetterData, ...newValues });
-              }}
-              conversationSteps={coverLetterConversationSteps}
-              hideResetButton
-              fieldApiConfigs={{
-                growthProcess: {
-                  endpoint: '/api/cover-letter/growth-process',
-                  summaryField: 'growthProcessSummary',
-                  resetSection: 'GROWTH_PROCESS',
-                },
-                strengthsAndWeaknesses: {
-                  endpoint: '/api/cover-letter/personality',
-                  summaryField: 'strengthsAndWeaknessesSummary',
-                  resetSection: 'PERSONALITY',
-                },
-                keyExperience: {
-                  endpoint: '/api/cover-letter/career-strength',
-                  summaryField: 'keyExperienceSummary',
-                  resetSection: 'CAREER_STRENGTH',
-                },
-                motivation: {
-                  endpoint: '/api/cover-letter/motivation-aspiration',
-                  summaryField: 'motivationSummary',
-                  resetSection: 'MOTIVATION_ASPIRATION',
-                },
-              }}
-          />
-        </Box>
-        <Box sx={{ display: currentMode === 'direct' ? (isFinalStep || isTemplateStep ? 'none' : 'block') : 'none' }}>
-          <CoverLetterDirectInputStep
-              activeStep={contentStepIndex}
-              isGenerating={isGenerating}
-          />
-        </Box>
-      </motion.div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeStep}
+          initial={{ opacity: 0, x: 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -24 }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+        >
+          {isTemplateStep && <CoverLetterTemplateSelectStep />}
+          {isFinalStep && <FinalReviewStep />}
+          <Box sx={{ display: currentMode === 'ai' ? (isFinalStep || isTemplateStep ? 'none' : 'block') : 'none' }}>
+            <AIChatView
+                ref={aiChatRef}
+                activeStep={contentStepIndex}
+                steps={contentSteps}
+                onStepComplete={() => setIsStepComplete(true)}
+                onResetChat={async (args) => {
+                  const sections = args?.sections?.length
+                    ? args.sections
+                    : args?.section
+                      ? [args.section]
+                      : [];
+                  if (sections.length === 0) return;
+                  await Promise.all(
+                    sections.map((section) =>
+                      fetch('/api/cover-letter/chat/reset', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ section }),
+                      })
+                    )
+                  );
+                }}
+                data={coverLetterData}
+                setData={(update) => {
+                  const newValues =
+                    typeof update === 'function'
+                      ? update(coverLetterData)
+                      : update;
+                  setCoverLetterData({ ...coverLetterData, ...newValues });
+                }}
+                conversationSteps={coverLetterConversationSteps}
+                hideResetButton
+                fieldApiConfigs={{
+                  growthProcess: {
+                    endpoint: '/api/cover-letter/growth-process',
+                    summaryField: 'growthProcessSummary',
+                    resetSection: 'GROWTH_PROCESS',
+                  },
+                  strengthsAndWeaknesses: {
+                    endpoint: '/api/cover-letter/personality',
+                    summaryField: 'strengthsAndWeaknessesSummary',
+                    resetSection: 'PERSONALITY',
+                  },
+                  keyExperience: {
+                    endpoint: '/api/cover-letter/career-strength',
+                    summaryField: 'keyExperienceSummary',
+                    resetSection: 'CAREER_STRENGTH',
+                  },
+                  motivation: {
+                    endpoint: '/api/cover-letter/motivation-aspiration',
+                    summaryField: 'motivationSummary',
+                    resetSection: 'MOTIVATION_ASPIRATION',
+                  },
+                }}
+            />
+          </Box>
+          <Box sx={{ display: currentMode === 'direct' ? (isFinalStep || isTemplateStep ? 'none' : 'block') : 'none' }}>
+            <CoverLetterDirectInputStep
+                activeStep={contentStepIndex}
+                isGenerating={isGenerating}
+            />
+          </Box>
+        </motion.div>
+      </AnimatePresence>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 6, pt: 3, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
         <Button disabled={activeStep === 0} onClick={handleBackStep} sx={{ color: '#64748b', fontWeight: 600, px: 3, py: 1, borderRadius: '20px', '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' } }} >
