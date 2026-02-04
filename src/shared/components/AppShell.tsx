@@ -42,6 +42,7 @@ const AppShell = ({ children, showParticles = false }: Props) => {
   const pathname = usePathname();
   const isResumePage = pathname === '/resume';
   const isDocumentsPage = pathname === '/documents';
+  const isReportOnlyPage = pathname === '/report-only';
   const { resetResultData } = useReportStore();
   const { resetResumeData } = useResumeStore();
   const { resetCoverLetterData } = useCoverLetterStore();
@@ -172,6 +173,22 @@ const AppShell = ({ children, showParticles = false }: Props) => {
                 }}
               >
                 {isMobile ? '조회' : '문서 조회'}
+              </Button>
+              <Button
+                onClick={() => router.push('/report-only')}
+                sx={{
+                  color: isReportOnlyPage ? '#2563EB' : '#64748b',
+                  fontWeight: 700,
+                  borderRadius: '20px',
+                  px: 2.5,
+                  bgcolor: isReportOnlyPage ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: 'rgba(37, 99, 235, 0.12)',
+                    color: '#2563EB',
+                  },
+                }}
+              >
+                {isMobile ? '리포트' : 'AI 리포트'}
               </Button>
             </Box>
           </Box>
