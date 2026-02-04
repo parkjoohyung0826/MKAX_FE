@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useImperativeHandle } from 'react';
 import { Box, Button } from '@mui/material';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -36,6 +36,7 @@ interface AIChatViewProps<T> {
   steps: string[];
   onStepComplete: () => void;
   onResetChat?: (args?: { section?: string; sections?: string[] }) => void | Promise<void>;
+  hideResetButton?: boolean;
   resetSectionMap?: Partial<Record<keyof T, string>>;
   data: T;
   setData: React.Dispatch<React.SetStateAction<T>>;
@@ -50,17 +51,25 @@ type FieldApiConfig<T> = {
   buildBody?: (args: { userInput: string; currentSummary: string; data: T }) => Record<string, unknown>;
 };
 
-const AIChatView = <T extends Record<string, any>>({
+export interface AIChatViewHandle {
+  resetCurrentStep: () => void;
+}
+
+const AIChatView = React.forwardRef(function AIChatView<T extends Record<string, any>>(
+  {
   activeStep,
   steps,
   onStepComplete,
   onResetChat,
+  hideResetButton,
   resetSectionMap,
   data,
   setData,
   conversationSteps,
   fieldApiConfigs,
-}: AIChatViewProps<T>) => {
+}: AIChatViewProps<T>,
+  ref: React.Ref<AIChatViewHandle>
+) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -462,10 +471,16 @@ const AIChatView = <T extends Record<string, any>>({
     }
   };
 
+  useImperativeHandle(ref, () => ({
+    resetCurrentStep: () => {
+      void handleResetChat();
+    },
+  }));
+
   return (
     <Box sx={{ maxWidth: '800px', mx: 'auto', p: 0, position: 'relative' }}>
       <Box sx={mainContainerSx}>
-        {onResetChat && (
+        {onResetChat && !hideResetButton && (
           <Box
             sx={{
               display: 'flex',
@@ -549,6 +564,6 @@ const AIChatView = <T extends Record<string, any>>({
       </PreviewDrawer>
     </Box>
   );
-};
+});
 
 export default AIChatView;

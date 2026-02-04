@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Box, Button, ButtonGroup } from '@mui/material';
+import React, { useState, useRef } from 'react';
+import { Box, Button } from '@mui/material';
 import { motion } from 'framer-motion';
 
-import AIChatView, { ConversationStep } from '@/features/resume/components/AIChatView';
+import AIChatView, { ConversationStep, AIChatViewHandle } from '@/features/resume/components/AIChatView';
 import CoverLetterDirectInputStep from './steps/CoverLetterDirectInputStep';
 import FinalReviewStep from './steps/FinalReviewStep';
 import QuestionPanel from './chat-panels/QuestionPanel';
 import ProgressStepper from '@/shared/components/ProgressStepper';
+import ModeToggleBar from '@/shared/components/ModeToggleBar';
 
 import { CoverLetterData } from '../types';
 import { useCoverLetterStore } from '../store';
@@ -59,6 +60,7 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
   const [direction, setDirection] = useState(0);
   const [isStepComplete, setIsStepComplete] = useState(false);
   const [stepInputModes, setStepInputModes] = useState<Record<number, InputMode>>({});
+  const aiChatRef = useRef<AIChatViewHandle | null>(null);
 
   const coverLetterCompletedSteps = [
     !!coverLetterData.growthProcess,
@@ -111,32 +113,12 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
         />
       </Box>
       {!isFinalStep && (
-        <ButtonGroup fullWidth sx={{ 
-            mb: 5, 
-            p: 0.5, 
-            bgcolor: '#f1f5f9', 
-            borderRadius: '16px',
-            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
-          }}>
-            {['ai', 'direct'].map((mode) => (
-              <Button 
-                key={mode}
-                variant={currentMode === mode ? 'contained' : 'text'}
-                onClick={() => handleModeChange(activeStep, mode as InputMode)}
-                sx={{ 
-                  borderRadius: '12px !important',
-                  py: 1.5,
-                  boxShadow: currentMode === mode ? '0 4px 12px rgba(37,99,235,0.2)' : 'none',
-                  bgcolor: currentMode === mode ? '#2563EB' : 'transparent',
-                  color: currentMode === mode ? 'white' : '#64748b',
-                  border: 'none',
-                  '&:hover': { bgcolor: currentMode === mode ? '#1d4ed8' : 'rgba(0,0,0,0.05)', border: 'none' }
-                }}
-              >
-                {mode === 'ai' ? 'AI 챗봇으로 작성' : '단계별로 직접 입력'}
-              </Button>
-            ))}
-        </ButtonGroup>
+        <ModeToggleBar
+          currentMode={currentMode}
+          onModeChange={(mode) => handleModeChange(activeStep, mode)}
+          onReset={() => aiChatRef.current?.resetCurrentStep()}
+          resetDisabled={currentMode !== 'ai'}
+        />
       )}
       <motion.div
         initial={{ opacity: 0, x: direction > 0 ? 30 : -30 }}
@@ -146,6 +128,7 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
         {isFinalStep && <FinalReviewStep />}
         <Box sx={{ display: currentMode === 'ai' ? (isFinalStep ? 'none' : 'block') : 'none' }}>
           <AIChatView
+              ref={aiChatRef}
               activeStep={activeStep}
               steps={coverLetterSteps}
               onStepComplete={() => setIsStepComplete(true)}
@@ -176,6 +159,7 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
                 setCoverLetterData({ ...coverLetterData, ...newValues });
               }}
               conversationSteps={coverLetterConversationSteps}
+              hideResetButton
               fieldApiConfigs={{
                 growthProcess: {
                   endpoint: '/api/cover-letter/growth-process',

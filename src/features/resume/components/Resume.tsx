@@ -1,16 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Box, Button, ButtonGroup } from '@mui/material';
+import React, { useState, useEffect, useRef } from 'react';
+import { Box, Button } from '@mui/material';
 import { Alert, Snackbar } from '@mui/material';
 import ProgressStepper from '@/shared/components/ProgressStepper';
 import FinalReviewStep from './steps/FinalReviewStep';
-import AIChatView, { ConversationStep } from './AIChatView';
+import AIChatView, { ConversationStep, AIChatViewHandle } from './AIChatView';
 import ConversationalForm from './ConversationalForm';
 import { ResumeData } from '../types';
 import { useResumeStore } from '../store';
 import TemplateSelectStep from './steps/TemplateSelectStep';
 import { AnimatePresence, motion } from 'framer-motion';
+import ModeToggleBar from '@/shared/components/ModeToggleBar';
 
 import BasicInfoPanel from '@/features/resume/components/chat-panels/BasicInfoPanel';
 import EducationPanel from '@/features/resume/components/chat-panels/EducationPanel';
@@ -80,6 +81,7 @@ const Resume = ({ onFinishResume }: Props) => {
   const isFinalStep = activeStep === resumeSteps.length - 1;
   const contentStepIndex = Math.max(activeStep - 1, 0);
   const progressActiveStep = Math.max(activeStep - 1, 0);
+  const aiChatRef = useRef<AIChatViewHandle | null>(null);
 
   const directCompletedSteps = [
     Boolean(selectedTemplate),
@@ -146,38 +148,12 @@ const Resume = ({ onFinishResume }: Props) => {
   const renderModeToggle = () => {
     if (isFinalStep || isTemplateStep) return null;
     return (
-      <ButtonGroup
-        fullWidth
-        sx={{
-          mb: 5,
-          p: 0.5,
-          bgcolor: '#f1f5f9',
-          borderRadius: '16px',
-          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)',
-        }}
-      >
-        {(['ai', 'direct'] as InputMode[]).map((mode) => (
-          <Button
-            key={mode}
-            variant={currentMode === mode ? 'contained' : 'text'}
-            onClick={() => handleModeChange(activeStep, mode)}
-            sx={{
-              borderRadius: '12px !important',
-              py: 1.5,
-              boxShadow: currentMode === mode ? '0 4px 12px rgba(37,99,235,0.2)' : 'none',
-              bgcolor: currentMode === mode ? '#2563EB' : 'transparent',
-              color: currentMode === mode ? 'white' : '#64748b',
-              border: 'none',
-              '&:hover': {
-                bgcolor: currentMode === mode ? '#1d4ed8' : 'rgba(0,0,0,0.05)',
-                border: 'none',
-              },
-            }}
-          >
-            {mode === 'ai' ? 'AI 챗봇으로 작성' : '단계별로 직접 입력'}
-          </Button>
-        ))}
-      </ButtonGroup>
+      <ModeToggleBar
+        currentMode={currentMode}
+        onModeChange={(mode) => handleModeChange(activeStep, mode)}
+        onReset={() => aiChatRef.current?.resetCurrentStep()}
+        resetDisabled={currentMode !== 'ai'}
+      />
     );
   };
 
@@ -194,6 +170,7 @@ const Resume = ({ onFinishResume }: Props) => {
       <>
         <Box sx={{ display: currentMode === 'ai' ? 'block' : 'none' }}>
           <AIChatView
+            ref={aiChatRef}
             activeStep={contentStepIndex}
             steps={contentSteps}
             onStepComplete={() => {
@@ -218,6 +195,7 @@ const Resume = ({ onFinishResume }: Props) => {
                 )
               );
             }}
+            hideResetButton
             data={resumeData}
             setData={(update) => {
               const newValues =
