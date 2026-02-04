@@ -22,7 +22,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 // 하위 컴포넌트 임포트
-import ResumeDisplay from '@/features/resume/components/ResumeDisplay';
+import ResumeTemplateRenderer from '@/features/resume/components/ResumeTemplateRenderer';
 import CoverLetterDisplay from '@/features/cover-letter/components/CoverLetterDisplay';
 import JobPostingList from './JobPostingList';
 import CareerAnalysisReport from './CareerAnalysisReport';
@@ -260,7 +260,7 @@ const GenerationResult = ({ data, onReset }: Props) => {
                   borderRadius: '4px', 
                   overflow: 'hidden' 
                 }}>
-                  <ResumeDisplay ref={resumeRef} />
+                  <ResumeTemplateRenderer ref={resumeRef} />
                 </Box>
               </Box>
             )}

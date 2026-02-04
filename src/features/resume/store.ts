@@ -1,10 +1,12 @@
 import { create } from 'zustand';
-import { ResumeData, ResumeFormatResult } from './types';
+import { ResumeData, ResumeFormatResult, ResumeTemplateId } from './types';
 
 interface ResumeStore {
   resumeData: ResumeData;
   setResumeData: (data: Partial<ResumeData>) => void;
   resetResumeData: () => void;
+  selectedTemplate: ResumeTemplateId;
+  setSelectedTemplate: (template: ResumeTemplateId) => void;
   resumeValidation: {
     education: boolean;
     workExperience: boolean;
@@ -39,12 +41,16 @@ const initialResumeValidation = {
   certifications: false,
 };
 
+const defaultTemplate: ResumeTemplateId = 'classic';
+
 export const useResumeStore = create<ResumeStore>((set) => ({
   resumeData: initialResumeData,
   setResumeData: (data) =>
     set((state) => ({
       resumeData: { ...state.resumeData, ...data },
     })),
+  selectedTemplate: defaultTemplate,
+  setSelectedTemplate: (template) => set({ selectedTemplate: template }),
   resumeValidation: initialResumeValidation,
   setResumeValidation: (data) =>
     set((state) => ({
@@ -53,5 +59,10 @@ export const useResumeStore = create<ResumeStore>((set) => ({
   formattedResume: null,
   setFormattedResume: (data) => set({ formattedResume: data }),
   resetResumeData: () =>
-    set({ resumeData: initialResumeData, resumeValidation: initialResumeValidation, formattedResume: null }),
+    set({
+      resumeData: initialResumeData,
+      resumeValidation: initialResumeValidation,
+      formattedResume: null,
+      selectedTemplate: defaultTemplate,
+    }),
 }));

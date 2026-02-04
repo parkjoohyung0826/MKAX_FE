@@ -9,6 +9,8 @@ import AIChatView, { ConversationStep } from './AIChatView';
 import ConversationalForm from './ConversationalForm';
 import { ResumeData } from '../types';
 import { useResumeStore } from '../store';
+import TemplateSelectStep from './steps/TemplateSelectStep';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import BasicInfoPanel from '@/features/resume/components/chat-panels/BasicInfoPanel';
 import EducationPanel from '@/features/resume/components/chat-panels/EducationPanel';
@@ -56,14 +58,16 @@ const resumeConversationSteps: ConversationStep<ResumeData>[] = [
   }
 ];
 
-const resumeSteps = ['기본 정보', '학력 사항', '경력 사항', '자격증/주요활동', '최종 검토'];
+const resumeSteps = ['템플릿 선택', '기본 정보', '학력 사항', '경력 사항', '자격증/주요활동', '최종 검토'];
+const contentSteps = resumeSteps.slice(1);
+const progressSteps = resumeSteps.slice(1);
 
 interface Props {
   onFinishResume: () => void;
 }
 
 const Resume = ({ onFinishResume }: Props) => {
-  const { resumeData, setResumeData, resumeValidation } = useResumeStore();
+  const { resumeData, setResumeData, resumeValidation, selectedTemplate } = useResumeStore();
   const [activeStep, setActiveStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isStepComplete, setIsStepComplete] = useState(false);
@@ -72,8 +76,13 @@ const Resume = ({ onFinishResume }: Props) => {
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const currentMode = stepInputModes[activeStep] || 'ai';
+  const isTemplateStep = activeStep === 0;
+  const isFinalStep = activeStep === resumeSteps.length - 1;
+  const contentStepIndex = Math.max(activeStep - 1, 0);
+  const progressActiveStep = Math.max(activeStep - 1, 0);
 
   const directCompletedSteps = [
+    Boolean(selectedTemplate),
     !!(resumeData.name && resumeData.desiredJob && resumeData.email && resumeData.phoneNumber),
     resumeValidation.education,
     resumeValidation.workExperience,
@@ -82,6 +91,9 @@ const Resume = ({ onFinishResume }: Props) => {
   ];
 
   const completedSteps = directCompletedSteps.map((completed, index) => {
+    if (index === 0 || index === resumeSteps.length - 1) {
+      return completed;
+    }
     const mode = stepInputModes[index] ?? 'ai';
     return mode === 'ai' ? !!aiCompletedSteps[index] : completed;
   });
@@ -123,56 +135,67 @@ const Resume = ({ onFinishResume }: Props) => {
     setActiveStep(step);
   };
 
+  const handleProgressStepClick = (step: number) => {
+    handleStepClick(step + 1);
+  };
+
   const handleModeChange = (step: number, mode: InputMode) => {
     setStepInputModes(prev => ({...prev, [step]: mode}));
   }
 
-  const renderResumeContent = () => {
-    const isFinalStep = activeStep === resumeSteps.length - 1;
-
+  const renderModeToggle = () => {
+    if (isFinalStep || isTemplateStep) return null;
     return (
-      <Box>
-        {!isFinalStep && (
-          <ButtonGroup
-            fullWidth
+      <ButtonGroup
+        fullWidth
+        sx={{
+          mb: 5,
+          p: 0.5,
+          bgcolor: '#f1f5f9',
+          borderRadius: '16px',
+          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)',
+        }}
+      >
+        {(['ai', 'direct'] as InputMode[]).map((mode) => (
+          <Button
+            key={mode}
+            variant={currentMode === mode ? 'contained' : 'text'}
+            onClick={() => handleModeChange(activeStep, mode)}
             sx={{
-              mb: 5,
-              p: 0.5,
-              bgcolor: '#f1f5f9',
-              borderRadius: '16px',
-              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)',
+              borderRadius: '12px !important',
+              py: 1.5,
+              boxShadow: currentMode === mode ? '0 4px 12px rgba(37,99,235,0.2)' : 'none',
+              bgcolor: currentMode === mode ? '#2563EB' : 'transparent',
+              color: currentMode === mode ? 'white' : '#64748b',
+              border: 'none',
+              '&:hover': {
+                bgcolor: currentMode === mode ? '#1d4ed8' : 'rgba(0,0,0,0.05)',
+                border: 'none',
+              },
             }}
           >
-            {(['ai', 'direct'] as InputMode[]).map((mode) => (
-              <Button
-                key={mode}
-                variant={currentMode === mode ? 'contained' : 'text'}
-                onClick={() => handleModeChange(activeStep, mode)}
-                sx={{
-                  borderRadius: '12px !important',
-                  py: 1.5,
-                  boxShadow: currentMode === mode ? '0 4px 12px rgba(37,99,235,0.2)' : 'none',
-                  bgcolor: currentMode === mode ? '#2563EB' : 'transparent',
-                  color: currentMode === mode ? 'white' : '#64748b',
-                  border: 'none',
-                  '&:hover': {
-                    bgcolor: currentMode === mode ? '#1d4ed8' : 'rgba(0,0,0,0.05)',
-                    border: 'none',
-                  },
-                }}
-              >
-                {mode === 'ai' ? 'AI 챗봇으로 작성' : '단계별로 직접 입력'}
-              </Button>
-            ))}
-          </ButtonGroup>
-        )}
+            {mode === 'ai' ? 'AI 챗봇으로 작성' : '단계별로 직접 입력'}
+          </Button>
+        ))}
+      </ButtonGroup>
+    );
+  };
 
-        {isFinalStep && <FinalReviewStep data={resumeData} />}
+  const renderStepBody = () => {
+    if (isTemplateStep) {
+      return <TemplateSelectStep />;
+    }
 
-        <Box sx={{ display: currentMode === 'ai' ? (isFinalStep ? 'none' : 'block') : 'none' }}>
+    if (isFinalStep) {
+      return <FinalReviewStep data={resumeData} />;
+    }
+
+    return (
+      <>
+        <Box sx={{ display: currentMode === 'ai' ? 'block' : 'none' }}>
           <AIChatView
-            activeStep={activeStep}
-            steps={resumeSteps}
+            activeStep={contentStepIndex}
+            steps={contentSteps}
             onStepComplete={() => {
               setIsStepComplete(true);
               setAiCompletedSteps((prev) => ({ ...prev, [activeStep]: true }));
@@ -220,29 +243,41 @@ const Resume = ({ onFinishResume }: Props) => {
             conversationSteps={resumeConversationSteps}
           />
         </Box>
-        <Box sx={{ display: currentMode === 'direct' ? (isFinalStep ? 'none' : 'block') : 'none' }}>
+        <Box sx={{ display: currentMode === 'direct' ? 'block' : 'none' }}>
           <ConversationalForm
-            activeStep={activeStep}
+            activeStep={contentStepIndex}
             direction={direction}
-            steps={resumeSteps}
+            steps={contentSteps}
           />
         </Box>
-      </Box>
+      </>
     );
   };
 
   return (
     <Box>
-      <Box sx={{ mt: -3 }}>
-        <ProgressStepper
-          steps={resumeSteps}
-          activeStep={activeStep}
-          onStepClick={handleStepClick}
-          completedSteps={completedSteps}
-        />
-      </Box>
-      
-      {renderResumeContent()}
+      {!isTemplateStep && (
+        <Box sx={{ mt: -3 }}>
+          <ProgressStepper
+            steps={progressSteps}
+            activeStep={progressActiveStep}
+            onStepClick={handleProgressStepClick}
+            completedSteps={completedSteps.slice(1)}
+          />
+        </Box>
+      )}
+      {renderModeToggle()}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeStep}
+          initial={{ opacity: 0, x: 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -24 }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+        >
+          {renderStepBody()}
+        </motion.div>
+      </AnimatePresence>
 
       <Box
         sx={{

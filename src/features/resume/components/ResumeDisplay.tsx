@@ -3,6 +3,7 @@ import React from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import { css } from '@emotion/react';
 import { useResumeStore } from '../store';
+import { ResumeData, ResumeFormatResult } from '../types';
 
 const borderColor = '#000';
 const headerBg = '#e9ecef';
@@ -67,11 +68,14 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
     </Box>
 );
 
-interface Props {}
+interface Props {
+  data?: ResumeData | ResumeFormatResult;
+  formattedData?: ResumeFormatResult | null;
+}
 
-const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
+const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data, formattedData }, ref) => {
     const { resumeData, formattedResume } = useResumeStore();
-    const displayData = formattedResume ?? resumeData;
+    const displayData = formattedData ?? data ?? formattedResume ?? resumeData;
     
     // 빈 줄 렌더링을 위한 헬퍼 함수
     const renderEmptyRows = (count: number, cells: { width: string, isLast?: boolean }[]) => {
@@ -283,7 +287,7 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>((props, ref) => {
                 <Typography variant="body1" fontWeight={600}>위 기재사항은 사실과 다름이 없습니다.</Typography>
                 <Typography variant="body1" sx={{ mt: 2 }}>2026년  01월  12일</Typography>
                 <Typography variant="h6" fontWeight={700} sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', pr: 4 }}>
-                    지원자 : {resumeData.name} (인)
+                    지원자 : {displayData.name} (인)
                 </Typography>
             </Box>
         </Paper>

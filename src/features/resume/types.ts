@@ -14,6 +14,8 @@ export interface ResumeData {
   certifications: string;
 }
 
+export type ResumeTemplateId = 'classic' | 'modern';
+
 export interface ResumeEducationItem {
   schoolName: string;
   major: string;
