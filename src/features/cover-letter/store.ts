@@ -1,10 +1,12 @@
 import { create } from 'zustand';
-import { CoverLetterData } from './types';
+import { CoverLetterData, CoverLetterTemplateId } from './types';
 
 interface CoverLetterState {
   coverLetterData: CoverLetterData;
   setCoverLetterData: (data: Partial<CoverLetterData>) => void;
   resetCoverLetterData: () => void;
+  selectedTemplate: CoverLetterTemplateId;
+  setSelectedTemplate: (template: CoverLetterTemplateId) => void;
 }
 
 const initialState: CoverLetterData = {
@@ -18,11 +20,15 @@ const initialState: CoverLetterData = {
   motivationSummary: '',
 };
 
+const defaultTemplate: CoverLetterTemplateId = 'classic';
+
 export const useCoverLetterStore = create<CoverLetterState>((set) => ({
   coverLetterData: initialState,
   setCoverLetterData: (data) =>
     set((state) => ({
       coverLetterData: { ...state.coverLetterData, ...data },
     })),
-  resetCoverLetterData: () => set({ coverLetterData: initialState }),
+  selectedTemplate: defaultTemplate,
+  setSelectedTemplate: (template) => set({ selectedTemplate: template }),
+  resetCoverLetterData: () => set({ coverLetterData: initialState, selectedTemplate: defaultTemplate }),
 }));

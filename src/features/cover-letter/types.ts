@@ -8,3 +8,5 @@ export interface CoverLetterData {
   motivation: string;
   motivationSummary?: string;
 }
+
+export type CoverLetterTemplateId = 'classic' | 'modern';

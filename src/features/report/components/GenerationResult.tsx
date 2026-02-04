@@ -23,7 +23,7 @@ import jsPDF from 'jspdf';
 
 // 하위 컴포넌트 임포트
 import ResumeTemplateRenderer from '@/features/resume/components/ResumeTemplateRenderer';
-import CoverLetterDisplay from '@/features/cover-letter/components/CoverLetterDisplay';
+import CoverLetterTemplateRenderer from '@/features/cover-letter/components/CoverLetterTemplateRenderer';
 import JobPostingList from './JobPostingList';
 import CareerAnalysisReport from './CareerAnalysisReport';
 import ReportControlBar from './ReportControlBar';
@@ -293,7 +293,7 @@ const GenerationResult = ({ data, onReset }: Props) => {
                   borderRadius: '4px',
                   overflow: 'hidden'
                 }}>
-                  <CoverLetterDisplay ref={coverLetterRef} resumeName={resumeData.name} />
+                  <CoverLetterTemplateRenderer ref={coverLetterRef} resumeName={resumeData.name} />
                 </Box>
               </Box>
             )}

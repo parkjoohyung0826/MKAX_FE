@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 
 import AIChatView, { ConversationStep, AIChatViewHandle } from '@/features/resume/components/AIChatView';
 import CoverLetterDirectInputStep from './steps/CoverLetterDirectInputStep';
+import CoverLetterTemplateSelectStep from './steps/CoverLetterTemplateSelectStep';
 import FinalReviewStep from './steps/FinalReviewStep';
 import QuestionPanel from './chat-panels/QuestionPanel';
 import ProgressStepper from '@/shared/components/ProgressStepper';
@@ -14,7 +15,9 @@ import ModeToggleBar from '@/shared/components/ModeToggleBar';
 import { CoverLetterData } from '../types';
 import { useCoverLetterStore } from '../store';
 
-const coverLetterSteps = ['성장과정', '성격의 장단점', '주요 경력 및 업무 강점', '지원 동기 및 포부', '최종 검토'];
+const coverLetterSteps = ['템플릿 선택', '성장과정', '성격의 장단점', '주요 경력 및 업무 강점', '지원 동기 및 포부', '최종 검토'];
+const contentSteps = coverLetterSteps.slice(1);
+const progressSteps = coverLetterSteps.slice(1);
 
 type InputMode = 'ai' | 'direct';
 
@@ -55,7 +58,7 @@ interface Props {
 }
 
 const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
-  const { coverLetterData, setCoverLetterData } = useCoverLetterStore();
+  const { coverLetterData, setCoverLetterData, selectedTemplate } = useCoverLetterStore();
   const [activeStep, setActiveStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isStepComplete, setIsStepComplete] = useState(false);
@@ -63,6 +66,7 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
   const aiChatRef = useRef<AIChatViewHandle | null>(null);
 
   const coverLetterCompletedSteps = [
+    Boolean(selectedTemplate),
     !!coverLetterData.growthProcess,
     !!coverLetterData.strengthsAndWeaknesses,
     !!coverLetterData.keyExperience,
@@ -95,24 +99,33 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
     setActiveStep(step);
   };
 
+  const handleProgressStepClick = (step: number) => {
+    handleStepClick(step + 1);
+  };
+
   const handleModeChange = (step: number, mode: InputMode) => {
     setStepInputModes(prev => ({...prev, [step]: mode}));
   }
   
+  const isTemplateStep = activeStep === 0;
   const isFinalStep = activeStep === coverLetterSteps.length - 1;
   const currentMode = stepInputModes[activeStep] || 'ai';
+  const contentStepIndex = Math.max(activeStep - 1, 0);
+  const progressActiveStep = Math.max(activeStep - 1, 0);
 
   return (
     <Box>
-      <Box sx={{mt: -3}}>
-        <ProgressStepper
-          steps={coverLetterSteps}
-          activeStep={activeStep}
-          onStepClick={handleStepClick}
-          completedSteps={coverLetterCompletedSteps}
-        />
-      </Box>
-      {!isFinalStep && (
+      {!isTemplateStep && (
+        <Box sx={{ mt: -3 }}>
+          <ProgressStepper
+            steps={progressSteps}
+            activeStep={progressActiveStep}
+            onStepClick={handleProgressStepClick}
+            completedSteps={coverLetterCompletedSteps.slice(1)}
+          />
+        </Box>
+      )}
+      {!isFinalStep && !isTemplateStep && (
         <ModeToggleBar
           currentMode={currentMode}
           onModeChange={(mode) => handleModeChange(activeStep, mode)}
@@ -125,12 +138,13 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3 }}
       >
+        {isTemplateStep && <CoverLetterTemplateSelectStep />}
         {isFinalStep && <FinalReviewStep />}
-        <Box sx={{ display: currentMode === 'ai' ? (isFinalStep ? 'none' : 'block') : 'none' }}>
+        <Box sx={{ display: currentMode === 'ai' ? (isFinalStep || isTemplateStep ? 'none' : 'block') : 'none' }}>
           <AIChatView
               ref={aiChatRef}
-              activeStep={activeStep}
-              steps={coverLetterSteps}
+              activeStep={contentStepIndex}
+              steps={contentSteps}
               onStepComplete={() => setIsStepComplete(true)}
               onResetChat={async (args) => {
                 const sections = args?.sections?.length
@@ -184,9 +198,9 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
               }}
           />
         </Box>
-        <Box sx={{ display: currentMode === 'direct' ? (isFinalStep ? 'none' : 'block') : 'none' }}>
+        <Box sx={{ display: currentMode === 'direct' ? (isFinalStep || isTemplateStep ? 'none' : 'block') : 'none' }}>
           <CoverLetterDirectInputStep
-              activeStep={activeStep}
+              activeStep={contentStepIndex}
               isGenerating={isGenerating}
           />
         </Box>

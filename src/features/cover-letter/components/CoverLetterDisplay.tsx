@@ -53,10 +53,12 @@ const contentCellStyle = css`
 
 interface Props {
   resumeName: string;
+  data?: CoverLetterData;
 }
 
-const CoverLetterDisplay = React.forwardRef<HTMLDivElement, Props>(({ resumeName }, ref) => {
+const CoverLetterDisplay = React.forwardRef<HTMLDivElement, Props>(({ resumeName, data }, ref) => {
   const { coverLetterData } = useCoverLetterStore();
+  const displayData = data ?? coverLetterData;
 
   const normalizeContent = (value: unknown) => {
     if (typeof value === 'string') return value;
@@ -117,7 +119,7 @@ const CoverLetterDisplay = React.forwardRef<HTMLDivElement, Props>(({ resumeName
               {/* 오른쪽 내용 */}
               <div css={contentCellStyle}>
                 
-                {normalizeContent(coverLetterData[section.key])}
+                {normalizeContent(displayData[section.key])}
               </div>
             </div>
           ))}
