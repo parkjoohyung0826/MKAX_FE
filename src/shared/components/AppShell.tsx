@@ -10,7 +10,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { AutoAwesome, Restore } from '@mui/icons-material';
+import { AutoAwesome } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCoverLetterStore } from '@/features/cover-letter/store';
@@ -158,7 +158,6 @@ const AppShell = ({ children, showParticles = false }: Props) => {
                 {isMobile ? '작성' : '문서 작성'}
               </Button>
               <Button
-                startIcon={<Restore />}
                 onClick={() => router.push('/documents')}
                 sx={{
                   color: isDocumentsPage ? '#2563EB' : '#64748b',

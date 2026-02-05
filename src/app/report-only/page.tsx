@@ -48,7 +48,7 @@ const ReportOnlyPage = () => {
     if (!resumeFile || !coverLetterFile || isSubmitting) return;
     setIsSubmitting(true);
     try {
-      const { code, report } = await requestPdfAnalysisReport(
+      const { code, report, resumeUrl, coverLetterUrl } = await requestPdfAnalysisReport(
         resumeFile ?? undefined,
         coverLetterFile ?? undefined
       );
@@ -59,6 +59,9 @@ const ReportOnlyPage = () => {
         resumeData: emptyResumeData,
         accessCode: code,
         analysisReport: report ?? null,
+        resumeUrl,
+        coverLetterUrl,
+        analysisReportSourceType: 'pdf',
       };
       setResultData(result);
       setToastMessage('리포트 생성이 완료되었습니다.');

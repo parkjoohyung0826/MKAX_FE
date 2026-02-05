@@ -82,6 +82,9 @@ export interface ResultData {
   resumeData: ResumeData;
   accessCode?: string;
   analysisReport?: AnalysisReport | null;
+  resumeUrl?: string;
+  coverLetterUrl?: string;
+  analysisReportSourceType?: 'json' | 'pdf';
 }
 
 export type { JobPosting };

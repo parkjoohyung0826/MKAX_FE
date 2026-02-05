@@ -237,30 +237,43 @@ const GenerationResult = ({ data, onReset }: Props) => {
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Box sx={{ mb: 5, width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography variant="h6" fontWeight={700} color="#334155">
-                     생성된 이력서 미리보기
+                     {data.analysisReportSourceType === 'pdf' ? '이력서 미리보기' : '생성된 이력서 미리보기'}
                   </Typography>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    startIcon={<Download />}
-                    onClick={() => handleDownloadPDF(resumeRef, `${resumeData.name}_이력서.pdf`)}
-                    sx={{ 
-                      py: 1.2, px: 3, 
-                      fontSize: '1rem', fontWeight: 700,
-                      bgcolor: '#2563EB', '&:hover': { bgcolor: '#1d4ed8' },
-                      borderRadius: '16px',
-                      boxShadow: '0 8px 20px rgba(37, 99, 235, 0.25)'
-                    }}
-                  >
-                    PDF 다운로드
-                  </Button>
+                  {data.analysisReportSourceType !== 'pdf' && (
+                    <Button
+                      variant="contained"
+                      size="large"
+                      startIcon={<Download />}
+                      onClick={() => handleDownloadPDF(resumeRef, `${resumeData.name}_이력서.pdf`)}
+                      sx={{ 
+                        py: 1.2, px: 3, 
+                        fontSize: '1rem', fontWeight: 700,
+                        bgcolor: '#2563EB', '&:hover': { bgcolor: '#1d4ed8' },
+                        borderRadius: '16px',
+                        boxShadow: '0 8px 20px rgba(37, 99, 235, 0.25)'
+                      }}
+                    >
+                      PDF 다운로드
+                    </Button>
+                  )}
                 </Box>
                 <Box sx={{ 
                   boxShadow: '0 10px 40px rgba(0,0,0,0.1)', 
-                  borderRadius: '4px', 
-                  overflow: 'hidden' 
+                  borderRadius: '12px', 
+                  overflow: 'hidden',
+                  width: '100%',
+                  bgcolor: 'white',
                 }}>
-                  <ResumeTemplateRenderer ref={resumeRef} />
+                  {data.resumeUrl ? (
+                    <Box
+                      component="iframe"
+                      src={data.resumeUrl}
+                      title="이력서 PDF 미리보기"
+                      sx={{ width: '100%', height: '780px', border: 'none', display: 'block' }}
+                    />
+                  ) : (
+                    <ResumeTemplateRenderer ref={resumeRef} />
+                  )}
                 </Box>
               </Box>
             )}
@@ -270,30 +283,43 @@ const GenerationResult = ({ data, onReset }: Props) => {
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Box sx={{ mb: 5, width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                    <Typography variant="h6" fontWeight={700} color="#334155">
-                     생성된 자기소개서 미리보기
+                     {data.analysisReportSourceType === 'pdf' ? '자기소개서 미리보기' : '생성된 자기소개서 미리보기'}
                   </Typography>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    startIcon={<Download />}
-                    onClick={() => handleDownloadPDF(coverLetterRef, `${resumeData.name}_자기소개서.pdf`)}
-                    sx={{ 
-                      py: 1.2, px: 3, 
-                      fontSize: '1rem', fontWeight: 700,
-                      bgcolor: '#2563EB', '&:hover': { bgcolor: '#1d4ed8' },
-                      borderRadius: '16px',
-                      boxShadow: '0 8px 20px rgba(37, 99, 235, 0.25)'
-                    }}
-                  >
-                    PDF 다운로드
-                  </Button>
+                  {data.analysisReportSourceType !== 'pdf' && (
+                    <Button
+                      variant="contained"
+                      size="large"
+                      startIcon={<Download />}
+                      onClick={() => handleDownloadPDF(coverLetterRef, `${resumeData.name}_자기소개서.pdf`)}
+                      sx={{ 
+                        py: 1.2, px: 3, 
+                        fontSize: '1rem', fontWeight: 700,
+                        bgcolor: '#2563EB', '&:hover': { bgcolor: '#1d4ed8' },
+                        borderRadius: '16px',
+                        boxShadow: '0 8px 20px rgba(37, 99, 235, 0.25)'
+                      }}
+                    >
+                      PDF 다운로드
+                    </Button>
+                  )}
                 </Box>
                 <Box sx={{ 
                   boxShadow: '0 10px 40px rgba(0,0,0,0.1)', 
-                  borderRadius: '4px',
-                  overflow: 'hidden'
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  width: '100%',
+                  bgcolor: 'white',
                 }}>
-                  <CoverLetterTemplateRenderer ref={coverLetterRef} resumeName={resumeData.name} />
+                  {data.coverLetterUrl ? (
+                    <Box
+                      component="iframe"
+                      src={data.coverLetterUrl}
+                      title="자기소개서 PDF 미리보기"
+                      sx={{ width: '100%', height: '780px', border: 'none', display: 'block' }}
+                    />
+                  ) : (
+                    <CoverLetterTemplateRenderer ref={coverLetterRef} resumeName={resumeData.name} />
+                  )}
                 </Box>
               </Box>
             )}

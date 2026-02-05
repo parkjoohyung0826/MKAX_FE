@@ -71,6 +71,7 @@ const ResumePage = () => {
         resumeData: resume ?? resumeData,
         accessCode: code,
         analysisReport,
+        analysisReportSourceType: 'json',
       };
       setResultData(mockResult);
       router.push('/report');

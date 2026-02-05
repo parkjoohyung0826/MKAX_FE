@@ -101,6 +101,26 @@ const DocumentsPage = () => {
         setCoverLetterData(normalizedCoverLetter);
       }
 
+      const resumeUrl =
+        data.resumeUrl ??
+        data.resume_url ??
+        data.resumePdfUrl ??
+        data.resume_pdf_url ??
+        data.resumePDFUrl ??
+        data.analysisReportSourceUrls?.resumeUrl ??
+        data.analysis_report_source_urls?.resumeUrl;
+      const coverLetterUrl =
+        data.coverLetterUrl ??
+        data.cover_letter_url ??
+        data.coverLetterPdfUrl ??
+        data.cover_letter_pdf_url ??
+        data.coverLetterPDFUrl ??
+        data.analysisReportSourceUrls?.coverLetterUrl ??
+        data.analysis_report_source_urls?.coverLetterUrl;
+      const inferredSource =
+        data.analysisReportSourceType ??
+        data.analysis_report_source_type ??
+        (resumeUrl || coverLetterUrl ? 'pdf' : 'json');
       const mockResult: ResultData = {
         aiCoverLetter: normalizedCoverLetter ? toCoverLetterText(normalizedCoverLetter) : (data.coverLetter ?? ''),
         aiResumeSummary: `${data?.resume?.name ?? ''}님의 경력 분석...`,
@@ -108,6 +128,9 @@ const DocumentsPage = () => {
         resumeData: data.resume ?? {},
         accessCode: code,
         analysisReport: data.analysisReport ?? null,
+        resumeUrl,
+        coverLetterUrl,
+        analysisReportSourceType: inferredSource,
       };
       if (data.resume) {
         setFormattedResume(data.resume);

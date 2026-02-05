@@ -17,5 +17,10 @@ export async function requestPdfAnalysisReport(
     throw new Error(err?.message ?? 'PDF 분석 요청 실패');
   }
 
-  return res.json() as Promise<{ code: string; report: any }>;
+  return res.json() as Promise<{
+    code: string;
+    report: any;
+    resumeUrl?: string;
+    coverLetterUrl?: string;
+  }>;
 }
