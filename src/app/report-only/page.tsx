@@ -1,100 +1,184 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Box, Button, Paper, Typography, useMediaQuery } from '@mui/material';
+import { Alert, Box, Button, Paper, Snackbar, Typography, useMediaQuery } from '@mui/material';
 import { CloudUploadOutlined, DescriptionOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { AnimatePresence, motion } from 'framer-motion';
 import AppShell from '@/shared/components/AppShell';
+import LoadingIndicator from '@/shared/components/LoadingIndicator';
+import { requestPdfAnalysisReport } from '@/features/report/services/requestPdfAnalysisReport';
+import { useReportStore } from '@/features/report/store';
+import { mockJobPostings } from '@/features/report/services/mockJobPostings';
+import { ResultData } from '@/features/report/types';
+import { ResumeData } from '@/features/resume/types';
+import { useRouter } from 'next/navigation';
 
 const ReportOnlyPage = () => {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastSeverity, setToastSeverity] = useState<'success' | 'error'>('success');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { setResultData } = useReportStore();
+  const router = useRouter();
+
+  const emptyResumeData: ResumeData = {
+    name: '',
+    englishName: '',
+    dateOfBirth: '',
+    email: '',
+    phoneNumber: '',
+    emergencyContact: '',
+    address: '',
+    photo: '',
+    desiredJob: '',
+    education: '',
+    workExperience: '',
+    coreCompetencies: '',
+    certifications: '',
+  };
+
+  const canSubmit = Boolean(resumeFile && coverLetterFile) && !isSubmitting;
+
+  const handleGenerateReport = async () => {
+    if (!resumeFile || !coverLetterFile || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const { code, report } = await requestPdfAnalysisReport(
+        resumeFile ?? undefined,
+        coverLetterFile ?? undefined
+      );
+      const result: ResultData = {
+        aiCoverLetter: '',
+        aiResumeSummary: '',
+        jobPostings: mockJobPostings,
+        resumeData: emptyResumeData,
+        accessCode: code,
+        analysisReport: report ?? null,
+      };
+      setResultData(result);
+      setToastMessage('리포트 생성이 완료되었습니다.');
+      setToastSeverity('success');
+      setToastOpen(true);
+      router.push('/report');
+    } catch (error) {
+      setToastMessage(error instanceof Error ? error.message : 'PDF 분석 요청 실패');
+      setToastSeverity('error');
+      setToastOpen(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <AppShell>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key="report-title"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.6 }}
-        >
-          <Box sx={{ textAlign: 'center', mb: 5 }}>
-            <Typography
-              variant={isMobile ? 'h5' : 'h4'}
-              fontWeight={900}
-              gutterBottom
+      {isSubmitting ? (
+        <LoadingIndicator />
+      ) : (
+        <>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key="report-title"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.6 }}
+            >
+              <Box sx={{ textAlign: 'center', mb: 5 }}>
+                <Typography
+                  variant={isMobile ? 'h5' : 'h4'}
+                  fontWeight={900}
+                  gutterBottom
+                  sx={{
+                    background: 'linear-gradient(45deg, #1e293b 30%, #2563EB 90%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    letterSpacing: '-1px',
+                    wordBreak: 'keep-all',
+                  }}
+                >
+                  AI 리포트 전용
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+                  이력서와 자기소개서 PDF를 업로드하면 분석 리포트만 생성합니다.
+                </Typography>
+              </Box>
+            </motion.div>
+          </AnimatePresence>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Paper
+              elevation={0}
               sx={{
-                background: 'linear-gradient(45deg, #1e293b 30%, #2563EB 90%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                letterSpacing: '-1px',
-                wordBreak: 'keep-all',
+                maxWidth: 900,
+                mx: 'auto',
+                p: { xs: 3, md: 5 },
+                borderRadius: '28px',
+                bgcolor: 'rgba(255, 255, 255, 0.75)',
+                border: '1px solid rgba(255, 255, 255, 0.8)',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.05)',
               }}
             >
-              AI 리포트 전용
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-              이력서와 자기소개서 PDF를 업로드하면 분석 리포트만 생성합니다.
-            </Typography>
-          </Box>
-        </motion.div>
-      </AnimatePresence>
+              <Box sx={{ display: 'grid', gap: 3 }}>
+                <FileDropCard
+                  title="이력서 PDF"
+                  description="이력서 파일(PDF)을 업로드하세요."
+                  file={resumeFile}
+                  onChange={setResumeFile}
+                />
+                <FileDropCard
+                  title="자기소개서 PDF"
+                  description="자기소개서 파일(PDF)을 업로드하세요."
+                  file={coverLetterFile}
+                  onChange={setCoverLetterFile}
+                />
+              </Box>
 
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
+                <Button
+                  variant="contained"
+                  disabled={!canSubmit}
+                  onClick={handleGenerateReport}
+                  sx={{
+                    px: 4,
+                    py: 1.3,
+                    borderRadius: '30px',
+                    fontWeight: 700,
+                    boxShadow: '0 8px 16px rgba(37, 99, 235, 0.2)',
+                    background: 'linear-gradient(45deg, #2563EB, #1d4ed8)',
+                  }}
+                >
+                  리포트 생성
+                </Button>
+              </Box>
+            </Paper>
+          </motion.div>
+        </>
+      )}
+
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={3000}
+        onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Paper
-          elevation={0}
-          sx={{
-            maxWidth: 900,
-            mx: 'auto',
-            p: { xs: 3, md: 5 },
-            borderRadius: '28px',
-            bgcolor: 'rgba(255, 255, 255, 0.75)',
-            border: '1px solid rgba(255, 255, 255, 0.8)',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.05)',
-          }}
+        <Alert
+          onClose={() => setToastOpen(false)}
+          severity={toastSeverity}
+          variant="filled"
+          sx={{ width: '100%', borderRadius: '12px', fontWeight: 600 }}
         >
-          <Box sx={{ display: 'grid', gap: 3 }}>
-            <FileDropCard
-              title="이력서 PDF"
-              description="이력서 파일(PDF)을 업로드하세요."
-              file={resumeFile}
-              onChange={setResumeFile}
-            />
-            <FileDropCard
-              title="자기소개서 PDF"
-              description="자기소개서 파일(PDF)을 업로드하세요."
-              file={coverLetterFile}
-              onChange={setCoverLetterFile}
-            />
-          </Box>
-
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
-            <Button
-              variant="contained"
-              disabled
-              sx={{
-                px: 4,
-                py: 1.3,
-                borderRadius: '30px',
-                fontWeight: 700,
-                boxShadow: '0 8px 16px rgba(37, 99, 235, 0.2)',
-                background: 'linear-gradient(45deg, #2563EB, #1d4ed8)',
-              }}
-            >
-              리포트 생성 (준비 중)
-            </Button>
-          </Box>
-        </Paper>
-      </motion.div>
+          {toastMessage}
+        </Alert>
+      </Snackbar>
     </AppShell>
   );
 };

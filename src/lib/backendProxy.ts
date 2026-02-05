@@ -54,3 +54,61 @@ export async function proxyPostToBackend(req: Request, opts: ProxyOptions) {
     );
   }
 }
+
+export async function proxyPostToBackendRaw(req: Request, opts: ProxyOptions) {
+  try {
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!backendUrl) {
+      return NextResponse.json(
+        { message: "Missing NEXT_PUBLIC_API_BASE_URL" },
+        { status: 500 }
+      );
+    }
+
+    const cookieHeader = req.headers.get("cookie");
+    const contentType = req.headers.get("content-type");
+    const body = await req.arrayBuffer();
+
+    const res = await fetch(`${backendUrl}${opts.backendPath}`, {
+      method: "POST",
+      headers: {
+        ...(contentType ? { "Content-Type": contentType } : {}),
+        ...(cookieHeader ? { cookie: cookieHeader } : {}),
+      },
+      body,
+    });
+
+    const text = await res.text();
+
+    if (!res.ok) {
+      const nextRes = NextResponse.json(
+        { message: "Backend error", detail: text },
+        { status: res.status }
+      );
+      const setCookie = res.headers.get("set-cookie");
+      if (setCookie) {
+        nextRes.headers.set("set-cookie", setCookie);
+      }
+      return nextRes;
+    }
+
+    let data: unknown = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = text;
+    }
+
+    const nextRes = NextResponse.json(data ?? {});
+    const setCookie = res.headers.get("set-cookie");
+    if (setCookie) {
+      nextRes.headers.set("set-cookie", setCookie);
+    }
+    return nextRes;
+  } catch (e: any) {
+    return NextResponse.json(
+      { message: e?.message ?? "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
