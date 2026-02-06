@@ -13,6 +13,9 @@ export async function requestPdfAnalysisReport(
   });
 
   if (!res.ok) {
+    if (res.status === 413) {
+      throw new Error('파일 용량이 커서 리포트를 생성할 수 없습니다.');
+    }
     const err = await res.json().catch(() => ({}));
     throw new Error(err?.message ?? 'PDF 분석 요청 실패');
   }
