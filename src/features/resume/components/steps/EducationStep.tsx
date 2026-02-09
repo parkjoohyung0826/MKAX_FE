@@ -96,7 +96,7 @@ const EducationStep = () => {
         onChange={handleChange}
         rows={5}
         name="education"
-        placeholder="예: OO대학교 컴퓨터공학과 졸업 (2018.03 ~ 2024.02)\n- 주요 수강 과목: 데이터베이스, 알고리즘, 웹프로그래밍\n- 졸업 프로젝트: AI 기반 추천 시스템 개발"
+        placeholder={`예: OO대학교 컴퓨터공학과 졸업 (2018.03 ~ 2024.02)\n- 주요 수강 과목: 데이터베이스, 알고리즘, 웹프로그래밍\n- 졸업 프로젝트: AI 기반 추천 시스템 개발`}
       />
     </Box>
   );

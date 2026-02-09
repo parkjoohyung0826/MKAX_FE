@@ -95,7 +95,7 @@ const WorkExperienceStep = () => {
         onChange={handleChange}
         rows={7}
         name="workExperience"
-        placeholder="예: (주)테크스타트업 (2021.01 ~ 재직중)\n- 주요 역할: 백엔드 리드 개발자\n- 주요 성과: 레거시 시스템 마이그레이션을 통해 서버 비용 40% 절감\n- 사용 기술: Node.js, AWS, Docker"
+        placeholder={`예: (주)테크스타트업 (2021.01 ~ 재직중)\n- 주요 역할: 백엔드 리드 개발자\n- 주요 성과: 레거시 시스템 마이그레이션을 통해 서버 비용 40% 절감\n- 사용 기술: Node.js, AWS, Docker`}
       />
     </Box>
   );

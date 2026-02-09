@@ -235,6 +235,9 @@ const ResumeAssistantTextSection = ({
         }}
         sx={{
           ...glassInputSx,
+          '& .MuiInputBase-input::placeholder': {
+            whiteSpace: 'pre-line',
+          },
           '& .MuiOutlinedInput-root': {
             ...(glassInputSx as any)['& .MuiOutlinedInput-root'],
             animation: isValidating ? `${glowingPulse} 2s infinite ease-in-out` : 'none',

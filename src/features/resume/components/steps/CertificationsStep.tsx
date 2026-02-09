@@ -158,7 +158,7 @@ const CertificationsStep = () => {
         onChange={handleChangeActivity}
         rows={4}
           name="coreCompetencies"
-          placeholder="예: 삼성 청년 SW 아카데미 (SSAFY) 10기 수료 (2023.07 ~ 2024.01)\nOOO 대외활동 (2022.01 ~ 2022.06) - 프로젝트 관리 및 기획 담당"
+          placeholder={`예: 삼성 청년 SW 아카데미 (SSAFY) 10기 수료 (2023.07 ~ 2024.01)\nOOO 대외활동 (2022.01 ~ 2022.06) - 프로젝트 관리 및 기획 담당`}
         />
 
         {/* 자격증 */}
@@ -173,7 +173,7 @@ const CertificationsStep = () => {
         onChange={handleChangeCertifacation}
         rows={3}
           name="certifications"
-          placeholder="예: 정보처리기사 (2023.05)\nTOEIC 900 (2023.08)"
+          placeholder={`예: 정보처리기사 (2023.05)\nTOEIC 900 (2023.08)`}
         />
       </Box>
     </Box>
