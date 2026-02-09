@@ -25,6 +25,7 @@ const glassSectionSx = {
   backgroundColor: 'rgba(255, 255, 255, 0.6)',
   borderRadius: '24px',
   p: 4,
+  pb: 2,
   mb: 3,
   border: '1px solid rgba(255, 255, 255, 0.6)',
   transition: 'all 0.3s ease',
@@ -127,6 +128,10 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
   const section = coverLetterSections[activeStep];
   if (!section) return null;
   const selectedSectionInfo = coverLetterSections.find((item) => item.id === selectedSection);
+  const getSectionCharCount = (sectionId: string) => {
+    const value = coverLetterData[sectionId as keyof CoverLetterData];
+    return value ? value.length : 0;
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -278,6 +283,11 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
           disabled={isGenerating}
           sx={glassInputSx}
         />
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+          <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+            {getSectionCharCount(section.id)}자
+          </Typography>
+        </Box>
       </Box>
 
       {/* 작성 가이드 모달 */}
