@@ -1,7 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Alert, Box, Button, Snackbar, TextField, Typography, Paper, useMediaQuery } from '@mui/material';
+import { 
+  Alert, 
+  Box, 
+  Button, 
+  Snackbar, 
+  TextField, 
+  Typography, 
+  Paper, 
+  useMediaQuery,
+  alpha,
+  InputAdornment
+} from '@mui/material';
+import { ArrowForwardRounded, KeyRounded } from '@mui/icons-material'; 
 import { useTheme } from '@mui/material/styles';
 import { AnimatePresence, motion } from 'framer-motion';
 import AppShell from '@/shared/components/AppShell';
@@ -11,20 +23,6 @@ import { useResumeStore } from '@/features/resume/store';
 import { useCoverLetterStore } from '@/features/cover-letter/store';
 import { mockJobPostings } from '@/features/report/services/mockJobPostings';
 import { ResultData } from '@/features/report/types';
-
-const glassInputSx = {
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    borderRadius: '16px',
-    '& fieldset': { borderColor: 'rgba(0,0,0,0.1)' },
-    '&:hover fieldset': { borderColor: 'rgba(37, 99, 235, 0.3)' },
-    '&.Mui-focused': {
-      backgroundColor: '#fff',
-      boxShadow: '0 4px 20px rgba(37, 99, 235, 0.1)',
-      '& fieldset': { borderColor: '#2563EB' },
-    },
-  },
-};
 
 const DocumentsPage = () => {
   const [accessCode, setAccessCode] = useState('');
@@ -192,40 +190,125 @@ const DocumentsPage = () => {
         <Paper
           elevation={0}
           sx={{
-            maxWidth: 520,
+            maxWidth: 600,
             mx: 'auto',
-            p: { xs: 3, md: 5 },
-            borderRadius: '28px',
-            bgcolor: 'rgba(255, 255, 255, 0.75)',
-            border: '1px solid rgba(255, 255, 255, 0.8)',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.05)',
-            textAlign: 'center',
+            p: { xs: 2, md: 4 },
+            borderRadius: '32px',
+            bgcolor: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 1)',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.05)',
           }}
         >
           <TextField
             fullWidth
-            placeholder="인증 코드 입력"
+            placeholder="인증 코드를 입력하세요"
             value={accessCode}
             onChange={(e) => setAccessCode(e.target.value)}
-            sx={glassInputSx}
-            InputProps={{ sx: { textAlign: 'center' } }}
-          />
-
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={handleLoadData}
-            disabled={!accessCode}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <KeyRounded sx={{ color: accessCode ? '#2563EB' : '#94a3b8', ml: 1, transition: 'color 0.3s' }} />
+                </InputAdornment>
+              ),
+              sx: { 
+                height: '64px',
+                fontSize: '1rem',
+                fontWeight: 600,
+                '& input::placeholder': { color: '#cbd5e1', opacity: 1 }
+              }
+            }}
             sx={{
-              mt: 3,
-              py: 1.4,
-              borderRadius: '16px',
-              fontWeight: 700,
-              background: 'linear-gradient(45deg, #2563EB, #1d4ed8)',
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: 'rgba(248, 250, 252, 0.5)',
+                borderRadius: '20px',
+                transition: 'all 0.3s ease',
+                '& fieldset': { borderColor: '#e2e8f0', borderWidth: '1px' },
+                '&:hover fieldset': { borderColor: '#cbd5e1' },
+                '&.Mui-focused': {
+                  backgroundColor: '#fff',
+                  boxShadow: '0 10px 25px -5px rgba(37, 99, 235, 0.1)',
+                  '& fieldset': { borderColor: '#2563EB', borderWidth: '2px' },
+                },
+              },
+            }}
+          />
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              flexDirection: { xs: 'column', sm: 'row' }, 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              mt: 5,
+              gap: 3,
+              px: 1
             }}
           >
-            불러오기
-          </Button>
+            {/* 왼쪽: 문서 작성 유도 섹션 */}
+            <Box sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
+              <Typography 
+                variant="caption" 
+                sx={{ color: '#94a3b8', fontWeight: 600, display: 'block', mb: 0.5, letterSpacing: '0.02em' }}
+              >
+                작성된 문서가 없으신가요?
+              </Typography>
+              
+              <Typography
+                variant="body2"
+                onClick={() => router.push('/resume')}
+                sx={{
+                  color: '#2563EB',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  lineHeight: 1,
+                  gap: 0.5,
+                  transition: 'all 0.2s ease',
+                  '&:hover': { 
+                    color: '#1d4ed8',
+                    textDecoration: 'underline',
+                    textUnderlineOffset: '4px',
+                  }
+                }}
+              >
+                AI로 새로 작성하기
+                <motion.span
+                  animate={{ x: [0, 4, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                  style={{ display: 'flex', alignItems: 'center' }}
+                >
+                  <ArrowForwardRounded sx={{ fontSize: 16, transform: 'translateY(0.5px)' }} />
+                </motion.span>
+              </Typography>
+            </Box>
+
+            {/* 오른쪽: 불러오기 버튼 */}
+            <Button
+              variant="contained"
+              disabled={!accessCode}
+              onClick={handleLoadData}
+              sx={{
+                px: 4,
+                py: 1.3,
+                borderRadius: '30px',
+                fontWeight: 700,
+                minWidth: '160px',
+                boxShadow: '0 8px 16px rgba(37, 99, 235, 0.2)',
+                background: 'linear-gradient(45deg, #2563EB, #1d4ed8)',
+                textTransform: 'none',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #1d4ed8, #1e40af)',
+                },
+                '&.Mui-disabled': {
+                  background: '#e2e8f0',
+                  color: '#94a3b8'
+                }
+                  }}
+            >
+              불러오기
+            </Button>
+          </Box>
         </Paper>
       </motion.div>
 
@@ -239,7 +322,7 @@ const DocumentsPage = () => {
           onClose={() => setToastOpen(false)}
           severity={toastSeverity}
           variant="filled"
-          sx={{ width: '100%', borderRadius: '12px', fontWeight: 600 }}
+          sx={{ width: '100%', borderRadius: '12px', fontWeight: 600, bgcolor: toastSeverity === 'success' ? '#0f172a' : undefined }}
         >
           {toastMessage}
         </Alert>
