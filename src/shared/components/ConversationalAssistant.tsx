@@ -12,9 +12,11 @@ import {
   Fade,
   Snackbar,
   Alert,
+  keyframes,
+  Collapse,
+  CircularProgress,
 } from '@mui/material';
-import { XMarkIcon } from '@heroicons/react/24/solid';
-import { AutoAwesome } from '@mui/icons-material';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
 interface Props {
   open: boolean;
@@ -29,17 +31,22 @@ export type AssistantSubmitResult = {
   isComplete?: boolean;
 };
 
+// --- 애니메이션 정의 ---
+const softPulse = keyframes`
+  0% { border-color: #e2e8f0; box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+  50% { border-color: #2563eb; box-shadow: 0 0 12px 0 rgba(37, 99, 235, 0.15); }
+  100% { border-color: #e2e8f0; box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+`;
+
 const modalStyle = {
   position: 'absolute' as 'absolute',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: { xs: '90%', md: 600 },
-  bgcolor: 'rgba(255, 255, 255, 0.85)',
-  backdropFilter: 'blur(20px)',
-  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-  borderRadius: '24px',
-  border: '1px solid rgba(255, 255, 255, 0.9)',
+  width: { xs: '92%', md: 560 },
+  bgcolor: '#ffffff',
+  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.08)',
+  borderRadius: '20px',
   outline: 'none',
   overflow: 'hidden',
 };
@@ -56,6 +63,7 @@ const ConversationalAssistant = ({ open, onClose, onSubmit, title, prompt }: Pro
       setError(null);
       setMissingInfo('');
       setLoading(false);
+      setText('');
     }
   }, [open]);
 
@@ -96,8 +104,8 @@ const ConversationalAssistant = ({ open, onClose, onSubmit, title, prompt }: Pro
         slots={{ backdrop: Backdrop }}
         slotProps={{
           backdrop: {
-            timeout: 500,
-            sx: { backdropFilter: 'blur(4px)', backgroundColor: 'rgba(0,0,0,0.2)' },
+            timeout: 400,
+            sx: { backgroundColor: 'rgba(15, 23, 42, 0.25)', backdropFilter: 'blur(2px)' },
           },
         }}
       >
@@ -106,102 +114,97 @@ const ConversationalAssistant = ({ open, onClose, onSubmit, title, prompt }: Pro
             {/* Header */}
             <Box
               sx={{
-                p: 3,
+                px: 3,
+                py: 2.5,
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                borderBottom: '1px solid rgba(0,0,0,0.06)',
               }}
             >
-              <Box display="flex" alignItems="center" gap={1}>
-                <Box
-                  sx={{
-                    p: 1,
-                    bgcolor: 'rgba(37, 99, 235, 0.1)',
-                    borderRadius: '12px',
-                    color: '#2563EB',
-                    display: 'flex',
-                  }}
-                >
-                  <AutoAwesome fontSize="small" />
-                </Box>
-                <Typography variant="h6" component="h2" sx={{ fontWeight: 800, color: '#1e293b' }}>
-                  {title}
-                </Typography>
-              </Box>
-              <IconButton
-                onClick={onClose}
-                sx={{
-                  color: '#94a3b8',
-                  '&:hover': { bgcolor: 'rgba(0,0,0,0.05)', color: '#64748b' },
-                }}
-              >
-                <XMarkIcon width={24} />
+              <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', letterSpacing: '-0.02em' }}>
+                {title}
+              </Typography>
+              <IconButton onClick={onClose} size="small" sx={{ color: '#94a3b8', '&:hover': { color: '#64748b' } }}>
+                <XMarkIcon width={20} />
               </IconButton>
             </Box>
 
             {/* Content */}
-            <Box sx={{ p: 4 }}>
-              <Typography variant="body1" sx={{ mb: 3, color: '#475569', lineHeight: 1.7 }}>
+            <Box sx={{ px: 3.5, pb: 2 }}>
+              <Typography variant="body2" sx={{ mb: 3, color: '#64748b', lineHeight: 1.6 }}>
                 {prompt}
               </Typography>
-              {missingInfo ? (
-                <Typography
-                  variant="caption"
-                  sx={{ color: '#ef4444', fontWeight: 600, mb: 1, display: 'block' }}
-                >
-                  {missingInfo}
-                </Typography>
-              ) : null}
+
+              <Collapse in={!!missingInfo}>
+                <Box sx={{ mb: 2, p: 1.3, bgcolor: '#fff1f2', borderRadius: '12px',  }}>
+                  <Typography variant="caption" sx={{ color: '#e11d48', fontWeight: 600, display: 'block' }}>
+                    추가 정보 필요: {missingInfo}
+                  </Typography>
+                </Box>
+              </Collapse>
+
               <TextField
                 fullWidth
                 multiline
                 rows={6}
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={(e) => {
+                  setText(e.target.value);
+                  if (missingInfo) setMissingInfo('');
+                }}
                 placeholder="AI에게 도움받고 싶은 내용을 입력해주세요."
-                variant="outlined"
+                disabled={loading}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: '16px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-                    transition: 'all 0.2s',
-                    '& fieldset': { borderColor: missingInfo ? '#ef4444' : 'rgba(0,0,0,0.1)' },
+                    fontSize: '0.925rem',
+                    borderRadius: '14px',
+                    transition: 'all 0.2s ease',
+                    backgroundColor: loading ? '#fcfdfe' : '#ffffff',
+                    '& fieldset': { 
+                      borderColor: missingInfo ? '#fda4af' : '#e2e8f0',
+                      borderWidth: '1px !important', 
+                    },
                     '&:hover fieldset': {
-                      borderColor: missingInfo ? '#ef4444' : 'rgba(37, 99, 235, 0.3)',
+                      borderColor: '#cbd5e1',
                     },
-                    '&.Mui-focused': {
-                      backgroundColor: '#fff',
-                      boxShadow: '0 4px 20px rgba(37, 99, 235, 0.1)',
-                      '& fieldset': { borderColor: missingInfo ? '#ef4444' : '#2563EB' },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#2563eb',
+                      boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.06)',
                     },
+                    ...(loading && {
+                      animation: `${softPulse} 2s infinite ease-in-out`,
+                    }),
                   },
                 }}
               />
-              {error ? (
-                <Typography variant="caption" sx={{ color: '#ef4444', fontWeight: 600, mt: 1 }}>
+
+              <Collapse in={!!error}>
+                <Typography variant="caption" sx={{ color: '#e11d48', fontWeight: 600, mt: 1.5, display: 'block' }}>
                   {error}
                 </Typography>
-              ) : null}
+              </Collapse>
             </Box>
 
             {/* Footer */}
             <Box
               sx={{
-                p: 3,
-                bgcolor: 'rgba(241, 245, 249, 0.5)',
+                p: 2.5,
+                bgcolor: '#f8fafc',
                 display: 'flex',
                 justifyContent: 'flex-end',
+                alignItems: 'center',
                 gap: 1.5,
               }}
             >
               <Button
                 onClick={onClose}
-                sx={{
-                  color: '#64748b',
-                  fontWeight: 600,
+                disabled={loading}
+                sx={{ 
+                  color: '#64748b', 
+                  fontWeight: 600, 
+                  fontSize: '0.875rem', 
                   px: 2,
-                  '&:hover': { bgcolor: 'rgba(0,0,0,0.05)' },
+                  '&:hover': { bgcolor: 'transparent', color: '#334155' } 
                 }}
               >
                 취소
@@ -210,35 +213,43 @@ const ConversationalAssistant = ({ open, onClose, onSubmit, title, prompt }: Pro
                 variant="contained"
                 onClick={handleSubmit}
                 disabled={loading || !text.trim()}
-                startIcon={<AutoAwesome />}
+                disableElevation
                 sx={{
-                  borderRadius: '12px',
-                  fontWeight: 700,
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
                   px: 3,
                   py: 1,
-                  bgcolor: '#2563EB',
+                  bgcolor: '#2563eb',
+                  minWidth: '110px',
+                  textTransform: 'none',
                   '&:hover': { bgcolor: '#1d4ed8' },
+                  '&.Mui-disabled': { bgcolor: loading ? '#2563eb' : '#e2e8f0', opacity: loading ? 0.7 : 1 }
                 }}
               >
-                {loading ? '생성 중...' : 'AI 생성하기'}
+                {loading ? (
+                  <CircularProgress size={18} sx={{ color: 'white' }} />
+                ) : (
+                  'AI 생성하기'
+                )}
               </Button>
             </Box>
           </Box>
         </Fade>
       </Modal>
+
       <Snackbar
         open={successOpen}
         autoHideDuration={3000}
         onClose={() => setSuccessOpen(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert
-          onClose={() => setSuccessOpen(false)}
-          severity="success"
-          variant="filled"
-          sx={{ width: '100%', borderRadius: '12px', fontWeight: 600 }}
+        <Alert 
+          severity="success" 
+          variant="filled" 
+          sx={{ borderRadius: '10px', fontSize: '0.875rem', fontWeight: 600, bgcolor: '#0f172a' }}
         >
-          작성이 완료되었습니다.
+          정리가 완료되었습니다.
         </Alert>
       </Snackbar>
     </>

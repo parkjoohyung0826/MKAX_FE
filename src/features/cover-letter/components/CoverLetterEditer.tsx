@@ -4,7 +4,7 @@ import React from 'react';
 import { Box, Button, TextField, Typography, Stack, IconButton, Tooltip } from '@mui/material';
 import { AutoAwesome, HelpOutline } from '@mui/icons-material';
 import CustomModal from '@/shared/components/CustomModal';
-import AIWriter from './cover-letter/AIWriter';
+import ConversationalAssistant from '@/shared/components/ConversationalAssistant';
 import { ResumeData } from '@/features/resume/types';
 import WritingGuide from './cover-letter/WritingGuide';
 
@@ -82,10 +82,13 @@ const CoverLetterEditor = ({ coverLetterData, handleChange, setCoverLetterData, 
     setIsAIGenerateSectionModalOpen(true);
   };
 
-  const handleAIGenerate = (prompt: string) => {
-    setIsAIGenerateSectionModalOpen(false); 
+  const handleAIGenerate = async (
+    prompt: string
+  ): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
+    setIsAIGenerateSectionModalOpen(false);
     const updatedSectionContent = `[AI 작성 예시] ${prompt}에 대한 내용입니다... (실제 연동 시 생성된 텍스트)`;
     setCoverLetterData(prev => ({ ...prev, [selectedSection]: updatedSectionContent }));
+    return { isComplete: true };
   };
 
   const handleAIGenerateAll = async (prompt: string) => {
@@ -112,6 +115,7 @@ const CoverLetterEditor = ({ coverLetterData, handleChange, setCoverLetterData, 
     { id: 'keyExperience', label: '주요 경력 및 업무 강점', rows: 8, desc: '관련 경험에서의 구체적인 역할과 성과' },
     { id: 'motivation', label: '지원 동기 및 포부', rows: 8, desc: '회사 지원 이유와 입사 후 구체적 목표' },
   ];
+  const selectedSectionInfo = coverLetterSections.find((item) => item.id === selectedSection);
 
   return (
     <Box sx={{ py: 2 }}>
@@ -233,17 +237,17 @@ const CoverLetterEditor = ({ coverLetterData, handleChange, setCoverLetterData, 
         <WritingGuide section={selectedSection} resumeData={resumeData} />
       </CustomModal>
 
-      <CustomModal
-        open={isAIGenerateSectionModalOpen} 
+      <ConversationalAssistant
+        open={isAIGenerateSectionModalOpen}
         onClose={() => setIsAIGenerateSectionModalOpen(false)}
-        title="AI 초안 작성"
-      >
-        <AIWriter
-          section={selectedSection}
-          onGenerate={handleAIGenerate}
-          isGenerating={isGenerating || isGeneratingAll} 
-        />
-      </CustomModal>
+        onSubmit={handleAIGenerate}
+        title={selectedSectionInfo ? `${selectedSectionInfo.label} AI 초안 작성` : 'AI 초안 작성'}
+        prompt={
+          selectedSectionInfo
+            ? `${selectedSectionInfo.label} 항목에 대해 강조하고 싶은 경험이나 성과를 입력해주세요.`
+            : 'AI에게 도움받고 싶은 내용을 입력해주세요.'
+        }
+      />
 
       <CustomModal
         open={isAIGenerateAllModalOpen}

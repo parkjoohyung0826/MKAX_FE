@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { AutoAwesome, HelpOutline } from '@mui/icons-material';
 import CustomModal from '@/shared/components/CustomModal';
-import AIWriter from '../cover-letter/AIWriter';
+import ConversationalAssistant from '@/shared/components/ConversationalAssistant';
 import WritingGuide from '../cover-letter/WritingGuide';
 import { CoverLetterData } from '../../types';
 import { useCoverLetterStore } from '../../store';
@@ -126,6 +126,7 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
 
   const section = coverLetterSections[activeStep];
   if (!section) return null;
+  const selectedSectionInfo = coverLetterSections.find((item) => item.id === selectedSection);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -146,7 +147,9 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
     setAIModalOpen(true);
   };
 
-  const handleAIGenerate = async (prompt: string) => {
+  const handleAIGenerate = async (
+    prompt: string
+  ): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
     try {
       const backendSection = SECTION_TO_BACKEND[selectedSection];
       if (!backendSection) {
@@ -170,19 +173,30 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
         throw new Error(data?.message ?? 'AI 초안 생성에 실패했습니다.');
       }
 
-      setCoverLetterData({
-        [selectedSection]: data.fullDescription ?? '',
-      });
+      const missingInfo = String(data?.missingInfo ?? '');
+      const isComplete =
+        typeof data?.isComplete === 'boolean'
+          ? data.isComplete
+          : missingInfo.trim().length === 0;
+      const fullDescription = String(data?.fullDescription ?? '');
 
-      setAIModalOpen(false);
-      setToastMessage('AI 작성이 완료되었습니다.');
-      setToastSeverity('success');
-      setToastOpen(true);
+      if (isComplete && fullDescription.trim().length > 0) {
+        setCoverLetterData({
+          [selectedSection]: fullDescription,
+        });
+        setAIModalOpen(false);
+        setToastMessage('AI 작성이 완료되었습니다.');
+        setToastSeverity('success');
+        setToastOpen(true);
+      }
+
+      return { missingInfo, isComplete };
     } catch (e: any) {
       console.error(e);
       setToastMessage('AI 작성에 실패했습니다.');
       setToastSeverity('error');
       setToastOpen(true);
+      throw e;
     } finally {
       setIsGenerating(false);
     }
@@ -267,7 +281,7 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
       </Box>
 
       {/* 작성 가이드 모달 */}
-      <CustomModal
+  <CustomModal
         open={isGuideModalOpen}
         onClose={() => setGuideModalOpen(false)}
         title="작성 가이드"
@@ -275,18 +289,17 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
         <WritingGuide section={selectedSection} />
       </CustomModal>
 
-      {/* AI 초안 작성 모달 */}
-      <CustomModal
+      <ConversationalAssistant
         open={isAIModalOpen}
         onClose={() => setAIModalOpen(false)}
-        title="AI 초안 작성"
-      >
-        <AIWriter
-          section={selectedSection}
-          onGenerate={handleAIGenerate}
-          isGenerating={isGenerating}
-        />
-      </CustomModal>
+        onSubmit={handleAIGenerate}
+        title={selectedSectionInfo ? `${selectedSectionInfo.label} AI 초안 작성` : 'AI 초안 작성'}
+        prompt={
+          selectedSectionInfo
+            ? `${selectedSectionInfo.label} 항목에 대해 강조하고 싶은 경험이나 성과를 입력해주세요.`
+            : 'AI에게 도움받고 싶은 내용을 입력해주세요.'
+        }
+      />
 
       <Snackbar
         open={toastOpen}
