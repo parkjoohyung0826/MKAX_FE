@@ -5,6 +5,7 @@ import {
   Alert, 
   Box, 
   Button, 
+  CircularProgress,
   Snackbar, 
   TextField, 
   Typography, 
@@ -29,6 +30,7 @@ const DocumentsPage = () => {
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastSeverity, setToastSeverity] = useState<'success' | 'error'>('success');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -90,9 +92,11 @@ const DocumentsPage = () => {
 
   const handleLoadData = async () => {
     const code = accessCode.trim();
-    if (!code) return;
+    if (!code || isLoading) return;
 
     try {
+      const startTime = Date.now();
+      setIsLoading(true);
       const data = await fetchByCode(code);
       const normalizedCoverLetter = normalizeCoverLetter(data.coverLetter);
       if (normalizedCoverLetter) {
@@ -134,6 +138,10 @@ const DocumentsPage = () => {
         setFormattedResume(data.resume);
       }
       setResultData(mockResult);
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 3000) {
+        await new Promise((resolve) => setTimeout(resolve, 3000 - elapsed));
+      }
       setToastMessage('문서 조회가 완료되었습니다.');
       setToastSeverity('success');
       setToastOpen(true);
@@ -145,6 +153,8 @@ const DocumentsPage = () => {
       );
       setToastSeverity('error');
       setToastOpen(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -205,6 +215,7 @@ const DocumentsPage = () => {
             placeholder="인증 코드를 입력하세요"
             value={accessCode}
             onChange={(e) => setAccessCode(e.target.value)}
+            disabled={isLoading}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -286,7 +297,7 @@ const DocumentsPage = () => {
             {/* 오른쪽: 불러오기 버튼 */}
             <Button
               variant="contained"
-              disabled={!accessCode}
+              disabled={!accessCode || isLoading}
               onClick={handleLoadData}
               sx={{
                 px: 4,
@@ -301,12 +312,19 @@ const DocumentsPage = () => {
                   background: 'linear-gradient(45deg, #1d4ed8, #1e40af)',
                 },
                 '&.Mui-disabled': {
-                  background: '#e2e8f0',
-                  color: '#94a3b8'
+                  background: isLoading ? '#2563EB' : '#e2e8f0',
+                  color: isLoading ? '#f8fafc' : '#94a3b8'
                 }
                   }}
             >
-              불러오기
+              {isLoading ? (
+                <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+                  <CircularProgress size={18} thickness={5} sx={{ color: '#f8fafc' }} />
+                  불러오는 중...
+                </Box>
+              ) : (
+                '불러오기'
+              )}
             </Button>
           </Box>
         </Paper>
@@ -322,7 +340,13 @@ const DocumentsPage = () => {
           onClose={() => setToastOpen(false)}
           severity={toastSeverity}
           variant="filled"
-          sx={{ width: '100%', borderRadius: '12px', fontWeight: 600, bgcolor: toastSeverity === 'success' ? '#0f172a' : undefined }}
+          sx={{
+            width: '100%',
+            borderRadius: '12px',
+            fontWeight: 600,
+            bgcolor: toastSeverity === 'success' ? '#16a34a' : undefined,
+            color: toastSeverity === 'success' ? '#f0fdf4' : undefined,
+          }}
         >
           {toastMessage}
         </Alert>
