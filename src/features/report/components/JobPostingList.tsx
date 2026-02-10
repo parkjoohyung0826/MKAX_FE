@@ -24,9 +24,13 @@ import {
 
 interface JobPostingListProps {
   jobPostings: JobPosting[];
+  loading?: boolean;
 }
 
-const JobPostingList: React.FC<JobPostingListProps> = ({ jobPostings }) => {
+const JobPostingList: React.FC<JobPostingListProps> = ({
+  jobPostings,
+  loading = false,
+}) => {
   const theme = useTheme();
   
   // 디자인 토큰
@@ -219,6 +223,11 @@ const JobPostingList: React.FC<JobPostingListProps> = ({ jobPostings }) => {
           </Card>
         ))}
       </Stack>
+      {/* {loading && (
+        <Typography sx={{ mt: 3, textAlign: 'center', color: '#64748b', fontWeight: 600 }}>
+          채용 공고를 불러오는 중입니다...
+        </Typography>
+      )} */}
     </Box>
   );
 };

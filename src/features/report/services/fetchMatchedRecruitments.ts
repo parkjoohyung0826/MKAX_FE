@@ -42,7 +42,13 @@ export async function fetchMatchedRecruitments(
     throw new Error(err?.message ?? '채용 공고 조회 실패');
   }
 
-  return res.json();
+  const data: MatchedRecruitmentResponse = await res.json();
+  const count = Array.isArray(data.items) ? data.items.length : 0;
+  console.log(
+    `[report] 채용 공고 정보 ${count > 0 ? '있음' : '없음'} (items: ${count}, total: ${data.total ?? 0})`
+  );
+
+  return data;
 }
 
 const formatYmd = (value?: string) => {
