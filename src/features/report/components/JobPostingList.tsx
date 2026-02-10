@@ -4,19 +4,22 @@ import {
   Box,
   Card,
   Typography,
-  Chip,
   Stack,
   Button,
   Avatar,
-  useTheme,
+  Divider,
   alpha,
+  useTheme,
 } from '@mui/material';
 import {
   LocationOnOutlined,
   WorkOutline,
   EventAvailable,
   ArrowForward,
-  BookmarkBorder,
+  DescriptionOutlined,
+  BusinessOutlined,
+  SchoolOutlined,
+  AccessTimeOutlined,
 } from '@mui/icons-material';
 
 interface JobPostingListProps {
@@ -25,7 +28,14 @@ interface JobPostingListProps {
 
 const JobPostingList: React.FC<JobPostingListProps> = ({ jobPostings }) => {
   const theme = useTheme();
+  
+  // 디자인 토큰
   const mainBlue = '#2563EB';
+  const COLORS = {
+    primary: mainBlue,
+    textTitle: '#1e293b',
+    textBody: '#64748b',
+  };
 
   return (
     <Box sx={{ mt: 4 }}>
@@ -35,157 +45,158 @@ const JobPostingList: React.FC<JobPostingListProps> = ({ jobPostings }) => {
             key={job.wantedAuthNo}
             elevation={0}
             sx={{
-              borderRadius: 3,
+              borderRadius: '20px',
               border: '1px solid',
               borderColor: 'divider',
               bgcolor: 'background.paper',
-              overflow: 'hidden',
               position: 'relative',
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
-                transform: 'translateY(-3px)',
-                borderColor: alpha(mainBlue, 0.5),
-                boxShadow: `0 12px 30px ${alpha(mainBlue, 0.08)}`,
-                '& .hover-action': { opacity: 1, transform: 'translateX(0)' },
+                transform: 'translateY(-4px)',
+                borderColor: alpha(COLORS.primary, 0.4),
+                boxShadow: `0 12px 24px -6px ${alpha(COLORS.primary, 0.12)}`,
+                '& .hover-arrow': { transform: 'translateX(0)', opacity: 1 }
               },
             }}
           >
-            {/* Flexbox 컨테이너: space-between 적용 */}
             <Box
               sx={{
-                p: 3,
+                p: { xs: 3, sm: 3.5 },
                 display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' }, // 모바일: 세로, PC: 가로
-                justifyContent: 'space-between', // ★ 핵심: 양쪽 끝으로 밀어내기
-                alignItems: { xs: 'stretch', sm: 'center' }, // PC에서는 수직 중앙 정렬
-                gap: 3, // 왼쪽과 오른쪽 사이 최소 간격
+                flexDirection: { xs: 'column', md: 'row' },
+                gap: 3,
               }}
             >
-              {/* 1. 왼쪽: 로고 + 주요 정보 */}
-              <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
+              {/* 1. 왼쪽: 모던한 정보 디자인 (아이콘 기반 메타 정보 + 뱃지) */}
+              <Box sx={{ display: 'flex', gap: 2.5, flex: 1, minWidth: 0 }}>
+                {/* 로고 */}
                 <Avatar
                   variant="rounded"
                   sx={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 2.5,
-                    bgcolor: alpha(mainBlue, 0.06),
-                    color: mainBlue,
+                    width: 52,
+                    height: 52,
+                    borderRadius: '14px',
+                    bgcolor: '#fff',
+                    color: COLORS.primary,
                     fontWeight: 800,
                     fontSize: '1.2rem',
-                    border: `1px solid ${alpha(mainBlue, 0.1)}`,
-                    flexShrink: 0, // 로고 크기 고정
+                    border: `1px solid ${alpha('#cbd5e1', 0.5)}`,
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
+                    flexShrink: 0,
                   }}
                 >
                   {job.company?.charAt(0)}
                 </Avatar>
 
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                    <Chip
-                      icon={<EventAvailable sx={{ fontSize: '0.9rem !important' }} />}
-                      label={job.closeDt}
-                      size="small"
-                      sx={{
-                        height: 24,
-                        bgcolor: alpha('#0288d1', 0.08),
-                        color: '#0288d1',
-                        fontWeight: 700,
-                        fontSize: '0.75rem',
-                        border: `1px solid ${alpha('#0288d1', 0.1)}`,
-                        '.MuiChip-icon': { color: '#0288d1' },
-                      }}
-                    />
+                  {/* 회사명 & 마감일 */}
+                  <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
                     <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'text.secondary',
-                        fontWeight: 600,
-                        fontSize: '0.85rem',
-                      }}
+                      variant="body2"
+                      sx={{ fontWeight: 700, color: COLORS.textBody, fontSize: '0.85rem' }}
                     >
                       {job.company}
                     </Typography>
+                    <Box sx={{ width: 3, height: 3, borderRadius: '50%', bgcolor: '#cbd5e1' }} />
+                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                      <EventAvailable sx={{ fontSize: 14, color: '#EF4444' }} />
+                      <Typography variant="caption" sx={{ fontWeight: 700, color: '#EF4444', letterSpacing: '-0.2px' }}>
+                        {job.closeDt}
+                      </Typography>
+                    </Stack>
                   </Stack>
 
+                  {/* 공고 제목 */}
                   <Typography
                     variant="h6"
                     sx={{
                       fontWeight: 800,
-                      mb: 1.5,
-                      lineHeight: 1.3,
-                      fontSize: '1.1rem',
-                      color: 'text.primary',
+                      mb: 2,
+                      fontSize: '1.15rem',
+                      color: COLORS.textTitle,
                       cursor: 'pointer',
-                      '&:hover': { color: mainBlue },
-                      whiteSpace: 'nowrap',
+                      lineHeight: 1.4,
+                      transition: 'color 0.2s',
+                      '&:hover': { color: COLORS.primary },
+                      display: '-webkit-box',
+                      WebkitLineClamp: 1,
+                      WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
-                      textOverflow: 'ellipsis',
                     }}
                   >
                     {job.title}
                   </Typography>
 
-                  <Stack
-                    direction="row"
-                    spacing={2}
-                    flexWrap="wrap"
-                    sx={{ mb: 2, rowGap: 1 }}
+                  {/* 메타 정보 (지역 | 경력 | 분야) */}
+                  <Stack 
+                    direction="row" 
+                    alignItems="center" 
+                    spacing={0}
+                    sx={{ mb: 2, flexWrap: 'wrap', gap: 1.5 }}
                   >
-                    <MetaItem icon={<LocationOnOutlined />} text={job.basicAddr} />
-                    <MetaItem icon={<WorkOutline />} text={job.career} />
+                    <MetaText icon={<LocationOnOutlined />} text={job.basicAddr || job.region} />
+                    <MetaDivider />
+                    <MetaText icon={<WorkOutline />} text={job.career} />
+                    <MetaDivider />
+                    <MetaText icon={<BusinessOutlined />} text={job.indTpNm} />
                   </Stack>
 
-                  <Stack direction="row" spacing={0.8} flexWrap="wrap" useFlexGap>
-                    <SoftChip label={job.minEdubg} color={mainBlue} />
-                    <SoftChip label={job.holidayTpNm} color={mainBlue} />
-                    <SoftChip label={job.indTpNm} variant="outlined" color={mainBlue} />
+                  {/* 태그 뱃지 */}
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ rowGap: 1 }}>
+                    <InfoBadge icon={<SchoolOutlined />} label={job.minEdubg} />
+                    <InfoBadge icon={<AccessTimeOutlined />} label={job.holidayTpNm} />
                   </Stack>
                 </Box>
               </Box>
 
-              {/* 2. 오른쪽: 액션 버튼 그룹 */}
+              {/* 2. 오른쪽: 버튼 영역 (원래 스타일 + 자세히 보기 변경) */}
               <Box
                 sx={{
                   display: 'flex',
-                  flexDirection: { xs: 'row', sm: 'column' },
+                  flexDirection: { xs: 'row', md: 'column' },
                   gap: 1.2,
-                  flexShrink: 0, // 버튼 영역이 줄어들지 않도록 고정
-                  minWidth: { sm: '140px' },
-                  // 데스크탑에서만 구분선 표시
-                  borderLeft: { sm: `1px dashed ${theme.palette.divider}` },
-                  pl: { sm: 3 },
-                  // space-between이 적용되어 있지만, 왼쪽 마진을 auto로 주면 더 확실하게 밀립니다.
-                  ml: { sm: 'auto' },
+                  flexShrink: 0,
+                  minWidth: { md: '140px' },
+                  justifyContent: { xs: 'flex-start', md: 'center' },
+                  borderLeft: { md: `1px dashed ${theme.palette.divider}` },
+                  pl: { md: 3 },
+                  ml: { md: 'auto' },
                 }}
               >
+                {/* 지원하기 버튼 */}
                 <Button
                   variant="contained"
-                  fullWidth // 모바일에서는 가로 꽉 참, PC에서는 부모 width 따름
+                  fullWidth
                   href={job.wantedInfoUrl}
                   target="_blank"
-                  endIcon={<ArrowForward className="hover-action" sx={{ transition: '0.2s', opacity: 0.7, transform: 'translateX(-4px)' }} />}
+                  endIcon={
+                    <ArrowForward 
+                      className="hover-arrow" 
+                      sx={{ transition: '0.2s', opacity: 0.7, transform: 'translateX(-4px)' }} 
+                    />
+                  }
                   sx={{
-                    bgcolor: mainBlue,
+                    bgcolor: alpha(mainBlue, 0.85),
                     borderRadius: 2.5,
-                    boxShadow: `0 4px 12px ${alpha(mainBlue, 0.25)}`,
+                    boxShadow: `0 4px 12px ${alpha(mainBlue, 0.18)}`,
                     fontWeight: 700,
                     py: 1.1,
                     textTransform: 'none',
                     whiteSpace: 'nowrap',
                     '&:hover': {
-                      bgcolor: alpha(mainBlue, 0.9),
-                      boxShadow: `0 6px 16px ${alpha(mainBlue, 0.35)}`,
+                      bgcolor: alpha(mainBlue, 0.95),
+                      boxShadow: `0 6px 16px ${alpha(mainBlue, 0.28)}`,
                     },
                   }}
                 >
                   지원하기
                 </Button>
 
+                {/* 자세히 보기 버튼 (관심 -> 자세히 보기) */}
                 <Button
                   variant="outlined"
                   fullWidth
-                  startIcon={<BookmarkBorder />}
+                  startIcon={<DescriptionOutlined />}
                   sx={{
                     borderRadius: 2.5,
                     borderColor: 'divider',
@@ -201,7 +212,7 @@ const JobPostingList: React.FC<JobPostingListProps> = ({ jobPostings }) => {
                     },
                   }}
                 >
-                  관심
+                  자세히 보기
                 </Button>
               </Box>
             </Box>
@@ -212,57 +223,45 @@ const JobPostingList: React.FC<JobPostingListProps> = ({ jobPostings }) => {
   );
 };
 
-// --- Sub Components ---
+// --- Helper Components ---
 
-function MetaItem({ icon, text, highlight = false }: { icon: React.ReactNode; text: string, highlight?: boolean }) {
-  return (
-    <Stack direction="row" spacing={0.6} alignItems="center">
-      <Box sx={{ display: 'flex', color: highlight ? 'text.primary' : 'text.disabled', '& svg': { fontSize: 17 } }}>
-        {icon}
-      </Box>
-      <Typography
-        variant="body2"
-        sx={{
-          color: highlight ? 'text.primary' : 'text.secondary',
-          fontWeight: highlight ? 600 : 500,
-          fontSize: '0.85rem',
-        }}
-      >
-        {text}
-      </Typography>
-    </Stack>
-  );
-}
+// 메타 텍스트 (아이콘 + 텍스트)
+const MetaText = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
+  <Stack direction="row" alignItems="center" spacing={0.6}>
+    <Box sx={{ color: '#94a3b8', display: 'flex', '& svg': { fontSize: 17 } }}>
+      {icon}
+    </Box>
+    <Typography variant="body2" sx={{ color: '#475569', fontWeight: 600, fontSize: '0.875rem', letterSpacing: '-0.3px' }}>
+      {text}
+    </Typography>
+  </Stack>
+);
 
-function SoftChip({
-  label,
-  variant = 'filled',
-  color,
-}: {
-  label: string;
-  variant?: 'filled' | 'outlined';
-  color: string;
-}) {
-  const isOutlined = variant === 'outlined';
-  return (
-    <Chip
-      label={label}
-      size="small"
-      variant={isOutlined ? 'outlined' : 'filled'}
-      sx={{
-        height: 24,
-        borderRadius: 1.5,
-        fontWeight: 600,
-        fontSize: '0.75rem',
-        border: isOutlined ? `1px solid ${alpha(color, 0.2)}` : 'none',
-        bgcolor: isOutlined ? 'transparent' : alpha(color, 0.08),
-        color: isOutlined ? 'text.secondary' : color,
-        '&:hover': {
-          bgcolor: isOutlined ? alpha(color, 0.04) : alpha(color, 0.12),
-        }
-      }}
-    />
-  );
-}
+// 수직 구분선
+const MetaDivider = () => (
+  <Divider orientation="vertical" flexItem sx={{ height: 12, alignSelf: 'center', mx: 1.5, borderColor: '#cbd5e1' }} />
+);
+
+// 정보 뱃지
+const InfoBadge = ({ icon, label }: { icon: React.ReactNode; label: string }) => (
+  <Box 
+    sx={{ 
+      display: 'inline-flex', 
+      alignItems: 'center', 
+      gap: 0.6, 
+      px: 1.2, 
+      py: 0.6, 
+      borderRadius: '8px', 
+      bgcolor: '#F8FAFC', 
+      border: '1px solid #E2E8F0', 
+      color: '#475569', 
+      transition: 'all 0.2s', 
+      '&:hover': { bgcolor: '#F1F5F9', borderColor: '#CBD5E1' } 
+    }}
+  >
+    <Box sx={{ display: 'flex', color: '#64748B', '& svg': { fontSize: 15 } }}>{icon}</Box>
+    <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, lineHeight: 1 }}>{label}</Typography>
+  </Box>
+);
 
 export default JobPostingList;
