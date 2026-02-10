@@ -14,6 +14,10 @@ import { mockJobPostings } from '@/features/report/services/mockJobPostings';
 import { ResultData } from '@/features/report/types';
 import { requestAnalysisReport } from '@/features/report/services/requestAnalysisReport';
 import { useCoverLetterStore } from '@/features/cover-letter/store';
+import {
+  fetchMatchedRecruitments,
+  mapMatchedRecruitmentsToJobPostings,
+} from '@/features/report/services/fetchMatchedRecruitments';
 
 const ResumePage = () => {
   const router = useRouter();
@@ -46,19 +50,25 @@ const ResumePage = () => {
       setFormattedResume(resume);
 
       let analysisReport = null;
+      let jobPostings = mockJobPostings;
       if (resume && code) {
+        const coverLetterPayload = {
+          growthProcess: coverLetterData.growthProcess,
+          strengthsAndWeaknesses: coverLetterData.strengthsAndWeaknesses,
+          keyExperience: coverLetterData.keyExperience,
+          motivation: coverLetterData.motivation,
+        };
         try {
-          const coverLetterPayload = {
-            growthProcess: coverLetterData.growthProcess,
-            strengthsAndWeaknesses: coverLetterData.strengthsAndWeaknesses,
-            keyExperience: coverLetterData.keyExperience,
-            motivation: coverLetterData.motivation,
-          };
-          analysisReport = await requestAnalysisReport({
-            resume,
-            coverLetter: coverLetterPayload,
-            code,
-          });
+          const [analysisResult, matchedRecruitments] = await Promise.all([
+            requestAnalysisReport({
+              resume,
+              coverLetter: coverLetterPayload,
+              code,
+            }),
+            fetchMatchedRecruitments(code),
+          ]);
+          analysisReport = analysisResult;
+          jobPostings = mapMatchedRecruitmentsToJobPostings(matchedRecruitments.items);
         } catch (error) {
           console.error(error);
         }
@@ -67,7 +77,7 @@ const ResumePage = () => {
       const mockResult: ResultData = {
         aiCoverLetter: coverLetter ?? `[AI 생성 자소서 예시]...`,
         aiResumeSummary: `${resumeData.name}님의 경력 분석...`,
-        jobPostings: mockJobPostings,
+        jobPostings,
         resumeData: resume ?? resumeData,
         accessCode: code,
         analysisReport,
