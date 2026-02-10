@@ -58,7 +58,7 @@ const resolveTextBlock = (value?: string | string[]) => {
 const CareerAnalysisReport = ({ analysisReport, jobPostings }: Props) => {
   const [currentSection, setCurrentSection] = useState(0);
 
-  const handleSectionChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleSectionChange = (_event: React.SyntheticEvent, newValue: number) => {
     setCurrentSection(newValue);
   };
 
@@ -167,7 +167,27 @@ const CareerAnalysisReport = ({ analysisReport, jobPostings }: Props) => {
             priorityStrategy={priorityStrategy}
           />
         )}
-        {currentSection === 3 && <JobPostingList jobPostings={jobPostings} />}
+        {currentSection === 3 && (
+          <Box sx={{ width: '100%', maxWidth: '860px', mx: 'auto' }}>
+            <Box sx={{ mt: 7, mb: 5, px: 2 }}>
+              <Typography
+                variant="h4"
+                sx={{ fontWeight: 800, color: '#202124', letterSpacing: '-0.5px', mb: 2 }}
+              >
+                맞춤 채용 정보
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{ color: '#5F6368', lineHeight: 1.6, fontSize: '1.05rem', maxWidth: '800px' }}
+              >
+                지원자님의 이력서와 자기소개서를 바탕으로 적합한 채용 공고를 추천합니다.
+                <br />
+                모든 공고는 공공기관 채용공고에 기반합니다.
+              </Typography>
+            </Box>
+            <JobPostingList jobPostings={jobPostings} />
+          </Box>
+        )}
       </Box>
     </Box>
   );

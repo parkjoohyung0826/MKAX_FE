@@ -29,6 +29,10 @@ import { mockJobPostings } from '@/features/report/services/mockJobPostings';
 import { ResultData } from '@/features/report/types';
 import { ResumeData } from '@/features/resume/types';
 import { useRouter } from 'next/navigation';
+import {
+  fetchMatchedRecruitments,
+  mapMatchedRecruitmentsToJobPostings,
+} from '@/features/report/services/fetchMatchedRecruitments';
 
 const ReportOnlyPage = () => {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -58,10 +62,19 @@ const ReportOnlyPage = () => {
         resumeFile ?? undefined,
         coverLetterFile ?? undefined
       );
+      let jobPostings = mockJobPostings;
+      if (code) {
+        try {
+          const matchedRecruitments = await fetchMatchedRecruitments(code);
+          jobPostings = mapMatchedRecruitmentsToJobPostings(matchedRecruitments.items);
+        } catch (error) {
+          console.error(error);
+        }
+      }
       const result: ResultData = {
         aiCoverLetter: '',
         aiResumeSummary: '',
-        jobPostings: mockJobPostings,
+        jobPostings,
         resumeData: emptyResumeData,
         accessCode: code,
         analysisReport: report ?? null,
