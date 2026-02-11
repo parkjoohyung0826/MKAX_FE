@@ -23,7 +23,10 @@ import { useReportStore } from '@/features/report/store';
 import { useResumeStore } from '@/features/resume/store';
 import { useCoverLetterStore } from '@/features/cover-letter/store';
 import { mockJobPostings } from '@/features/report/services/mockJobPostings';
-import { mapMatchedRecruitmentsToJobPostings } from '@/features/report/services/fetchMatchedRecruitments';
+import {
+  fetchMatchedRecruitments,
+  mapMatchedRecruitmentsToJobPostings,
+} from '@/features/report/services/fetchMatchedRecruitments';
 import { ResultData } from '@/features/report/types';
 
 const DocumentsPage = () => {
@@ -91,6 +94,35 @@ const DocumentsPage = () => {
     return res.json();
   };
 
+  const extractMatchedItems = (data: any): any[] => {
+    const candidates = [
+      data?.recruitmentMatch?.items,
+      data?.recruitment_match?.items,
+      data?.recruitmentMatch?.result?.items,
+      data?.recruitment_match?.result?.items,
+      data?.recruitmentMatch?.result?.result?.items,
+      data?.recruitment_match?.result?.result?.items,
+      data?.recruitmentMatch?.result,
+      data?.recruitment_match?.result,
+      data?.recruitmentMatch,
+      data?.recruitment_match,
+      data?.jobPostings,
+      data?.job_postings,
+      data?.matchedRecruitments?.items,
+      data?.matched_recruitments?.items,
+      data?.matchedRecruitments?.result?.items,
+      data?.matched_recruitments?.result?.items,
+    ];
+
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) return candidate;
+      if (candidate && typeof candidate === 'object' && ('recrutPblntSn' in candidate || 'recrutPbancTtl' in candidate)) {
+        return [candidate];
+      }
+    }
+    return [];
+  };
+
   const handleLoadData = async () => {
     const code = accessCode.trim();
     if (!code || isLoading) return;
@@ -124,12 +156,20 @@ const DocumentsPage = () => {
         data.analysisReportSourceType ??
         data.analysis_report_source_type ??
         (resumeUrl || coverLetterUrl ? 'pdf' : 'json');
-      const recruitmentMatch = data.recruitmentMatch ?? data.recruitment_match;
-      const matchedItems = Array.isArray(recruitmentMatch?.items) ? recruitmentMatch.items : [];
-      const mappedJobPostings =
-        matchedItems.length > 0
-          ? mapMatchedRecruitmentsToJobPostings(matchedItems)
-          : mockJobPostings;
+      let matchedItems = extractMatchedItems(data);
+
+      if (matchedItems.length === 0 && code) {
+        try {
+          const matchedRecruitments = await fetchMatchedRecruitments(code);
+          matchedItems = Array.isArray(matchedRecruitments.items) ? matchedRecruitments.items : [];
+        } catch (error) {
+          console.error('[documents] 채용공고 재조회 실패', error);
+        }
+      }
+
+      const mappedJobPostings = matchedItems.length > 0
+        ? mapMatchedRecruitmentsToJobPostings(matchedItems)
+        : mockJobPostings;
       const mockResult: ResultData = {
         aiCoverLetter: normalizedCoverLetter ? toCoverLetterText(normalizedCoverLetter) : (data.coverLetter ?? ''),
         aiResumeSummary: `${data?.resume?.name ?? ''}님의 경력 분석...`,

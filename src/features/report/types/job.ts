@@ -1,3 +1,24 @@
+export interface RecruitmentAttachment {
+  recrutAtchFileNo?: number;
+  sortNo?: number;
+  atchFileNm?: string;
+  atchFileType?: string;
+  url?: string;
+}
+
+export interface RecruitmentStep {
+  recrutStepSn?: number;
+  recrutPblntSn?: number;
+  recrutPbancTtl?: string;
+  recrutNope?: number | null;
+  aplyNope?: number | null;
+  cmpttRt?: number | null;
+  rsnOcrnYmd?: string | null;
+  sortNo?: number;
+  minStepSn?: number;
+  maxStepSn?: number;
+}
+
 export interface JobPosting {
   wantedAuthNo: string; // 구인인증번호
   company: string; // 회사명
@@ -25,4 +46,40 @@ export interface JobPosting {
   empTpCd: number; // 고용형태코드 (10: 기간의 정함이 없는 근로계약, 11: 기간의 정함이 없는 근로계약 (시간(선택)제), 20: 기간의 정함이 있는 근로계약, 21: 기간의 정함이 있는 근로계약 (시간(선택)제)))
   jobsCd: number; // 직종코드
   smodifyDtm: number; // 최종수정일
+  recrutPblntSn?: number;
+  pblntInstCd?: string;
+  pbadmsStdInstCd?: string;
+  instNm?: string;
+  ncsCdLst?: string;
+  ncsCdNmLst?: string;
+  ncsCdNmList?: string[];
+  hireTypeLst?: string;
+  hireTypeNmLst?: string;
+  hireTypeNmList?: string[];
+  workRgnLst?: string;
+  workRgnNmLst?: string;
+  workRgnNmList?: string[];
+  recrutSe?: string;
+  recrutSeNm?: string;
+  prefCondCn?: string | null;
+  recrutNope?: number | null;
+  pbancBgngYmd?: string;
+  pbancEndYmd?: string;
+  recrutPbancTtl?: string;
+  srcUrl?: string;
+  replmprYn?: string | null;
+  aplyQlfcCn?: string | null;
+  disqlfcRsn?: string | null;
+  scrnprcdrMthdExpln?: string | null;
+  prefCn?: string | null;
+  acbgCondLst?: string | null;
+  acbgCondNmLst?: string | null;
+  acbgCondNmList?: string[];
+  nonatchRsn?: string | null;
+  ongoingYn?: string | null;
+  decimalDay?: number | null;
+  files?: RecruitmentAttachment[];
+  steps?: RecruitmentStep[];
+  matchScore?: number | null;
+  matchReason?: string | null;
 }
