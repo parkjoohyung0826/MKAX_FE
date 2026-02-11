@@ -74,6 +74,13 @@ const JobPostingDetailModal: React.FC<JobPostingDetailModalProps> = ({ job, open
 
   if (!job) return null;
 
+  const hasMatchScore =
+    typeof job.matchScore === 'number' &&
+    Number.isFinite(job.matchScore) &&
+    job.matchScore > 0;
+  const hasMatchReason =
+    typeof job.matchReason === 'string' && job.matchReason.trim().length > 0;
+
   return (
     <Dialog
       open={open}
@@ -129,7 +136,7 @@ const JobPostingDetailModal: React.FC<JobPostingDetailModalProps> = ({ job, open
         <Stack spacing={5}>
           
           {/* 1. AI 매칭 분석 */}
-          {(job.matchScore !== null || job.matchReason) && (
+          {(hasMatchScore || hasMatchReason) && (
             <Box>
               {/* <SectionHeader icon={<AutoAwesome sx={{ color: '#2563EB' }} />} title="AI 매칭 분석" /> */}
               <Paper
@@ -145,7 +152,7 @@ const JobPostingDetailModal: React.FC<JobPostingDetailModalProps> = ({ job, open
                   gap: { xs: 2, md: 4 }
                 }}
               >
-                {job.matchScore !== null && (
+                {hasMatchScore && (
                   <Box sx={{ minWidth: { md: '120px' }, textAlign: 'center', borderRight: { md: `1px solid ${alpha('#2563EB', 0.15)}` }, pr: { md: 4 } }}>
                     <Typography variant="caption" sx={{ color: '#2563EB', fontWeight: 800, display: 'block', mb: 0.5, letterSpacing: '0.05em' }}>매칭 점수</Typography>
                     <Typography variant="h4" sx={{ fontWeight: 900, color: '#2563EB', lineHeight: 1 }}>
@@ -153,7 +160,7 @@ const JobPostingDetailModal: React.FC<JobPostingDetailModalProps> = ({ job, open
                     </Typography>
                   </Box>
                 )}
-                {job.matchReason && (
+                {hasMatchReason && (
                   <Box sx={{ flex: 1 }}>
                     <Typography sx={{ color: '#334155', lineHeight: 1.7, fontWeight: 500, fontSize: '0.95rem' }}>
                       {toMultilineDisplay(job.matchReason)}
@@ -260,7 +267,7 @@ const JobPostingDetailModal: React.FC<JobPostingDetailModalProps> = ({ job, open
           href={job.srcUrl || job.wantedInfoUrl}
           target="_blank"
           endIcon={<LaunchOutlined />}
-          sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700, bgcolor: '#2563EB', px: 4, py: 1.2, boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)', '&:hover': { bgcolor: '#1d4ed8' } }}
+          sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700, bgcolor: alpha('#2563EB', 0.85), px: 4, py: 1.2, boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)', '&:hover': { bgcolor: alpha('#2563EB', 0.95) } }}
         >
           공고 원문 보기
         </Button>
@@ -268,8 +275,6 @@ const JobPostingDetailModal: React.FC<JobPostingDetailModalProps> = ({ job, open
     </Dialog>
   );
 };
-
-// --- 서브 컴포넌트 (Stack 기반 정렬 및 여백 수정) ---
 
 const InfoCard = ({ icon, label, value, fullWidth = false }: { icon: React.ReactNode; label: string; value: string; fullWidth?: boolean }) => (
   <Box

@@ -43,6 +43,7 @@ const AppShell = ({ children, showParticles = false }: Props) => {
   const isResumePage = pathname === '/resume';
   const isDocumentsPage = pathname === '/documents';
   const isReportOnlyPage = pathname === '/report-only';
+  const isRecruitmentsPage = pathname === '/recruitments';
   const { resetResultData } = useReportStore();
   const { resetResumeData } = useResumeStore();
   const { resetCoverLetterData } = useCoverLetterStore();
@@ -78,7 +79,10 @@ const AppShell = ({ children, showParticles = false }: Props) => {
         position: 'relative',
         minHeight: '100vh',
         overflow: 'hidden',
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        backgroundImage: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: '100% 100vh',
       }}
     >
       {showParticles &&
@@ -188,6 +192,22 @@ const AppShell = ({ children, showParticles = false }: Props) => {
                 }}
               >
                 {isMobile ? '리포트' : 'AI 리포트'}
+              </Button>
+              <Button
+                onClick={() => router.push('/recruitments')}
+                sx={{
+                  color: isRecruitmentsPage ? '#2563EB' : '#64748b',
+                  fontWeight: 700,
+                  borderRadius: '20px',
+                  px: 2.5,
+                  bgcolor: isRecruitmentsPage ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: 'rgba(37, 99, 235, 0.12)',
+                    color: '#2563EB',
+                  },
+                }}
+              >
+                {isMobile ? '채용' : '채용 공고'}
               </Button>
             </Box>
           </Box>
