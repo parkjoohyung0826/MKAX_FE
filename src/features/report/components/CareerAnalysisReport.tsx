@@ -7,7 +7,7 @@ import defaultAnalysisReport from '../constants/defaultAnalysisReport';
 import SectionOneSummary from './analysis/SectionOneSummary';
 import SectionTwoSentenceFeedback from './analysis/SectionTwoSentenceFeedback';
 import SectionThreeImprovementGuide from './analysis/SectionThreeImprovementGuide';
-import JobPostingList from './JobPostingList';
+import RecommendedJobPostingsTab from './RecommendedJobPostingsTab';
 
 // --- Glassmorphism 스타일 ---
 const glassCardSx = {
@@ -34,6 +34,7 @@ const sectionTitleSx = {
 interface Props {
   analysisReport?: AnalysisReport | null;
   jobPostings: JobPosting[];
+  accessCode?: string;
 }
 
 const defaultReport = defaultAnalysisReport;
@@ -55,7 +56,7 @@ const resolveTextBlock = (value?: string | string[]) => {
   return value ?? '';
 };
 
-const CareerAnalysisReport = ({ analysisReport, jobPostings }: Props) => {
+const CareerAnalysisReport = ({ analysisReport, jobPostings, accessCode }: Props) => {
   const [currentSection, setCurrentSection] = useState(0);
 
   const handleSectionChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -182,10 +183,13 @@ const CareerAnalysisReport = ({ analysisReport, jobPostings }: Props) => {
               >
                 지원자님의 이력서와 자기소개서를 바탕으로 적합한 채용 공고를 추천합니다.
                 <br />
-                모든 공고는 공공기관 채용공고에 기반합니다.
+                스크롤 하단으로 이동하면 다음 추천 공고를 자동으로 불러옵니다.
               </Typography>
             </Box>
-            <JobPostingList jobPostings={jobPostings} />
+            <RecommendedJobPostingsTab
+              code={accessCode}
+              initialJobPostings={jobPostings}
+            />
           </Box>
         )}
       </Box>

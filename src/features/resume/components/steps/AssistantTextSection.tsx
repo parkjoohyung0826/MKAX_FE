@@ -11,22 +11,23 @@ import {
   keyframes,
   CircularProgress,
   InputAdornment,
+  Collapse,
 } from '@mui/material';
 import { AutoAwesome } from '@mui/icons-material';
 import ConversationalAssistant from '@/shared/components/ConversationalAssistant';
 
 const glowingPulse = keyframes`
   0% {
-    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.1), 0 0 0 1px rgba(37, 99, 235, 0.1);
-    border-color: rgba(37, 99, 235, 0.3);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.06), 0 0 0 1px rgba(37, 99, 235, 0.08);
+    border-color: rgba(37, 99, 235, 0.22);
   }
   50% {
-    box-shadow: 0 0 20px 4px rgba(37, 99, 235, 0.2), 0 0 0 1px rgba(37, 99, 235, 0.5);
-    border-color: rgba(37, 99, 235, 0.8);
+    box-shadow: 0 0 14px 2px rgba(37, 99, 235, 0.14), 0 0 0 1px rgba(37, 99, 235, 0.32);
+    border-color: rgba(37, 99, 235, 0.5);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.1), 0 0 0 1px rgba(37, 99, 235, 0.1);
-    border-color: rgba(37, 99, 235, 0.3);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.06), 0 0 0 1px rgba(37, 99, 235, 0.08);
+    border-color: rgba(37, 99, 235, 0.22);
   }
 `;
 
@@ -100,9 +101,6 @@ const ResumeAssistantTextSection = ({
   const abortControllerRef = useRef(false);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (missingInfo) {
-      setMissingInfo('');
-    }
     onChange(event);
   };
 
@@ -210,56 +208,69 @@ const ResumeAssistantTextSection = ({
         </Box>
       </Box>
 
-      {missingInfo ? (
-        <Typography variant="caption" sx={{ color: '#ef4444', fontWeight: 600, mb: 1, display: 'block' }}>
-          {missingInfo}
-        </Typography>
-      ) : null}
+      <Collapse in={Boolean(missingInfo)} timeout={250} unmountOnExit>
+        <Box sx={{ px: 1 }}>
+          <Typography variant="caption" sx={{ color: '#ef4444', fontWeight: 600, mb: 1, display: 'block' }}>
+            {missingInfo}
+          </Typography>
+        </Box>
+      </Collapse>
 
-      <TextField
-        fullWidth
-        multiline
-        rows={rows}
-        name={name}
-        placeholder={placeholder}
-        value={value}
-        onChange={handleChange}
-        variant="outlined"
-        disabled={isValidating}
-        InputProps={{
-          endAdornment: isValidating ? (
-            <InputAdornment position="end" sx={{ position: 'absolute', bottom: 16, right: 16 }}>
-              <CircularProgress size={20} thickness={5} sx={{ color: '#2563EB' }} />
-            </InputAdornment>
-          ) : null,
-        }}
+      <Box sx={{ px: 1, overflow: 'visible' }}>
+        <TextField
+          fullWidth
+          multiline
+          rows={rows}
+          name={name}
+          placeholder={placeholder}
+          value={value}
+          onChange={handleChange}
+          variant="outlined"
+          disabled={isValidating}
+          InputProps={{
+            endAdornment: isValidating ? (
+              <InputAdornment position="end" sx={{ position: 'absolute', bottom: 16, right: 16 }}>
+                <CircularProgress size={20} thickness={5} sx={{ color: '#2563EB' }} />
+              </InputAdornment>
+            ) : null,
+          }}
         sx={{
           ...glassInputSx,
+          position: 'relative',
+          zIndex: 1,
+          '& textarea': {
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          },
+          '& textarea::-webkit-scrollbar': {
+            display: 'none',
+          },
           '& .MuiInputBase-input::placeholder': {
             whiteSpace: 'pre-line',
           },
-          '& .MuiOutlinedInput-root': {
-            ...(glassInputSx as any)['& .MuiOutlinedInput-root'],
-            animation: isValidating ? `${glowingPulse} 2s infinite ease-in-out` : 'none',
-            backgroundColor: isValidating ? 'rgba(255, 255, 255, 0.9)' : (glassInputSx as any)['& .MuiOutlinedInput-root'].backgroundColor,
+            '& .MuiOutlinedInput-root': {
+              ...(glassInputSx as any)['& .MuiOutlinedInput-root'],
+              animation: isValidating ? `${glowingPulse} 2s infinite ease-in-out` : 'none',
+              backgroundColor: isValidating ? 'rgba(255, 255, 255, 0.9)' : (glassInputSx as any)['& .MuiOutlinedInput-root'].backgroundColor,
 
-            '& fieldset': {
-              borderColor: missingInfo ? '#ef4444' : (isValidating ? '#2563EB' : 'transparent'),
-              borderWidth: isValidating ? '1px' : undefined,
-            },
-            '&:hover fieldset': {
-              borderColor: missingInfo ? '#ef4444' : (isValidating ? '#2563EB' : 'rgba(37, 99, 235, 0.3)'),
-            },
-            '&.Mui-focused': {
-              ...(glassInputSx as any)['& .MuiOutlinedInput-root']['&.Mui-focused'],
               '& fieldset': {
-                borderColor: missingInfo ? '#ef4444' : '#2563EB',
-                borderWidth: '1px',
+                borderColor: missingInfo ? '#ef4444' : (isValidating ? '#2563EB' : 'transparent'),
+                borderWidth: isValidating ? '1px' : undefined,
+              },
+              '&:hover fieldset': {
+                borderColor: missingInfo ? '#ef4444' : (isValidating ? '#2563EB' : 'rgba(37, 99, 235, 0.3)'),
+              },
+              '&.Mui-focused': {
+                ...(glassInputSx as any)['& .MuiOutlinedInput-root']['&.Mui-focused'],
+                '& fieldset': {
+                  borderColor: missingInfo ? '#ef4444' : '#2563EB',
+                  borderWidth: '1px',
+                },
               },
             },
-          },
-        }}
-      />
+          }}
+        />
+      </Box>
       <Snackbar
         open={toastOpen}
         autoHideDuration={3000}

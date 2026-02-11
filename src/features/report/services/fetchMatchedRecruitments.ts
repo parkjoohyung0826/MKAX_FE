@@ -107,22 +107,39 @@ export async function fetchMatchedRecruitments(
 
   const raw = await res.json();
   const items = extractMatchedItems(raw);
+  const top = raw && typeof raw === 'object' ? (raw as Record<string, any>) : {};
   const envelope =
-    raw && typeof raw === 'object' && (raw as Record<string, any>).result
-      ? (raw as Record<string, any>).result
-      : raw;
+    top.result && typeof top.result === 'object'
+      ? (top.result as Record<string, any>)
+      : top;
   const total =
-    envelope && typeof envelope === 'object' && typeof (envelope as Record<string, any>).total === 'number'
-      ? (envelope as Record<string, any>).total
+    typeof envelope.total === 'number'
+      ? envelope.total
+      : typeof top.total === 'number'
+        ? top.total
       : items.length;
   const nextOffset =
-    envelope && typeof envelope === 'object' && typeof (envelope as Record<string, any>).nextOffset === 'number'
-      ? (envelope as Record<string, any>).nextOffset
-      : 0;
+    typeof envelope.nextOffset === 'number'
+      ? envelope.nextOffset
+      : typeof top.nextOffset === 'number'
+        ? top.nextOffset
+        : typeof envelope.next_offset === 'number'
+          ? envelope.next_offset
+          : typeof top.next_offset === 'number'
+            ? top.next_offset
+            : offset + items.length;
   const hasMore =
-    envelope && typeof envelope === 'object' && typeof (envelope as Record<string, any>).hasMore === 'boolean'
-      ? (envelope as Record<string, any>).hasMore
-      : false;
+    typeof envelope.hasMore === 'boolean'
+      ? envelope.hasMore
+      : typeof top.hasMore === 'boolean'
+        ? top.hasMore
+        : typeof envelope.has_more === 'boolean'
+          ? envelope.has_more
+          : typeof top.has_more === 'boolean'
+            ? top.has_more
+            : typeof limit === 'number'
+              ? items.length >= limit
+              : false;
 
   const data: MatchedRecruitmentResponse = { items, total, nextOffset, hasMore };
   const count = data.items.length;

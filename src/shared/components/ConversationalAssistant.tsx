@@ -150,11 +150,17 @@ const ConversationalAssistant = ({ open, onClose, onSubmit, title, prompt }: Pro
                 value={text}
                 onChange={(e) => {
                   setText(e.target.value);
-                  if (missingInfo) setMissingInfo('');
                 }}
                 placeholder="AI에게 도움받고 싶은 내용을 입력해주세요."
                 disabled={loading}
                 sx={{
+                  '& textarea': {
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                  },
+                  '& textarea::-webkit-scrollbar': {
+                    display: 'none',
+                  },
                   '& .MuiOutlinedInput-root': {
                     fontSize: '0.925rem',
                     borderRadius: '14px',
@@ -230,7 +236,7 @@ const ConversationalAssistant = ({ open, onClose, onSubmit, title, prompt }: Pro
                 {loading ? (
                   <CircularProgress size={18} sx={{ color: 'white' }} />
                 ) : (
-                  'AI 생성하기'
+                  '생성하기'
                 )}
               </Button>
             </Box>

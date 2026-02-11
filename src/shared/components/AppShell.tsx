@@ -161,22 +161,7 @@ const AppShell = ({ children, showParticles = false }: Props) => {
               >
                 {isMobile ? '작성' : '문서 작성'}
               </Button>
-              <Button
-                onClick={() => router.push('/documents')}
-                sx={{
-                  color: isDocumentsPage ? '#2563EB' : '#64748b',
-                  fontWeight: 700,
-                  borderRadius: '20px',
-                  px: 2.5,
-                  bgcolor: isDocumentsPage ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
-                  '&:hover': {
-                    backgroundColor: 'rgba(37, 99, 235, 0.12)',
-                    color: '#2563EB',
-                  },
-                }}
-              >
-                {isMobile ? '조회' : '문서 조회'}
-              </Button>
+              
               <Button
                 onClick={() => router.push('/report-only')}
                 sx={{
@@ -208,6 +193,22 @@ const AppShell = ({ children, showParticles = false }: Props) => {
                 }}
               >
                 {isMobile ? '채용' : '채용 공고'}
+              </Button>
+              <Button
+                onClick={() => router.push('/documents')}
+                sx={{
+                  color: isDocumentsPage ? '#2563EB' : '#64748b',
+                  fontWeight: 700,
+                  borderRadius: '20px',
+                  px: 2.5,
+                  bgcolor: isDocumentsPage ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: 'rgba(37, 99, 235, 0.12)',
+                    color: '#2563EB',
+                  },
+                }}
+              >
+                {isMobile ? '조회' : '문서 조회'}
               </Button>
             </Box>
           </Box>
