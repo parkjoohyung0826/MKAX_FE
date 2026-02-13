@@ -11,12 +11,34 @@ export async function GET(req: Request) {
     }
 
     const url = new URL(req.url);
-    const offset = url.searchParams.get('offset') ?? '0';
-    const limit = url.searchParams.get('limit') ?? '10';
+    const forwardParams = new URLSearchParams();
+    const allowedParams = new Set([
+      'q',
+      'regions',
+      'fields',
+      'careerTypes',
+      'educationLevels',
+      'hireTypes',
+      'includeClosed',
+      'offset',
+      'limit',
+      'refresh',
+    ]);
+
+    for (const key of allowedParams) {
+      const values = url.searchParams.getAll(key);
+      values
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .forEach((value) => forwardParams.append(key, value));
+    }
+
+    if (!forwardParams.has('offset')) forwardParams.set('offset', '0');
+    if (!forwardParams.has('limit')) forwardParams.set('limit', '10');
     const cookieHeader = req.headers.get('cookie');
 
     const res = await fetch(
-      `${backendUrl}/api/report/recruitments?offset=${encodeURIComponent(offset)}&limit=${encodeURIComponent(limit)}`,
+      `${backendUrl}/api/report/recruitments?${forwardParams.toString()}`,
       {
         method: 'GET',
         headers: {
