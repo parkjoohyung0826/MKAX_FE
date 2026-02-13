@@ -11,40 +11,25 @@ export async function GET(req: Request) {
     }
 
     const url = new URL(req.url);
-    const forwardParams = new URLSearchParams();
-    const allowedParams = new Set([
-      'q',
-      'regions',
-      'fields',
-      'careerTypes',
-      'educationLevels',
-      'hireTypes',
-      'includeClosed',
-      'offset',
-      'limit',
-    ]);
+    const params = new URLSearchParams();
+    const includeClosed = url.searchParams.get('includeClosed');
 
-    for (const key of allowedParams) {
-      const values = url.searchParams.getAll(key);
-      values
-        .map((value) => value.trim())
-        .filter(Boolean)
-        .forEach((value) => forwardParams.append(key, value));
+    if (includeClosed === 'true' || includeClosed === 'false') {
+      params.set('includeClosed', includeClosed);
     }
 
-    if (!forwardParams.has('offset')) forwardParams.set('offset', '0');
-    if (!forwardParams.has('limit')) forwardParams.set('limit', '10');
+    const query = params.toString();
+    const targetUrl = query
+      ? `${backendUrl}/api/report/recruitments/filters?${query}`
+      : `${backendUrl}/api/report/recruitments/filters`;
     const cookieHeader = req.headers.get('cookie');
 
-    const res = await fetch(
-      `${backendUrl}/api/report/recruitments?${forwardParams.toString()}`,
-      {
-        method: 'GET',
-        headers: {
-          ...(cookieHeader ? { cookie: cookieHeader } : {}),
-        },
-      }
-    );
+    const res = await fetch(targetUrl, {
+      method: 'GET',
+      headers: {
+        ...(cookieHeader ? { cookie: cookieHeader } : {}),
+      },
+    });
 
     const text = await res.text();
 

@@ -29,7 +29,14 @@ export type RecruitmentFilters = {
   educationLevels?: string[];
   hireTypes?: string[];
   includeClosed?: boolean;
-  refresh?: boolean;
+};
+
+export type RecruitmentFilterOptions = {
+  regions: string[];
+  fields: string[];
+  careerTypes: string[];
+  educationLevels: string[];
+  hireTypes: string[];
 };
 
 const extractEnvelope = (raw: RecruitmentsApiResponse) => {
@@ -58,7 +65,6 @@ export async function fetchRecruitments(
   if (typeof filters.includeClosed === 'boolean') {
     params.set('includeClosed', String(filters.includeClosed));
   }
-  if (typeof filters.refresh === 'boolean') params.set('refresh', String(filters.refresh));
 
   const res = await fetch(`/api/report/recruitments?${params.toString()}`, {
     method: 'GET',
@@ -79,5 +85,38 @@ export async function fetchRecruitments(
     total: typeof envelope.total === 'number' ? envelope.total : rawItems.length,
     nextOffset: typeof envelope.nextOffset === 'number' ? envelope.nextOffset : offset + rawItems.length,
     hasMore: typeof envelope.hasMore === 'boolean' ? envelope.hasMore : rawItems.length >= limit,
+  };
+}
+
+export async function fetchRecruitmentFilterOptions(
+  includeClosed?: boolean
+): Promise<RecruitmentFilterOptions> {
+  const params = new URLSearchParams();
+  if (typeof includeClosed === 'boolean') {
+    params.set('includeClosed', String(includeClosed));
+  }
+
+  const query = params.toString();
+  const url = query
+    ? `/api/report/recruitments/filters?${query}`
+    : '/api/report/recruitments/filters';
+
+  const res = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.message ?? '필터 옵션 조회 실패');
+  }
+
+  const raw = (await res.json()) as Partial<RecruitmentFilterOptions>;
+  return {
+    regions: Array.isArray(raw.regions) ? raw.regions : [],
+    fields: Array.isArray(raw.fields) ? raw.fields : [],
+    careerTypes: Array.isArray(raw.careerTypes) ? raw.careerTypes : [],
+    educationLevels: Array.isArray(raw.educationLevels) ? raw.educationLevels : [],
+    hireTypes: Array.isArray(raw.hireTypes) ? raw.hireTypes : [],
   };
 }

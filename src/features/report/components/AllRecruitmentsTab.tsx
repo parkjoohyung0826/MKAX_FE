@@ -30,40 +30,36 @@ import {
   KeyboardArrowDownRounded,
   KeyboardArrowUpRounded,
   FilterListRounded,
-  PlaceRounded,       // 지역
-  CategoryRounded,    // 분야
-  BadgeRounded,       // 경력
-  SchoolRounded,      // 학력
-  AccessTimeRounded,  // 고용형태
+  PlaceRounded,    
+  CategoryRounded, 
+  BadgeRounded,    
+  SchoolRounded,   
+  AccessTimeRounded, 
   CheckRounded,
 } from '@mui/icons-material';
-import { RecruitmentFilters, fetchRecruitments } from '../services/fetchRecruitments';
+import {
+  RecruitmentFilterOptions,
+  RecruitmentFilters,
+  fetchRecruitmentFilterOptions,
+  fetchRecruitments,
+} from '../services/fetchRecruitments';
 import JobPostingList from './JobPostingList';
 import { useReportStore } from '../store';
 
 const PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 400;
 
-// --- Utility Functions ---
-const splitCsv = (value?: string | null) =>
-  (value ?? '')
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean);
-
 const normalizeValues = (values: readonly string[]) =>
   Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
 
-// --- Styles ---
 const ANTIGRAVITY_SHADOW = '0 20px 40px -4px rgba(145, 158, 171, 0.16), 0 4px 8px -2px rgba(145, 158, 171, 0.08)';
 
-// 슬림해진 입력 필드 스타일
 const filterInputSx = {
   '& .MuiOutlinedInput-root': {
-    borderRadius: '12px', // 조금 더 둥글게 (12px)
+    borderRadius: '12px',
     backgroundColor: '#F9FAFB',
     transition: 'all 0.2s',
-    paddingLeft: '10px', // 아이콘 공간 확보
+    paddingLeft: '10px',
     '& fieldset': { borderColor: 'transparent' },
     '&:hover fieldset': { borderColor: '#DFE3E8' },
     '&.Mui-focused': {
@@ -71,7 +67,6 @@ const filterInputSx = {
       boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
       '& fieldset': { borderColor: '#3182F6' },
     },
-    // 높이 축소 (Small size overrides)
     '& .MuiInputBase-input': {
       paddingTop: '8.5px',
       paddingBottom: '8.5px',
@@ -79,10 +74,9 @@ const filterInputSx = {
       fontWeight: 500,
     },
   },
-  '& .MuiInputLabel-root': { display: 'none' }, // 라벨 숨김 (Placeholder 사용)
+  '& .MuiInputLabel-root': { display: 'none' },
 };
 
-// 커스텀 드롭다운(Popper) 스타일
 const CustomPopper = (props: any) => {
   return (
     <Popper 
@@ -90,7 +84,7 @@ const CustomPopper = (props: any) => {
       placement="bottom-start" 
       sx={{ 
         zIndex: 1300,
-        width: props.anchorEl?.clientWidth, // 입력창 너비와 동일하게
+        width: props.anchorEl?.clientWidth, 
       }} 
     />
   );
@@ -108,7 +102,6 @@ const AllRecruitmentsTab = () => {
     resetRecruitments,
   } = useReportStore();
 
-  // --- Filter States ---
   const [qInput, setQInput] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
   const [regions, setRegions] = useState<string[]>([]);
@@ -117,13 +110,20 @@ const AllRecruitmentsTab = () => {
   const [educationLevels, setEducationLevels] = useState<string[]>([]);
   const [hireTypes, setHireTypes] = useState<string[]>([]);
   const [includeClosed, setIncludeClosed] = useState(false);
+  const [filterOptions, setFilterOptions] = useState<RecruitmentFilterOptions>({
+    regions: [],
+    fields: [],
+    careerTypes: [],
+    educationLevels: [],
+    hireTypes: [],
+  });
+  const [isFilterOptionsLoading, setIsFilterOptionsLoading] = useState(false);
+  const [filterOptionsError, setFilterOptionsError] = useState<string | null>(null);
   
-  // UI States
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // --- Refs & Infinite Scroll ---
   const didMountRef = useRef(false);
   const requestIdRef = useRef(0);
   const filtersRef = useRef<RecruitmentFilters>({ q: '', regions: [], fields: [], careerTypes: [], educationLevels: [], hireTypes: [], includeClosed: false });
@@ -145,11 +145,11 @@ const AllRecruitmentsTab = () => {
   useEffect(() => { hasMoreRef.current = recruitmentsHasMore; }, [recruitmentsHasMore]);
   useEffect(() => { nextOffsetRef.current = recruitmentsNextOffset; }, [recruitmentsNextOffset]);
 
-  const regionOptions = useMemo(() => normalizeValues(recruitments.flatMap(i => Array.isArray(i.workRgnNmList) && i.workRgnNmList.length ? i.workRgnNmList : splitCsv(i.workRgnNmLst ?? i.region))), [recruitments]);
-  const fieldOptions = useMemo(() => normalizeValues(recruitments.flatMap(i => Array.isArray(i.ncsCdNmList) && i.ncsCdNmList.length ? i.ncsCdNmList : splitCsv(i.ncsCdNmLst ?? i.indTpNm))), [recruitments]);
-  const careerTypeOptions = useMemo(() => normalizeValues(recruitments.map(i => i.recrutSeNm ?? i.career).filter(Boolean) as string[]), [recruitments]);
-  const educationOptions = useMemo(() => normalizeValues(recruitments.flatMap(i => Array.isArray(i.acbgCondNmList) && i.acbgCondNmList.length ? i.acbgCondNmList : splitCsv(i.acbgCondNmLst ?? i.minEdubg))), [recruitments]);
-  const hireTypeOptions = useMemo(() => normalizeValues(recruitments.flatMap(i => Array.isArray(i.hireTypeNmList) && i.hireTypeNmList.length ? i.hireTypeNmList : splitCsv(i.hireTypeNmLst ?? i.holidayTpNm))), [recruitments]);
+  const regionOptions = filterOptions.regions;
+  const fieldOptions = filterOptions.fields;
+  const careerTypeOptions = filterOptions.careerTypes;
+  const educationOptions = filterOptions.educationLevels;
+  const hireTypeOptions = filterOptions.hireTypes;
 
   const hasAppliedFilters = Boolean(debouncedQ) || regions.length > 0 || fields.length > 0 || careerTypes.length > 0 || educationLevels.length > 0 || hireTypes.length > 0 || includeClosed;
 
@@ -177,6 +177,38 @@ const AllRecruitmentsTab = () => {
 
   useEffect(() => { if (!recruitmentsLoaded) void loadMore({ forceOffset: 0 }); }, [loadMore, recruitmentsLoaded]);
   useEffect(() => { if (!didMountRef.current) { didMountRef.current = true; return; } void loadMore({ forceOffset: 0, resetBeforeLoad: true }); }, [filterKey, loadMore]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const fetchOptions = async () => {
+      setIsFilterOptionsLoading(true);
+      setFilterOptionsError(null);
+      try {
+        const data = await fetchRecruitmentFilterOptions();
+        if (!isActive) return;
+        setFilterOptions({
+          regions: normalizeValues(data.regions),
+          fields: normalizeValues(data.fields),
+          careerTypes: normalizeValues(data.careerTypes),
+          educationLevels: normalizeValues(data.educationLevels),
+          hireTypes: normalizeValues(data.hireTypes),
+        });
+      } catch (error) {
+        if (!isActive) return;
+        setFilterOptionsError(
+          error instanceof Error ? error.message : '필터 옵션을 불러오지 못했습니다.'
+        );
+      } finally {
+        if (isActive) setIsFilterOptionsLoading(false);
+      }
+    };
+
+    void fetchOptions();
+    return () => {
+      isActive = false;
+    };
+  }, []);
   
   useEffect(() => {
     if (!sentinelRef.current || !recruitmentsHasMore) return;
@@ -192,7 +224,6 @@ const AllRecruitmentsTab = () => {
   return (
     <Box sx={{ width: '100%', maxWidth: '900px', mx: 'auto', px: 2 }}>
       
-      {/* 1. Header Area */}
       <Box sx={{ mt: 3, mb: 5, textAlign: 'center' }}>
         <Typography
           variant={isMobile ? 'h5' : 'h4'}
@@ -213,7 +244,6 @@ const AllRecruitmentsTab = () => {
         </Typography>
       </Box>
 
-      {/* 2. Slim Antigravity Filter Box */}
       <Paper
         elevation={0}
         sx={{
@@ -225,11 +255,8 @@ const AllRecruitmentsTab = () => {
           transition: 'all 0.3s ease',
         }}
       >
-        <Box sx={{ p: 2 }}> {/* 패딩 축소 (2.5 -> 2) */}
-          
-          {/* Top Row: Search + Filter Toggle */}
+        <Box sx={{ p: 2 }}> 
           <Stack direction="row" spacing={1} alignItems="center">
-            {/* Search Input */}
             <TextField
               fullWidth
               placeholder="기관명, 공고명 검색"
@@ -243,7 +270,7 @@ const AllRecruitmentsTab = () => {
                   backgroundColor: '#F4F6F8',
                   fontSize: '0.95rem',
                   fontWeight: 600,
-                  height: '42px', // 높이 축소 (48 -> 42)
+                  height: '42px', 
                   '& fieldset': { border: 'none' },
                   '&:hover': { backgroundColor: '#EDEFF1' },
                   '&.Mui-focused': { 
@@ -261,7 +288,6 @@ const AllRecruitmentsTab = () => {
               }}
             />
 
-            {/* Filter Toggle Button */}
             <Button
               onClick={() => setIsFilterExpanded(!isFilterExpanded)}
               variant="outlined"
@@ -269,7 +295,7 @@ const AllRecruitmentsTab = () => {
               endIcon={isFilterExpanded ? <KeyboardArrowUpRounded /> : <KeyboardArrowDownRounded />}
               sx={{
                 minWidth: 'fit-content',
-                height: '42px', // 검색창 높이와 일치
+                height: '42px', 
                 borderColor: isFilterExpanded ? '#3182F6' : 'transparent',
                 color: isFilterExpanded ? '#3182F6' : '#637381',
                 bgcolor: isFilterExpanded ? alpha('#3182F6', 0.08) : '#F4F6F8',
@@ -290,7 +316,12 @@ const AllRecruitmentsTab = () => {
             </Button>
           </Stack>
 
-          {/* Collapsible Detailed Filters */}
+          {filterOptionsError && (
+            <Alert severity="warning" sx={{ mt: 1.5, borderRadius: 2 }}>
+              {filterOptionsError}
+            </Alert>
+          )}
+
           <Collapse in={isFilterExpanded}>
             <Box sx={{ pt: 2 }}>
               <Divider sx={{ mb: 2, borderStyle: 'dashed', borderColor: '#E5E8EB' }} />
@@ -299,7 +330,7 @@ const AllRecruitmentsTab = () => {
                 sx={{ 
                   display: 'grid', 
                   gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, 
-                  gap: 1.5 // 간격 축소 (2.5 -> 1.5)
+                  gap: 1.5
                 }}
               >
                 {[
@@ -313,11 +344,11 @@ const AllRecruitmentsTab = () => {
                     key={idx}
                     multiple
                     disableCloseOnSelect
-                    PopperComponent={CustomPopper} // 커스텀 드롭다운 적용
+                    loading={isFilterOptionsLoading}
+                    PopperComponent={CustomPopper}
                     options={filter.options}
                     value={filter.value}
                     onChange={(_, v) => filter.setter(normalizeValues(v))}
-                    // 커스텀 드롭다운 옵션 렌더링
                     renderOption={(props, option, { selected }) => (
                       <li {...props} style={{ padding: '8px 12px', fontSize: '0.9rem', borderRadius: '8px', marginBottom: '2px', transition: 'background 0.2s' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
@@ -326,7 +357,6 @@ const AllRecruitmentsTab = () => {
                         </Box>
                       </li>
                     )}
-                    // 드롭다운 Paper 스타일
                     componentsProps={{
                       paper: {
                         sx: {
@@ -380,7 +410,6 @@ const AllRecruitmentsTab = () => {
                   />
                 ))}
                 
-                {/* Switch & Reset Row */}
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <Box
                     sx={{
@@ -388,7 +417,7 @@ const AllRecruitmentsTab = () => {
                       display: 'flex',
                       alignItems: 'center',
                       px: 2,
-                      height: '42px', // 높이 일치
+                      height: '42px', 
                       borderRadius: '12px',
                       border: '1px solid transparent',
                       backgroundColor: '#F9FAFB',
@@ -438,7 +467,6 @@ const AllRecruitmentsTab = () => {
             </Box>
           </Collapse>
 
-          {/* Applied Filter Chips (Summary) */}
           {!isFilterExpanded && hasAppliedFilters && (
             <Stack direction="row" spacing={1} sx={{ mt: 1.5, overflowX: 'auto', pb: 0.5, scrollbarWidth: 'none' }}>
               {regions.map(v => <AppliedFilterChip key={v} label={v} onDelete={() => setRegions(regions.filter(i => i !== v))} />)}
@@ -452,7 +480,6 @@ const AllRecruitmentsTab = () => {
         </Box>
       </Paper>
 
-      {/* 3. Error Message */}
       {errorMessage && (
         <Alert
           severity="error"
@@ -463,7 +490,6 @@ const AllRecruitmentsTab = () => {
         </Alert>
       )}
 
-      {/* 4. Content List */}
       {isLoading && recruitments.length === 0 ? (
         <Stack spacing={2}>
           {Array.from({ length: 4 }).map((_, i) => (
@@ -474,7 +500,6 @@ const AllRecruitmentsTab = () => {
         <JobPostingList jobPostings={recruitments} />
       )}
 
-      {/* 5. Empty State */}
       {!isLoading && recruitments.length === 0 && !errorMessage && (
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <FilterListRounded sx={{ fontSize: 60, color: '#DFE3E8', mb: 2 }} />
@@ -493,7 +518,6 @@ const AllRecruitmentsTab = () => {
         </Box>
       )}
 
-      {/* 6. Loading Indicator */}
       <Stack alignItems="center" spacing={1.5} sx={{ py: 6 }}>
         {isLoading && (
           <Stack direction="row" spacing={1.5} alignItems="center">
@@ -509,7 +533,6 @@ const AllRecruitmentsTab = () => {
   );
 };
 
-// --- Helper Component ---
 const AppliedFilterChip = ({ label, onDelete }: { label: string; onDelete: () => void }) => (
   <Chip
     label={label}
