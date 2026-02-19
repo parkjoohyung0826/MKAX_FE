@@ -46,7 +46,7 @@ const ConversationalForm = ({ activeStep, direction, steps }: Props) => {
         minHeight: 320, 
         overflow: 'hidden' 
       }}>
-        <AnimatePresence mode="wait" custom={direction}>
+        <AnimatePresence mode="wait" custom={direction} initial={false}>
           <motion.div
             key={activeStep}
             custom={direction}

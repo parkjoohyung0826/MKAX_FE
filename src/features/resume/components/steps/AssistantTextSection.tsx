@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -75,6 +75,8 @@ type ResumeAssistantTextSectionProps = {
   placeholder: string;
   buttonLabel?: string;
   validateLabel?: string;
+  isValidated?: boolean;
+  onValidatedChange?: (validated: boolean) => void;
 };
 
 const ResumeAssistantTextSection = ({
@@ -92,6 +94,8 @@ const ResumeAssistantTextSection = ({
   placeholder,
   buttonLabel = 'AI 작성 도우미',
   validateLabel = '내용 검증하기',
+  isValidated = false,
+  onValidatedChange,
 }: ResumeAssistantTextSectionProps) => {
   const [isAssistantOpen, setAssistantOpen] = useState(false);
   const [missingInfo, setMissingInfo] = useState('');
@@ -131,6 +135,7 @@ const ResumeAssistantTextSection = ({
       if (info.trim().length > 0) {
         setMissingInfo(info);
       } else if (isComplete === true) {
+        onValidatedChange?.(true);
         setToastOpen(true);
       }
     } catch (error) {
@@ -147,6 +152,11 @@ const ResumeAssistantTextSection = ({
   const handleCancelValidate = () => {
     abortControllerRef.current = true; 
     setIsValidating(false); 
+  };
+
+  const handleUnlockValidation = () => {
+    setMissingInfo('');
+    onValidatedChange?.(false);
   };
 
   return (
@@ -173,37 +183,59 @@ const ResumeAssistantTextSection = ({
             </Typography>
           ) : null}
         </Box>
-        <Box display="flex" gap={1}>
-          <Button size="small" onClick={handleOpenAssistant} startIcon={<AutoAwesome />} sx={aiButtonSx}>
-            {buttonLabel}
-          </Button>
-          {onValidate && (
+        <Box display="flex" gap={1} alignItems="center">
+          <Box>
             <Button
               size="small"
-              onClick={isValidating ? handleCancelValidate : handleValidate}
-              sx={{
-                fontWeight: 600,
-                textTransform: 'none',
-                borderRadius: '20px',
-                px: 2,
-                py: 0.5,
-                fontSize: '0.85rem',
-                transition: 'all 0.2s ease',
-                ...(isValidating
-                  ? {
-                      color: '#ef4444',
-                      bgcolor: '#fee2e2',
-                      '&:hover': { bgcolor: '#fecaca' },
-                    }
-                  : {
-                      color: '#0f172a',
-                      bgcolor: 'rgba(15, 23, 42, 0.06)',
-                      '&:hover': { bgcolor: 'rgba(15, 23, 42, 0.12)' },
-                    }),
-              }}
+              onClick={handleOpenAssistant}
+              startIcon={<AutoAwesome />}
+              sx={aiButtonSx}
+              disabled={isValidated}
             >
-              {isValidating ? '검증 취소하기' : validateLabel}
+              {buttonLabel}
             </Button>
+          </Box>
+          {onValidate && (
+            <Box>
+              <Button
+                size="small"
+                onClick={
+                  isValidated
+                    ? handleUnlockValidation
+                    : isValidating
+                      ? handleCancelValidate
+                      : handleValidate
+                }
+                sx={{
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  borderRadius: '20px',
+                  px: 2,
+                  py: 0.5,
+                  fontSize: '0.85rem',
+                  transition: 'all 0.2s ease',
+                  ...(isValidated
+                    ? {
+                        color: '#0f172a',
+                        bgcolor: 'rgba(15, 23, 42, 0.06)',
+                        '&:hover': { bgcolor: 'rgba(15, 23, 42, 0.12)' },
+                      }
+                    : isValidating
+                    ? {
+                        color: '#ef4444',
+                        bgcolor: '#fee2e2',
+                        '&:hover': { bgcolor: '#fecaca' },
+                      }
+                    : {
+                        color: '#0f172a',
+                        bgcolor: 'rgba(15, 23, 42, 0.06)',
+                        '&:hover': { bgcolor: 'rgba(15, 23, 42, 0.12)' },
+                      }),
+                }}
+              >
+                {isValidated ? '수정하기' : isValidating ? '검증 취소하기' : validateLabel}
+              </Button>
+            </Box>
           )}
         </Box>
       </Box>
@@ -226,7 +258,7 @@ const ResumeAssistantTextSection = ({
           value={value}
           onChange={handleChange}
           variant="outlined"
-          disabled={isValidating}
+          disabled={isValidating || isValidated}
           InputProps={{
             endAdornment: isValidating ? (
               <InputAdornment position="end" sx={{ position: 'absolute', bottom: 16, right: 16 }}>

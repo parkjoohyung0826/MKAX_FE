@@ -35,6 +35,8 @@ interface AIChatViewProps<T> {
   activeStep: number;
   steps: string[];
   onStepComplete: () => void;
+  onFieldComplete?: (field: keyof T) => void;
+  onFieldsReset?: (fields: Array<keyof T>) => void;
   onResetChat?: (args?: { section?: string; sections?: string[] }) => void | Promise<void>;
   hideResetButton?: boolean;
   resetSectionMap?: Partial<Record<keyof T, string>>;
@@ -68,6 +70,8 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
   activeStep,
   steps,
   onStepComplete,
+  onFieldComplete,
+  onFieldsReset,
   onResetChat,
   hideResetButton,
   resetSectionMap,
@@ -284,6 +288,9 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
           }
 
           if (isComplete) {
+            if (currentField) {
+              onFieldComplete?.(currentField);
+            }
             setIsCurrentStepComplete(true);
             onStepComplete();
             setIsDrawerOpen(true);
@@ -424,6 +431,9 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
         }
 
         if (isComplete) {
+          if (currentField) {
+            onFieldComplete?.(currentField);
+          }
           if (currentField === 'coreCompetencies' && currentStepConfig.fields[questionIndex + 1]) {
             sectionFinalizePendingRef.current[currentField] = true;
             setMessages((prev) => [
@@ -535,12 +545,14 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
     } finally {
       if (currentStepConfig?.fields?.length) {
         const updates: Partial<T> = {};
+        const resetFields: Array<keyof T> = [];
         currentStepConfig.fields.forEach((fieldConfig) => {
           const field = fieldConfig.field;
           const fieldConfigApi = fieldApiConfigs?.[field];
           const summaryField = fieldConfigApi?.summaryField ?? field;
           sectionStateRef.current[field] = undefined;
           sectionFinalizePendingRef.current[field] = false;
+          resetFields.push(field);
           updates[summaryField] = '' as T[keyof T];
           updates[field] = '' as T[keyof T];
         });
@@ -548,6 +560,7 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
           ...prev,
           ...updates,
         }));
+        onFieldsReset?.(resetFields);
       }
       resetCurrentStepState();
     }

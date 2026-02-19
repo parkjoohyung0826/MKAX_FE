@@ -8,7 +8,7 @@ import ResumeAssistantTextSection from './AssistantTextSection';
 import StepHeader from './StepHeader';
 
 const WorkExperienceStep = () => {
-  const { resumeData, setResumeData, setResumeValidation } = useResumeStore();
+  const { resumeData, setResumeData, setResumeValidation, validationLock, setValidationLock } = useResumeStore();
 
   const handleAssistantSubmit = async (
     text: string
@@ -72,10 +72,9 @@ const WorkExperienceStep = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { value } = e.target;
-    // 사용자가 직접 입력 시, 첫 번째 학력 정보의 fullDescription을 업데이트
-    // 또는 학력 정보가 없다면 새로운 항목으로 생성
     setResumeData({ workExperience: value });
     setResumeValidation({ workExperience: false });
+    setValidationLock({ workExperience: false });
   };
 
   return (
@@ -95,6 +94,13 @@ const WorkExperienceStep = () => {
         onValidate={handleValidate}
         value={resumeData.workExperience}
         onChange={handleChange}
+        isValidated={validationLock.workExperience}
+        onValidatedChange={(validated) => {
+          setValidationLock({ workExperience: validated });
+          if (!validated) {
+            setResumeValidation({ workExperience: false });
+          }
+        }}
         rows={7}
         name="workExperience"
         placeholder={`예: (주)테크스타트업 (2021.01 ~ 재직중)\n- 주요 역할: 백엔드 리드 개발자\n- 주요 성과: 레거시 시스템 마이그레이션을 통해 서버 비용 40% 절감\n- 사용 기술: Node.js, AWS, Docker`}

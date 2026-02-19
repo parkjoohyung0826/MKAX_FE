@@ -8,7 +8,7 @@ import ResumeAssistantTextSection from './AssistantTextSection';
 import StepHeader from './StepHeader';
 
 const EducationStep = () => {
-  const { resumeData, setResumeData, setResumeValidation } = useResumeStore();
+  const { resumeData, setResumeData, setResumeValidation, validationLock, setValidationLock } = useResumeStore();
 
   const handleAssistantSubmit = async (
     text: string
@@ -72,10 +72,9 @@ const EducationStep = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { value } = e.target;
-    // 사용자가 직접 입력 시, 첫 번째 학력 정보의 fullDescription을 업데이트
-    // 또는 학력 정보가 없다면 새로운 항목으로 생성
     setResumeData({ education: value });
     setResumeValidation({ education: false });
+    setValidationLock({ education: false });
   };
 
 
@@ -96,6 +95,13 @@ const EducationStep = () => {
         onValidate={handleValidate}
         value={resumeData.education}
         onChange={handleChange}
+        isValidated={validationLock.education}
+        onValidatedChange={(validated) => {
+          setValidationLock({ education: validated });
+          if (!validated) {
+            setResumeValidation({ education: false });
+          }
+        }}
         rows={5}
         name="education"
         placeholder={`예: OO대학교 컴퓨터공학과 졸업 (2018.03 ~ 2024.02)\n- 주요 수강 과목: 데이터베이스, 알고리즘, 웹프로그래밍\n- 졸업 프로젝트: AI 기반 추천 시스템 개발`}

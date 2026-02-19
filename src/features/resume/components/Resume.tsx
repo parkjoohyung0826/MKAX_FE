@@ -68,7 +68,14 @@ interface Props {
 }
 
 const Resume = ({ onFinishResume }: Props) => {
-  const { resumeData, setResumeData, resumeValidation, selectedTemplate } = useResumeStore();
+  const {
+    resumeData,
+    setResumeData,
+    resumeValidation,
+    setResumeValidation,
+    setValidationLock,
+    selectedTemplate,
+  } = useResumeStore();
   const [activeStep, setActiveStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isStepComplete, setIsStepComplete] = useState(false);
@@ -194,6 +201,44 @@ const Resume = ({ onFinishResume }: Props) => {
                   })
                 )
               );
+            }}
+            onFieldsReset={(fields) => {
+              fields.forEach((field) => {
+                if (field === 'education') {
+                  setResumeValidation({ education: false });
+                  setValidationLock({ education: false });
+                }
+                if (field === 'workExperience') {
+                  setResumeValidation({ workExperience: false });
+                  setValidationLock({ workExperience: false });
+                }
+                if (field === 'coreCompetencies') {
+                  setResumeValidation({ coreCompetencies: false });
+                  setValidationLock({ coreCompetencies: false });
+                }
+                if (field === 'certifications') {
+                  setResumeValidation({ certifications: false });
+                  setValidationLock({ certifications: false });
+                }
+              });
+            }}
+            onFieldComplete={(field) => {
+              if (field === 'education') {
+                setResumeValidation({ education: true });
+                setValidationLock({ education: true });
+              }
+              if (field === 'workExperience') {
+                setResumeValidation({ workExperience: true });
+                setValidationLock({ workExperience: true });
+              }
+              if (field === 'coreCompetencies') {
+                setResumeValidation({ coreCompetencies: true });
+                setValidationLock({ coreCompetencies: true });
+              }
+              if (field === 'certifications') {
+                setResumeValidation({ certifications: true });
+                setValidationLock({ certifications: true });
+              }
             }}
             hideResetButton
             data={resumeData}

@@ -14,6 +14,13 @@ interface ResumeStore {
     certifications: boolean;
   };
   setResumeValidation: (data: Partial<ResumeStore['resumeValidation']>) => void;
+  validationLock: {
+    education: boolean;
+    workExperience: boolean;
+    coreCompetencies: boolean;
+    certifications: boolean;
+  };
+  setValidationLock: (data: Partial<ResumeStore['validationLock']>) => void;
   formattedResume: ResumeFormatResult | null;
   setFormattedResume: (data: ResumeFormatResult | null) => void;
 }
@@ -41,6 +48,13 @@ const initialResumeValidation = {
   certifications: false,
 };
 
+const initialValidationLock = {
+  education: false,
+  workExperience: false,
+  coreCompetencies: false,
+  certifications: false,
+};
+
 const defaultTemplate: ResumeTemplateId = 'classic';
 
 export const useResumeStore = create<ResumeStore>((set) => ({
@@ -59,12 +73,18 @@ export const useResumeStore = create<ResumeStore>((set) => ({
     set((state) => ({
       resumeValidation: { ...state.resumeValidation, ...data },
     })),
+  validationLock: initialValidationLock,
+  setValidationLock: (data) =>
+    set((state) => ({
+      validationLock: { ...state.validationLock, ...data },
+    })),
   formattedResume: null,
   setFormattedResume: (data) => set({ formattedResume: data }),
   resetResumeData: () =>
     set({
       resumeData: initialResumeData,
       resumeValidation: initialResumeValidation,
+      validationLock: initialValidationLock,
       formattedResume: null,
       selectedTemplate: defaultTemplate,
     }),

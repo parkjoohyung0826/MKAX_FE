@@ -8,7 +8,7 @@ import ResumeAssistantTextSection from './AssistantTextSection';
 import StepHeader from './StepHeader';
 
 const CertificationsStep = () => {
-  const { resumeData, setResumeData, setResumeValidation } = useResumeStore();
+  const { resumeData, setResumeData, setResumeValidation, validationLock, setValidationLock } = useResumeStore();
 
   const submitCoreCompetencies = async (
     text: string
@@ -74,6 +74,7 @@ const CertificationsStep = () => {
     const { value } = e.target;
     setResumeData({ coreCompetencies: value });
     setResumeValidation({ coreCompetencies: false });
+    setValidationLock({ coreCompetencies: false });
   };
 
   const submitCertifications = async (
@@ -140,6 +141,7 @@ const CertificationsStep = () => {
     const { value } = e.target;
     setResumeData({ certifications: value });
     setResumeValidation({ certifications: false });
+    setValidationLock({ certifications: false });
   };
 
   return (
@@ -160,6 +162,13 @@ const CertificationsStep = () => {
         onValidate={handleValidateActivity}
         value={resumeData.coreCompetencies}
         onChange={handleChangeActivity}
+        isValidated={validationLock.coreCompetencies}
+        onValidatedChange={(validated) => {
+          setValidationLock({ coreCompetencies: validated });
+          if (!validated) {
+            setResumeValidation({ coreCompetencies: false });
+          }
+        }}
         rows={4}
           name="coreCompetencies"
           placeholder={`예: 삼성 청년 SW 아카데미 (SSAFY) 10기 수료 (2023.07 ~ 2024.01)\nOOO 대외활동 (2022.01 ~ 2022.06) - 프로젝트 관리 및 기획 담당`}
@@ -175,6 +184,13 @@ const CertificationsStep = () => {
         onValidate={handleValidateCertifications}
         value={resumeData.certifications}
         onChange={handleChangeCertifacation}
+        isValidated={validationLock.certifications}
+        onValidatedChange={(validated) => {
+          setValidationLock({ certifications: validated });
+          if (!validated) {
+            setResumeValidation({ certifications: false });
+          }
+        }}
         rows={3}
           name="certifications"
           placeholder={`예: 정보처리기사 (2023.05)\nTOEIC 900 (2023.08)`}
