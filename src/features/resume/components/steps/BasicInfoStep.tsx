@@ -174,7 +174,19 @@ const BasicInfoStep = ({ data, handleChange }: Props) => {
                 </>
               ) : (
                 <>
-                  <Box sx={{ p: 2, bgcolor: '#eff6ff', borderRadius: '50%', mb: 2 }}>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      bgcolor: '#eff6ff',
+                      borderRadius: '50%',
+                      mb: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      lineHeight: 0,
+                    }}
+                  >
                     <CloudUploadOutlined sx={{ color: '#2563EB' }} />
                   </Box>
                   <Typography variant="caption" fontWeight={600} color="text.secondary">사진 업로드</Typography>

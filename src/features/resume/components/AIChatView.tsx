@@ -51,6 +51,12 @@ type FieldApiConfig<T> = {
   buildBody?: (args: { userInput: string; currentSummary: string; data: T }) => Record<string, unknown>;
 };
 
+type SectionState = {
+  draftInput: string;
+  items: string[];
+  followUpQuestion: string;
+};
+
 export interface AIChatViewHandle {
   resetCurrentStep: () => void;
 }
@@ -73,7 +79,6 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [apiDraft, setApiDraft] = useState('');
   const [isCurrentStepComplete, setIsCurrentStepComplete] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -83,6 +88,7 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messageListRef = useRef<HTMLDivElement>(null);
+  const sectionStateRef = useRef<Partial<Record<keyof T, SectionState>>>({});
   const stepStateRef = useRef<Record<number, {
     messages: ChatMessage[];
     userInput: string;
@@ -91,7 +97,6 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
     isTyping: boolean;
     isDrawerOpen: boolean;
     hasUnreadChanges: boolean;
-    apiDraft: string;
   }>>({});
   const prevStepRef = useRef<number | null>(null);
 
@@ -122,7 +127,6 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
         isTyping,
         isDrawerOpen,
         hasUnreadChanges,
-        apiDraft,
       };
     }
 
@@ -135,7 +139,6 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
       setIsTyping(savedState.isTyping);
       setIsDrawerOpen(savedState.isDrawerOpen);
       setHasUnreadChanges(savedState.hasUnreadChanges);
-      setApiDraft(savedState.apiDraft);
       setPendingIntro(null);
       prevStepRef.current = activeStep;
       return;
@@ -143,7 +146,6 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
 
     setQuestionIndex(0);
     setIsCurrentStepComplete(false);
-    setApiDraft('');
     if (currentStepConfig && currentStepConfig.fields.length > 0) {
       setMessages([]);
       setIsTyping(true);
@@ -161,12 +163,6 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
     }, 800);
     return () => clearTimeout(timer);
   }, [pendingIntro]);
-
-  useEffect(() => {
-    if (isApiStep) {
-      setApiDraft('');
-    }
-  }, [currentField, isApiStep]);
 
   useEffect(() => {
     if (!isTyping && !isCurrentStepComplete) {
@@ -274,8 +270,27 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
         return;
       }
 
-      const combinedInput = apiDraft ? `${apiDraft}\n${userInput}` : userInput;
-      setApiDraft(combinedInput);
+      const getSectionState = (field: keyof T): SectionState => {
+        const saved = sectionStateRef.current[field];
+        if (saved) return saved;
+        const raw = String(data?.[field] ?? '').trim();
+        const items = raw.length > 0 ? raw.split(/\n{2,}/).map((item) => item.trim()).filter(Boolean) : [];
+        const nextState: SectionState = {
+          draftInput: '',
+          items,
+          followUpQuestion: '',
+        };
+        sectionStateRef.current[field] = nextState;
+        return nextState;
+      };
+
+      const sectionState = currentField ? getSectionState(currentField) : null;
+      if (sectionState) {
+        sectionState.draftInput = sectionState.draftInput
+          ? `${sectionState.draftInput}\n${userInput}`
+          : userInput;
+      }
+
       try {
         const endpoint = isProfileStep
           ? '/api/recommend/profile'
@@ -287,10 +302,10 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
                 ? '/api/recommend/activity'
                 : '/api/recommend/certification';
         const body = isProfileStep
-          ? { description: combinedInput }
+          ? { description: userInput }
           : currentField === 'education'
-            ? { description: combinedInput }
-            : { userInput: combinedInput };
+            ? { description: userInput }
+            : { userInput };
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -333,11 +348,16 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
           }
         } else {
           const fullDescription = String(data?.fullDescription ?? '');
-          if (fullDescription.trim().length > 0) {
+          if (fullDescription.trim().length > 0 && currentField && sectionState) {
+            const nextItems = [...sectionState.items, fullDescription];
+            sectionState.items = nextItems;
+            sectionState.draftInput = '';
+            sectionState.followUpQuestion = '추가 항목이 있으면 이어서 입력해주세요.';
             let hasDiff = false;
             setData((prev) => {
-              hasDiff = fullDescription !== String(prev[currentField] ?? '');
-              return { ...prev, [currentField]: fullDescription };
+              const joinedValue = nextItems.join('\n\n');
+              hasDiff = joinedValue !== String(prev[currentField] ?? '');
+              return { ...prev, [currentField]: joinedValue };
             });
             if (hasDiff) {
               setHasUnreadChanges(true);
@@ -349,13 +369,11 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
           if (currentField === 'coreCompetencies' && currentStepConfig.fields[questionIndex + 1]) {
             const nextQuestion = currentStepConfig.fields[questionIndex + 1].question;
             setQuestionIndex(questionIndex + 1);
-            setApiDraft('');
             setMessages((prev) => [
               ...prev,
               { id: Date.now() + 1, sender: 'ai', text: nextQuestion },
             ]);
           } else {
-            const wasComplete = isCurrentStepComplete;
             setIsCurrentStepComplete(true);
             onStepComplete();
             setMessages((prev) => [
@@ -363,13 +381,16 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
               {
                 id: Date.now() + 1,
                 sender: 'ai',
-                text: `'${currentStepConfig.title}' 작성이 완료되었습니다. 추가로 수정하거나 보완할 내용이 있으면 계속 입력해주세요.`,
+                text: `'${currentStepConfig.title}' 작성이 완료되었습니다. 추가 항목이 있으면 이어서 입력해주세요.`,
               },
             ]);
             setIsDrawerOpen(true);
           }
         } else {
           const nextQuestion = missingInfo.trim().length > 0 ? missingInfo : '추가 정보를 알려주세요.';
+          if (currentField && sectionState) {
+            sectionState.followUpQuestion = nextQuestion;
+          }
           setMessages((prev) => [
             ...prev,
             { id: Date.now() + 1, sender: 'ai', text: nextQuestion },
@@ -398,7 +419,6 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
           const nextQuestion = currentStepConfig.fields[nextQuestionIndex].question;
           setMessages((prev) => [...prev, { id: Date.now() + 1, sender: 'ai', text: nextQuestion }]);
         } else {
-          const wasComplete = isCurrentStepComplete;
           setIsCurrentStepComplete(true);
           onStepComplete();
           setMessages((prev) => [
@@ -430,7 +450,6 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
     setIsTyping(true);
     setIsDrawerOpen(false);
     setHasUnreadChanges(false);
-    setApiDraft('');
     setPendingIntro(currentStepConfig?.fields?.[0]?.question ?? null);
   };
 
@@ -459,6 +478,7 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
           const field = fieldConfig.field;
           const fieldConfigApi = fieldApiConfigs?.[field];
           const summaryField = fieldConfigApi?.summaryField ?? field;
+          sectionStateRef.current[field] = undefined;
           updates[summaryField] = '' as T[keyof T];
           updates[field] = '' as T[keyof T];
         });

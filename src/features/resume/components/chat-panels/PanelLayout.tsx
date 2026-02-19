@@ -9,7 +9,7 @@ const panelShellSx = {
   bgcolor: '#F8FAFC',
   border: '1px solid #F1F5F9',
   boxShadow: 'none',
-  height: '100%'
+  minHeight: '100%'
 };
 
 const panelHeaderSx = {

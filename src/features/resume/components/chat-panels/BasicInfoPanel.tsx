@@ -111,7 +111,12 @@ const BasicInfoPanel = ({ data }: Props) => {
               right: 0,
               bgcolor: '#2563EB',
               borderRadius: '50%',
-              p: 0.5,
+              width: 28,
+              height: 28,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              lineHeight: 0,
               border: '2px solid #fff',
             }}
           >

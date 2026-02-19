@@ -12,6 +12,10 @@ const drawerPaperSx = {
   borderLeft: '1px solid rgba(255,255,255,0.5)',
   p: 4,
   pt: 8,
+  display: 'flex',
+  flexDirection: 'column',
+  height: '100dvh',
+  overflow: 'hidden',
 };
 
 type PreviewDrawerProps = {
@@ -46,7 +50,7 @@ const PreviewDrawer = ({ open, onClose, title, subtitle, children }: PreviewDraw
       </Typography>
     </Box>
 
-    <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 1 }}>{children}</Box>
+    <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: 1 }}>{children}</Box>
   </Drawer>
 );
 
