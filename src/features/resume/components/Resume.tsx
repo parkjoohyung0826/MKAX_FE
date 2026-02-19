@@ -198,11 +198,11 @@ const Resume = ({ onFinishResume }: Props) => {
             hideResetButton
             data={resumeData}
             setData={(update) => {
-              const newValues =
+              setResumeData((prev) => (
                 typeof update === 'function'
-                  ? update(resumeData)
-                  : update;
-              setResumeData({ ...resumeData, ...newValues });
+                  ? update(prev)
+                  : update
+              ));
             }}
             resetSectionMap={{
               name: 'PROFILE',

@@ -16,7 +16,8 @@ const EducationStep = () => {
     const res = await fetch("/api/recommend/education", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description: text }),
+      credentials: "include",
+      body: JSON.stringify({ description: text, currentSummary: resumeData.education }),
     });
 
     if (!res.ok) {
@@ -30,8 +31,8 @@ const EducationStep = () => {
       typeof data?.isComplete === 'boolean'
         ? data.isComplete
         : missingInfo.trim().length === 0;
-    const fullDescription = String(data?.fullDescription ?? '');
-    if (fullDescription.trim().length > 0) {
+    const fullDescription = String(data?.fullDescription ?? '').trim();
+    if (fullDescription.length > 0) {
       setResumeData({ education: fullDescription });
     }
     setResumeValidation({ education: isComplete });
@@ -46,7 +47,8 @@ const EducationStep = () => {
     const res = await fetch("/api/recommend/education", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description: text }),
+      credentials: "include",
+      body: JSON.stringify({ description: text, currentSummary: resumeData.education }),
     });
 
     if (!res.ok) {
@@ -60,8 +62,8 @@ const EducationStep = () => {
       typeof data?.isComplete === 'boolean'
         ? data.isComplete
         : missingInfo.trim().length === 0;
-    const fullDescription = String(data?.fullDescription ?? '');
-    if (fullDescription.trim().length > 0) {
+    const fullDescription = String(data?.fullDescription ?? '').trim();
+    if (fullDescription.length > 0) {
       setResumeData({ education: fullDescription });
     }
     setResumeValidation({ education: isComplete });

@@ -57,6 +57,8 @@ type SectionState = {
   followUpQuestion: string;
 };
 
+type SectionFinalizeDecision = 'move' | 'stay' | 'unknown';
+
 export interface AIChatViewHandle {
   resetCurrentStep: () => void;
 }
@@ -89,6 +91,7 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
   const inputRef = useRef<HTMLInputElement>(null);
   const messageListRef = useRef<HTMLDivElement>(null);
   const sectionStateRef = useRef<Partial<Record<keyof T, SectionState>>>({});
+  const sectionFinalizePendingRef = useRef<Partial<Record<keyof T, boolean>>>({});
   const stepStateRef = useRef<Record<number, {
     messages: ChatMessage[];
     userInput: string;
@@ -194,6 +197,37 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
     setMessages((prev) => [...prev, newUserMessage]);
     setUserInput('');
     setIsTyping(true);
+
+    const parseSectionFinalizeDecision = (raw: string): SectionFinalizeDecision => {
+      const normalized = raw.replace(/\s+/g, '').toLowerCase();
+      const moveKeywords = ['다음', '넘어가', '없음', '없어요', '없습니다', '끝', '마침', '그만'];
+
+      if (moveKeywords.some((keyword) => normalized.includes(keyword))) return 'move';
+      return 'stay';
+    };
+
+    const moveToNextQuestion = () => {
+      if (!currentStepConfig?.fields?.[questionIndex + 1]) return false;
+      const nextQuestion = currentStepConfig.fields[questionIndex + 1].question;
+      setQuestionIndex(questionIndex + 1);
+      setMessages((prev) => [
+        ...prev,
+        { id: Date.now() + 1, sender: 'ai', text: nextQuestion },
+      ]);
+      return true;
+    };
+
+    if (currentField === 'coreCompetencies' && sectionFinalizePendingRef.current[currentField]) {
+      const decision = parseSectionFinalizeDecision(userInput);
+      if (decision === 'move') {
+        sectionFinalizePendingRef.current[currentField] = false;
+        moveToNextQuestion();
+        setIsTyping(false);
+        return;
+      }
+      // '다음/없음'이 아닌 입력은 추가 주요활동 내용으로 간주하여 그대로 처리한다.
+      sectionFinalizePendingRef.current[currentField] = false;
+    }
 
     if (isApiStep) {
       if (fieldApiConfig && currentField) {
@@ -347,31 +381,58 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
             setHasUnreadChanges(true);
           }
         } else {
-          const fullDescription = String(data?.fullDescription ?? '');
-          if (fullDescription.trim().length > 0 && currentField && sectionState) {
-            const nextItems = [...sectionState.items, fullDescription];
-            sectionState.items = nextItems;
-            sectionState.draftInput = '';
-            sectionState.followUpQuestion = '추가 항목이 있으면 이어서 입력해주세요.';
-            let hasDiff = false;
-            setData((prev) => {
-              const joinedValue = nextItems.join('\n\n');
-              hasDiff = joinedValue !== String(prev[currentField] ?? '');
-              return { ...prev, [currentField]: joinedValue };
-            });
-            if (hasDiff) {
-              setHasUnreadChanges(true);
+          const fullDescription = String(data?.fullDescription ?? '').trim();
+          if (currentField && sectionState) {
+            if (isComplete) {
+              const finalizedItem = fullDescription.length > 0
+                ? fullDescription
+                : sectionState.draftInput.trim();
+
+              if (finalizedItem.length > 0) {
+                const nextItems = [...sectionState.items, finalizedItem];
+                sectionState.items = nextItems;
+              }
+              sectionState.draftInput = '';
+              sectionState.followUpQuestion = '추가 항목이 있으면 이어서 입력해주세요.';
+
+              let hasDiff = false;
+              setData((prev) => {
+                const joinedValue = sectionState.items.join('\n\n');
+                hasDiff = joinedValue !== String(prev[currentField] ?? '');
+                return { ...prev, [currentField]: joinedValue };
+              });
+              if (hasDiff) {
+                setHasUnreadChanges(true);
+              }
+            } else {
+              sectionState.draftInput = fullDescription.length > 0 ? fullDescription : sectionState.draftInput;
+
+              const previewItems = sectionState.draftInput.trim().length > 0
+                ? [...sectionState.items, sectionState.draftInput.trim()]
+                : [...sectionState.items];
+              let hasDiff = false;
+              setData((prev) => {
+                const joinedValue = previewItems.join('\n\n');
+                hasDiff = joinedValue !== String(prev[currentField] ?? '');
+                return { ...prev, [currentField]: joinedValue };
+              });
+              if (hasDiff) {
+                setHasUnreadChanges(true);
+              }
             }
           }
         }
 
         if (isComplete) {
           if (currentField === 'coreCompetencies' && currentStepConfig.fields[questionIndex + 1]) {
-            const nextQuestion = currentStepConfig.fields[questionIndex + 1].question;
-            setQuestionIndex(questionIndex + 1);
+            sectionFinalizePendingRef.current[currentField] = true;
             setMessages((prev) => [
               ...prev,
-              { id: Date.now() + 1, sender: 'ai', text: nextQuestion },
+              {
+                id: Date.now() + 1,
+                sender: 'ai',
+                text: "주요활동 항목을 저장했어요. 추가 활동이 있으면 이어서 입력해주세요. 없으면 '다음'이라고 입력하면 자격증 작성으로 넘어갈게요.",
+              },
             ]);
           } else {
             setIsCurrentStepComplete(true);
@@ -479,6 +540,7 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
           const fieldConfigApi = fieldApiConfigs?.[field];
           const summaryField = fieldConfigApi?.summaryField ?? field;
           sectionStateRef.current[field] = undefined;
+          sectionFinalizePendingRef.current[field] = false;
           updates[summaryField] = '' as T[keyof T];
           updates[field] = '' as T[keyof T];
         });

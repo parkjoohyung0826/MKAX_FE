@@ -16,7 +16,8 @@ const WorkExperienceStep = () => {
     const res = await fetch('/api/recommend/career', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userInput: text }),
+      credentials: 'include',
+      body: JSON.stringify({ userInput: text, currentSummary: resumeData.workExperience }),
     });
 
     if (!res.ok) {
@@ -30,8 +31,8 @@ const WorkExperienceStep = () => {
       typeof data?.isComplete === 'boolean'
         ? data.isComplete
         : missingInfo.trim().length === 0;
-    const fullDescription = String(data?.fullDescription ?? '');
-    if (fullDescription.trim().length > 0) {
+    const fullDescription = String(data?.fullDescription ?? '').trim();
+    if (fullDescription.length > 0) {
       setResumeData({ workExperience: fullDescription });
     }
     setResumeValidation({ workExperience: isComplete });
@@ -46,7 +47,8 @@ const WorkExperienceStep = () => {
     const res = await fetch('/api/recommend/career', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userInput: text }),
+      credentials: 'include',
+      body: JSON.stringify({ userInput: text, currentSummary: resumeData.workExperience }),
     });
 
     if (!res.ok) {
@@ -60,8 +62,8 @@ const WorkExperienceStep = () => {
       typeof data?.isComplete === 'boolean'
         ? data.isComplete
         : missingInfo.trim().length === 0;
-    const fullDescription = String(data?.fullDescription ?? '');
-    if (fullDescription.trim().length > 0) {
+    const fullDescription = String(data?.fullDescription ?? '').trim();
+    if (fullDescription.length > 0) {
       setResumeData({ workExperience: fullDescription });
     }
     setResumeValidation({ workExperience: isComplete });

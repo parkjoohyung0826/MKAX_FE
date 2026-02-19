@@ -16,7 +16,8 @@ const CertificationsStep = () => {
     const res = await fetch('/api/recommend/activity', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userInput: text }),
+      credentials: 'include',
+      body: JSON.stringify({ userInput: text, currentSummary: resumeData.coreCompetencies }),
     });
 
     if (!res.ok) {
@@ -30,8 +31,8 @@ const CertificationsStep = () => {
       typeof data?.isComplete === 'boolean'
         ? data.isComplete
         : missingInfo.trim().length === 0;
-    const fullDescription = String(data?.fullDescription ?? '');
-    if (fullDescription.trim().length > 0) {
+    const fullDescription = String(data?.fullDescription ?? '').trim();
+    if (fullDescription.length > 0) {
       setResumeData({ coreCompetencies: fullDescription });
     }
     setResumeValidation({ coreCompetencies: isComplete });
@@ -46,7 +47,8 @@ const CertificationsStep = () => {
     const res = await fetch('/api/recommend/activity', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userInput: text }),
+      credentials: 'include',
+      body: JSON.stringify({ userInput: text, currentSummary: resumeData.coreCompetencies }),
     });
 
     if (!res.ok) {
@@ -60,8 +62,8 @@ const CertificationsStep = () => {
       typeof data?.isComplete === 'boolean'
         ? data.isComplete
         : missingInfo.trim().length === 0;
-    const fullDescription = String(data?.fullDescription ?? '');
-    if (fullDescription.trim().length > 0) {
+    const fullDescription = String(data?.fullDescription ?? '').trim();
+    if (fullDescription.length > 0) {
       setResumeData({ coreCompetencies: fullDescription });
     }
     setResumeValidation({ coreCompetencies: isComplete });
@@ -80,7 +82,8 @@ const CertificationsStep = () => {
     const res = await fetch("/api/recommend/certification", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userInput: text }),
+      credentials: "include",
+      body: JSON.stringify({ userInput: text, currentSummary: resumeData.certifications }),
     });
 
     if (!res.ok) {
@@ -94,8 +97,8 @@ const CertificationsStep = () => {
       typeof data?.isComplete === 'boolean'
         ? data.isComplete
         : missingInfo.trim().length === 0;
-    const fullDescription = String(data?.fullDescription ?? '');
-    if (fullDescription.trim().length > 0) {
+    const fullDescription = String(data?.fullDescription ?? '').trim();
+    if (fullDescription.length > 0) {
       setResumeData({ certifications: fullDescription });
     }
     setResumeValidation({ certifications: isComplete });
@@ -110,7 +113,8 @@ const CertificationsStep = () => {
     const res = await fetch("/api/recommend/certification", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userInput: text }),
+      credentials: "include",
+      body: JSON.stringify({ userInput: text, currentSummary: resumeData.certifications }),
     });
 
     if (!res.ok) {
@@ -124,8 +128,8 @@ const CertificationsStep = () => {
       typeof data?.isComplete === 'boolean'
         ? data.isComplete
         : missingInfo.trim().length === 0;
-    const fullDescription = String(data?.fullDescription ?? '');
-    if (fullDescription.trim().length > 0) {
+    const fullDescription = String(data?.fullDescription ?? '').trim();
+    if (fullDescription.length > 0) {
       setResumeData({ certifications: fullDescription });
     }
     setResumeValidation({ certifications: isComplete });

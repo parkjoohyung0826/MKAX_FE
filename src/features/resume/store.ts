@@ -3,7 +3,7 @@ import { ResumeData, ResumeFormatResult, ResumeTemplateId } from './types';
 
 interface ResumeStore {
   resumeData: ResumeData;
-  setResumeData: (data: Partial<ResumeData>) => void;
+  setResumeData: (data: Partial<ResumeData> | ((prev: ResumeData) => Partial<ResumeData>)) => void;
   resetResumeData: () => void;
   selectedTemplate: ResumeTemplateId;
   setSelectedTemplate: (template: ResumeTemplateId) => void;
@@ -46,9 +46,12 @@ const defaultTemplate: ResumeTemplateId = 'classic';
 export const useResumeStore = create<ResumeStore>((set) => ({
   resumeData: initialResumeData,
   setResumeData: (data) =>
-    set((state) => ({
-      resumeData: { ...state.resumeData, ...data },
-    })),
+    set((state) => {
+      const patch = typeof data === 'function' ? data(state.resumeData) : data;
+      return {
+        resumeData: { ...state.resumeData, ...patch },
+      };
+    }),
   selectedTemplate: defaultTemplate,
   setSelectedTemplate: (template) => set({ selectedTemplate: template }),
   resumeValidation: initialResumeValidation,
