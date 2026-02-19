@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Box, Typography, Container } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion'; 
 
 import BasicInfoStep from './steps/BasicInfoStep';
 import EducationStep from './steps/EducationStep';
@@ -25,39 +24,35 @@ const ConversationalForm = ({ activeStep, direction, steps }: Props) => {
     const { name, value } = e.target;
     setResumeData({ [name]: value });
   };
-  
-  const getStepContent = (step: number) => {
-    switch (step) {
-      case 0: return <BasicInfoStep data={resumeData} handleChange={handleChange} />;
-      case 1: return <EducationStep />;
-      case 2: return <WorkExperienceStep />;
-      case 3: return <CertificationsStep />;
-      case 4: return <FinalReviewStep data={resumeData} />;
-      default: return <Typography>알 수 없는 단계</Typography>;
-    }
-  }
+
+  const stepContents = [
+    <BasicInfoStep key="basic-info" data={resumeData} handleChange={handleChange} />,
+    <EducationStep key="education" />,
+    <WorkExperienceStep key="work-experience" />,
+    <CertificationsStep key="certifications" />,
+    <FinalReviewStep key="final-review" data={resumeData} />,
+  ];
 
   return (
     <Container maxWidth="md" disableGutters>
-      
-
       <Box sx={{ 
         position: 'relative', 
         minHeight: 320, 
         overflow: 'hidden' 
       }}>
-        <AnimatePresence mode="wait" custom={direction} initial={false}>
-          <motion.div
-            key={activeStep}
-            custom={direction}
-            initial={{ opacity: 0, x: direction > 0 ? 30 : -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: direction > 0 ? -30 : 30 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+        {stepContents.map((content, index) => (
+          <Box
+            key={index}
+            sx={{
+              display: activeStep === index ? 'block' : 'none',
+            }}
           >
-            {getStepContent(activeStep)}
-          </motion.div>
-        </AnimatePresence>
+            {content}
+          </Box>
+        ))}
+        {activeStep < 0 || activeStep >= stepContents.length ? (
+          <Typography>알 수 없는 단계</Typography>
+        ) : null}
       </Box>
     </Container>
   );
