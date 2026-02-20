@@ -4,11 +4,13 @@ import React from 'react';
 import { Box } from '@mui/material';
 import { WorkspacePremium } from '@mui/icons-material';
 import { useResumeStore } from '../../store';
+import { getResumeCareerTypeCopy } from '../../careerTypeCopy';
 import ResumeAssistantTextSection from './AssistantTextSection';
 import StepHeader from './StepHeader';
 
 const CoreCompetenciesStep = () => {
-  const { resumeData, setResumeData, setResumeValidation, validationLock, setValidationLock } = useResumeStore();
+  const { resumeData, setResumeData, setResumeValidation, validationLock, setValidationLock, selectedCareerType } = useResumeStore();
+  const copy = getResumeCareerTypeCopy(selectedCareerType);
 
   const submitCoreCompetencies = async (
     text: string
@@ -80,16 +82,16 @@ const CoreCompetenciesStep = () => {
   return (
     <Box sx={{ py: 2 }}>
       <StepHeader
-        title="주요활동"
-        subtitle="교육 및 대외활동 등 주요 활동 정보를 입력해주세요."
+        title={copy.coreStepTitle}
+        subtitle={copy.coreStepSubtitle}
       />
 
       <ResumeAssistantTextSection
-        sectionTitle="교육사항 / 대외활동"
-        sectionHint="최신순 기재 권장 (활동명, 기간, 역할, 주요 성과 등)"
+        sectionTitle={copy.coreSectionTitle}
+        sectionHint={copy.coreSectionHint}
         icon={<WorkspacePremium fontSize="small" sx={{ color: '#64748b' }} />}
-        assistantTitle="교육사항/대외활동 AI"
-        assistantPrompt="참여했던 교육 프로그램, 대외 활동, 동아리 활동 등에 대해 자유롭게 이야기해주세요."
+        assistantTitle={copy.coreAssistantTitle}
+        assistantPrompt={copy.coreAssistantPrompt}
         onAssistantSubmit={submitCoreCompetencies}
         onValidate={handleValidateActivity}
         value={resumeData.coreCompetencies}
@@ -103,7 +105,7 @@ const CoreCompetenciesStep = () => {
         }}
         rows={7}
         name="coreCompetencies"
-        placeholder={`예: 삼성 청년 SW 아카데미 (SSAFY) 10기 수료 (2023.07 ~ 2024.01)\nOOO 대외활동 (2022.01 ~ 2022.06) - 프로젝트 관리 및 기획 담당`}
+        placeholder={copy.corePlaceholder}
       />
     </Box>
   );

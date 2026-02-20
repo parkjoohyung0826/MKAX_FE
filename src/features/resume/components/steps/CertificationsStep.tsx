@@ -4,11 +4,13 @@ import React from 'react';
 import { Box } from '@mui/material';
 import { Verified } from '@mui/icons-material';
 import { useResumeStore } from '../../store';
+import { getResumeCareerTypeCopy } from '../../careerTypeCopy';
 import ResumeAssistantTextSection from './AssistantTextSection';
 import StepHeader from './StepHeader';
 
 const CertificationsStep = () => {
-  const { resumeData, setResumeData, setResumeValidation, validationLock, setValidationLock } = useResumeStore();
+  const { resumeData, setResumeData, setResumeValidation, validationLock, setValidationLock, selectedCareerType } = useResumeStore();
+  const copy = getResumeCareerTypeCopy(selectedCareerType);
 
   const submitCertifications = async (
     text: string
@@ -80,16 +82,16 @@ const CertificationsStep = () => {
   return (
     <Box sx={{ py: 2 }}>
       <StepHeader
-        title="자격증"
-        subtitle="자격증 및 어학 정보를 입력해주세요."
+        title={copy.certStepTitle}
+        subtitle={copy.certStepSubtitle}
       />
 
       <ResumeAssistantTextSection
-        sectionTitle="자격증 및 어학"
-        sectionHint="취득일 최신순 기재 권장 (자격증명/점수, 발급기관, 취득일)"
+        sectionTitle={copy.certSectionTitle}
+        sectionHint={copy.certSectionHint}
         icon={<Verified fontSize="small" sx={{ color: '#64748b' }} />}
-        assistantTitle="자격증/어학 AI"
-        assistantPrompt="취득한 자격증, 면허, 어학 성적 등에 대해 자유롭게 이야기해주세요."
+        assistantTitle={copy.certAssistantTitle}
+        assistantPrompt={copy.certAssistantPrompt}
         onAssistantSubmit={submitCertifications}
         onValidate={handleValidateCertifications}
         value={resumeData.certifications}
@@ -103,7 +105,7 @@ const CertificationsStep = () => {
         }}
         rows={6}
         name="certifications"
-        placeholder={`예: 정보처리기사 (2023.05)\nTOEIC 900 (2023.08)`}
+        placeholder={copy.certPlaceholder}
       />
     </Box>
   );

@@ -463,7 +463,7 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
               {
                 id: Date.now() + 1,
                 sender: 'ai',
-                text: "주요활동 항목을 저장했어요. 추가 활동이 있으면 이어서 입력해주세요. 없으면 '다음'이라고 입력하면 자격증 작성으로 넘어갈게요.",
+                text: "현재 항목을 저장했어요. 추가 내용이 있으면 이어서 입력해주세요. 없으면 '다음'이라고 입력하면 다음 항목 작성으로 넘어갈게요.",
               },
             ]);
           } else {

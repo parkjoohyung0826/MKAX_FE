@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Box, Button } from '@mui/material';
 import { Alert, Snackbar } from '@mui/material';
 import ProgressStepper from '@/shared/components/ProgressStepper';
@@ -9,6 +9,7 @@ import AIChatView, { ConversationStep, AIChatViewHandle } from './AIChatView';
 import ConversationalForm from './ConversationalForm';
 import { ResumeData } from '../types';
 import { useResumeStore } from '../store';
+import { getResumeCareerTypeCopy } from '../careerTypeCopy';
 import CareerTypeSelectStep from './steps/CareerTypeSelectStep';
 import TemplateSelectStep from './steps/TemplateSelectStep';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -37,7 +38,7 @@ const stepSlideVariants = {
   }),
 };
 
-const resumeConversationSteps: ConversationStep<ResumeData>[] = [
+const baseConversationSteps: ConversationStep<ResumeData>[] = [
   {
     title: '기본 정보',
     panel: (data: Partial<ResumeData>) => <BasicInfoPanel data={data} />,
@@ -70,21 +71,17 @@ const resumeConversationSteps: ConversationStep<ResumeData>[] = [
     title: '주요활동',
     panel: (data: Partial<ResumeData>) => <CoreCompetenciesPanel data={data} />,
     fields: [
-      { field: 'coreCompetencies', question: '참여했던 교육 프로그램, 대외 활동, 동아리 활동 등에 대해 자유롭게 이야기해주세요.' },
+      { field: 'coreCompetencies', question: '' },
     ]
   },
   {
     title: '자격증',
     panel: (data: Partial<ResumeData>) => <CertificationsPanel data={data} />,
     fields: [
-      { field: 'certifications', question: '자격증 또는 어학 성적이 있다면 알려주세요.' },
+      { field: 'certifications', question: '' },
     ]
   }
 ];
-
-const resumeSteps = ['작성 유형 선택', '템플릿 선택', '기본 정보', '학력 사항', '경력 사항', '주요활동', '자격증', '최종 검토'];
-const contentSteps = resumeSteps.slice(2, -1);
-const progressSteps = resumeSteps.slice(2, -1);
 
 interface Props {
   onFinishResume: () => void;
@@ -107,6 +104,34 @@ const Resume = ({ onFinishResume }: Props) => {
   const [aiCompletedSteps, setAiCompletedSteps] = useState<Record<number, boolean>>({});
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const copy = getResumeCareerTypeCopy(selectedCareerType);
+  const resumeConversationSteps = useMemo(
+    () =>
+      baseConversationSteps.map((step) => {
+        if (step.fields[0]?.field === 'coreCompetencies') {
+          return {
+            ...step,
+            title: copy.coreStep,
+            fields: [{ field: 'coreCompetencies', question: copy.coreQuestion }],
+          };
+        }
+        if (step.fields[0]?.field === 'certifications') {
+          return {
+            ...step,
+            title: copy.certStep,
+            fields: [{ field: 'certifications', question: copy.certQuestion }],
+          };
+        }
+        return step;
+      }),
+    [copy.coreQuestion, copy.coreStep, copy.certQuestion, copy.certStep]
+  );
+  const resumeSteps = useMemo(
+    () => ['작성 유형 선택', '템플릿 선택', '기본 정보', '학력 사항', '경력 사항', copy.coreStep, copy.certStep, '최종 검토'],
+    [copy.certStep, copy.coreStep]
+  );
+  const contentSteps = useMemo(() => resumeSteps.slice(2, -1), [resumeSteps]);
+  const progressSteps = useMemo(() => resumeSteps.slice(2, -1), [resumeSteps]);
   const currentMode = stepInputModes[activeStep] || 'ai';
   const isTypeStep = activeStep === 0;
   const isTemplateStep = activeStep === 1;

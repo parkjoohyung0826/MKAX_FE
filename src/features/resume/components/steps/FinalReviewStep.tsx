@@ -2,6 +2,8 @@
 
 import { Box, Typography } from '@mui/material';
 import { PersonOutline, WorkOutline, School, BusinessCenter, WorkspacePremium, Verified } from '@mui/icons-material';
+import { useResumeStore } from '../../store';
+import { getResumeCareerTypeCopy } from '../../careerTypeCopy';
 import { ResumeData } from '../../types';
 import StepHeader from './StepHeader';
 
@@ -50,6 +52,8 @@ const SectionContent = ({ content }: { content: string }) => (
 );
 
 const FinalReviewStep = ({ data }: Props) => {
+  const { selectedCareerType } = useResumeStore();
+  const copy = getResumeCareerTypeCopy(selectedCareerType);
   const formatContent = (value?: string) => value ?? '';
 
   return (
@@ -101,11 +105,11 @@ const FinalReviewStep = ({ data }: Props) => {
           gap: 3 
         }}>
           <Box sx={glassBox}>
-            <SectionHeader icon={WorkspacePremium} title="주요 활동 및 역량" />
+            <SectionHeader icon={WorkspacePremium} title={copy.reviewCoreTitle} />
             <SectionContent content={formatContent(data.coreCompetencies)} />
           </Box>
           <Box sx={glassBox}>
-            <SectionHeader icon={Verified} title="자격증 및 기타" />
+            <SectionHeader icon={Verified} title={copy.reviewCertTitle} />
             <SectionContent content={formatContent(data.certifications)} />
           </Box>
         </Box>

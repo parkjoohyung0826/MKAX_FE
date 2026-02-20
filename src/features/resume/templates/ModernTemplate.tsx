@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Typography, Divider } from '@mui/material';
 import { useResumeStore } from '../store';
+import { getResumeCareerTypeCopy } from '../careerTypeCopy';
 import { ResumeData, ResumeFormatResult } from '../types';
 
 interface Props {
@@ -18,7 +19,8 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
 );
 
 const ModernTemplate = React.forwardRef<HTMLDivElement, Props>(({ data, formattedData }, ref) => {
-  const { resumeData, formattedResume } = useResumeStore();
+  const { resumeData, formattedResume, selectedCareerType } = useResumeStore();
+  const copy = getResumeCareerTypeCopy(selectedCareerType);
   const displayData = formattedData ?? data ?? formattedResume ?? resumeData;
 
   const renderTextBlock = (text: unknown, fallback = '내용이 없습니다.') => (
@@ -148,7 +150,7 @@ const ModernTemplate = React.forwardRef<HTMLDivElement, Props>(({ data, formatte
           </Box>
 
           <Box>
-            <SectionTitle>주요 활동</SectionTitle>
+            <SectionTitle>{copy.reviewCoreTitle}</SectionTitle>
             {isArray((displayData as any).coreCompetencies)
               ? renderArrayList((displayData as any).coreCompetencies, (item, index) => (
                   <Box key={`activity-${index}`} sx={{ p: 2, borderRadius: '12px', bgcolor: '#f1f5f9' }}>
@@ -170,7 +172,7 @@ const ModernTemplate = React.forwardRef<HTMLDivElement, Props>(({ data, formatte
           </Box>
 
           <Box>
-            <SectionTitle>자격증</SectionTitle>
+            <SectionTitle>{copy.reviewCertTitle}</SectionTitle>
             {isArray((displayData as any).certifications)
               ? renderArrayList((displayData as any).certifications, (cert, index) => (
                   <Box key={`cert-${index}`} sx={{ p: 2, borderRadius: '12px', bgcolor: '#f1f5f9' }}>

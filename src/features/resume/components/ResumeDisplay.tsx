@@ -3,6 +3,7 @@ import React from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import { css } from '@emotion/react';
 import { useResumeStore } from '../store';
+import { getResumeCareerTypeCopy } from '../careerTypeCopy';
 import { ResumeData, ResumeFormatResult } from '../types';
 
 const borderColor = '#000';
@@ -74,7 +75,12 @@ interface Props {
 }
 
 const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data, formattedData }, ref) => {
-    const { resumeData, formattedResume } = useResumeStore();
+    const { resumeData, formattedResume, selectedCareerType } = useResumeStore();
+    const copy = getResumeCareerTypeCopy(selectedCareerType);
+    const isSeniorMode = selectedCareerType === 'senior';
+    const corePeriodHeader = isSeniorMode ? '이수 년월' : '활동/근무기간';
+    const coreCourseHeader = isSeniorMode ? '교육/훈련 과정' : '교육 과정';
+    const coreInstitutionHeader = isSeniorMode ? '교육 기관' : '교육 기관';
     const displayData = formattedData ?? data ?? formattedResume ?? resumeData;
     const photoSrc =
       String((displayData as any)?.photo ?? '').trim() ||
@@ -224,13 +230,13 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data, formatted
             )}
             
             {/* 4. 교육사항 / 대외활동 */}
-            <SectionTitle>교육사항 / 대외활동</SectionTitle>
+            <SectionTitle>{copy.displayCoreTitle}</SectionTitle>
             {Array.isArray((displayData as any).coreCompetencies) ? (
               <div css={tableContainerStyle}>
                   <div css={rowStyle}>
-                      <div css={cellStyle} className="header" style={{ width: '25%' }}>활동/근무기간</div>
-                      <div css={cellStyle} className="header" style={{ width: '50%' }}>교육 과정</div>
-                      <div css={cellStyle} className="header no-border-right" style={{ width: '25%' }}>교육 기관</div>
+                      <div css={cellStyle} className="header" style={{ width: '25%' }}>{corePeriodHeader}</div>
+                      <div css={cellStyle} className="header" style={{ width: '50%' }}>{coreCourseHeader}</div>
+                      <div css={cellStyle} className="header no-border-right" style={{ width: '25%' }}>{coreInstitutionHeader}</div>
                   </div>
                   {(displayData as any).coreCompetencies.map((item: any, index: number) => (
                       <div css={rowStyle} key={index}>
@@ -246,7 +252,7 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data, formatted
             ) : (
               <div css={tableContainerStyle}>
                   <div css={rowStyle}>
-                      <div css={cellStyle} className="header no-border-right" style={{ width: '100%' }}>활동 상세</div>
+                      <div css={cellStyle} className="header no-border-right" style={{ width: '100%' }}>{copy.displayCoreDetailTitle}</div>
                   </div>
                   <div css={rowStyle}>
                       <div css={cellStyle} className="data no-border-right" style={{ width: '100%' }}>
@@ -257,12 +263,12 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data, formatted
             )}
 
             {/* 5. 자격증 */}
-            <SectionTitle>자격증/어학성적</SectionTitle>
+            <SectionTitle>{copy.displayCertTitle}</SectionTitle>
             {Array.isArray((displayData as any).certifications) ? (
               <div css={tableContainerStyle}>
                   <div css={rowStyle}>
                       <div css={cellStyle} className="header" style={{ width: '25%' }}>취득일(년월)</div>
-                      <div css={cellStyle} className="header" style={{ width: '50%' }}>자격증/면허증/교육이수</div>
+                      <div css={cellStyle} className="header" style={{ width: '50%' }}>{copy.displayCertHeaderName}</div>
                       <div css={cellStyle} className="header no-border-right" style={{ width: '25%' }}>발급 기관</div>
                   </div>
                    {(displayData as any).certifications.map((cert: any, index: number) => (
@@ -279,7 +285,7 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data, formatted
             ) : (
               <div css={tableContainerStyle}>
                   <div css={rowStyle}>
-                      <div css={cellStyle} className="header no-border-right" style={{ width: '100%' }}>자격증 상세</div>
+                      <div css={cellStyle} className="header no-border-right" style={{ width: '100%' }}>{copy.displayCertDetailTitle}</div>
                   </div>
                   <div css={rowStyle}>
                       <div css={cellStyle} className="data no-border-right" style={{ width: '100%' }}>
