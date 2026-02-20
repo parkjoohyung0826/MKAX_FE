@@ -44,6 +44,7 @@ interface AIChatViewProps<T> {
   setData: React.Dispatch<React.SetStateAction<T>>;
   conversationSteps: ConversationStep<T>[];
   fieldApiConfigs?: Partial<Record<keyof T, FieldApiConfig<T>>>;
+  resumeType?: 'basic' | 'senior';
 }
 
 type FieldApiConfig<T> = {
@@ -79,6 +80,7 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
   setData,
   conversationSteps,
   fieldApiConfigs,
+  resumeType = 'basic',
 }: AIChatViewProps<T>,
   ref: React.Ref<AIChatViewHandle>
 ) {
@@ -362,8 +364,12 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
             : currentField === 'workExperience'
               ? '/api/recommend/career'
               : currentField === 'coreCompetencies'
-                ? '/api/recommend/activity'
-                : '/api/recommend/certification';
+                ? resumeType === 'senior'
+                  ? '/api/recommend/senior-training'
+                  : '/api/recommend/activity'
+                : resumeType === 'senior'
+                  ? '/api/recommend/senior-license-skill'
+                  : '/api/recommend/certification';
         const body = isProfileStep
           ? { description: userInput }
           : currentField === 'education'

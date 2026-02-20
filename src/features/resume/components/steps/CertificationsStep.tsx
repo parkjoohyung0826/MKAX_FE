@@ -11,11 +11,14 @@ import StepHeader from './StepHeader';
 const CertificationsStep = () => {
   const { resumeData, setResumeData, setResumeValidation, validationLock, setValidationLock, selectedCareerType } = useResumeStore();
   const copy = getResumeCareerTypeCopy(selectedCareerType);
+  const certificationsEndpoint = selectedCareerType === 'senior'
+    ? '/api/recommend/senior-license-skill'
+    : '/api/recommend/certification';
 
   const submitCertifications = async (
     text: string
   ): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
-    const res = await fetch('/api/recommend/certification', {
+    const res = await fetch(certificationsEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -46,7 +49,7 @@ const CertificationsStep = () => {
 
   const handleValidateCertifications = async (): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
     const text = resumeData.certifications.trim();
-    const res = await fetch('/api/recommend/certification', {
+    const res = await fetch(certificationsEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

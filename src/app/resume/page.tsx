@@ -23,7 +23,7 @@ const ResumePage = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'resume' | 'coverLetter'>('resume');
   const [isGenerating, setIsGenerating] = useState(false);
-  const { resumeData, setFormattedResume } = useResumeStore();
+  const { resumeData, setFormattedResume, selectedCareerType } = useResumeStore();
   const { coverLetterData } = useCoverLetterStore();
   const { setResultData } = useReportStore();
 
@@ -38,7 +38,11 @@ const ResumePage = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ ...resumeData, coverLetter: coverLetterData }),
+        body: JSON.stringify({
+          ...resumeData,
+          coverLetter: coverLetterData,
+          resumeType: selectedCareerType ?? 'basic',
+        }),
       });
 
       if (!res.ok) {

@@ -11,11 +11,14 @@ import StepHeader from './StepHeader';
 const CoreCompetenciesStep = () => {
   const { resumeData, setResumeData, setResumeValidation, validationLock, setValidationLock, selectedCareerType } = useResumeStore();
   const copy = getResumeCareerTypeCopy(selectedCareerType);
+  const activityEndpoint = selectedCareerType === 'senior'
+    ? '/api/recommend/senior-training'
+    : '/api/recommend/activity';
 
   const submitCoreCompetencies = async (
     text: string
   ): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
-    const res = await fetch('/api/recommend/activity', {
+    const res = await fetch(activityEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -46,7 +49,7 @@ const CoreCompetenciesStep = () => {
 
   const handleValidateActivity = async (): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
     const text = resumeData.coreCompetencies.trim();
-    const res = await fetch('/api/recommend/activity', {
+    const res = await fetch(activityEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
