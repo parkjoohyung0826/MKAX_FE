@@ -15,7 +15,7 @@ export interface TemplateSelectItem {
 
 interface Props<T extends string> {
   items: Array<TemplateSelectItem & { id: T }>;
-  selectedId: T;
+  selectedId: T | null;
   onSelect: (id: T) => void;
 }
 
@@ -45,21 +45,29 @@ const TemplateSelectGrid = <T extends string>({ items, selectedId, onSelect }: P
             onClick={() => onSelect(item.id)}
             sx={{
               p: 0,
-              borderRadius: '20px',
+              borderRadius: '32px',
               bgcolor: COLORS.bg,
               cursor: 'pointer',
               overflow: 'hidden',
               position: 'relative',
+              aspectRatio: '1 / 1',
               border: '1.5px solid',
-              borderColor: isSelected ? item.accent : 'transparent',
+              borderColor: isSelected ? alpha(item.accent, 0.5) : 'rgba(255, 255, 255, 0.6)',
+              background: isSelected
+                ? `linear-gradient(135deg, ${alpha(item.accent, 0.08)} 0%, ${alpha(item.accent, 0.02)} 100%)`
+                : 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%)',
               boxShadow: isSelected
-                ? `0 12px 36px -4px ${alpha(item.accent, 0.2)}`
-                : '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                ? `0 24px 48px -12px ${alpha(item.accent, 0.25)}, inset 0 2px 20px rgba(255,255,255,0.5)`
+                : '0 12px 32px -8px rgba(15, 23, 42, 0.08), inset 0 2px 20px rgba(255,255,255,0.5)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               
               '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: `0 20px 40px -4px rgba(0, 0, 0, 0.08)`,
+                transform: 'translateY(-8px)',
+                boxShadow: isSelected
+                  ? `0 32px 50px -12px ${alpha(item.accent, 0.3)}`
+                  : '0 20px 40px -12px rgba(15, 23, 42, 0.12)',
                 '& .hover-arrow': {
                   opacity: 1,
                   transform: 'translate(0, 0)',
@@ -74,7 +82,7 @@ const TemplateSelectGrid = <T extends string>({ items, selectedId, onSelect }: P
                 sx={{
                   position: 'relative',
                   overflow: 'hidden',
-                  paddingTop: '75%', 
+                  height: '72%',
                   
                   '&:hover .template-image': {
                     filter: 'blur(4px)',
@@ -131,7 +139,7 @@ const TemplateSelectGrid = <T extends string>({ items, selectedId, onSelect }: P
                 sx={{ 
                   px: 2, 
                   py: 1.5,
-                  borderTop: `1px solid ${COLORS.border}`,
+                  borderTop: `1px solid ${alpha(COLORS.border, 0.8)}`,
                   bgcolor: isSelected ? alpha(item.accent, 0.04) : '#FFFFFF',
                   flexGrow: 1,
                   transition: 'background-color 0.3s ease',

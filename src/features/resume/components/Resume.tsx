@@ -9,6 +9,7 @@ import AIChatView, { ConversationStep, AIChatViewHandle } from './AIChatView';
 import ConversationalForm from './ConversationalForm';
 import { ResumeData } from '../types';
 import { useResumeStore } from '../store';
+import CareerTypeSelectStep from './steps/CareerTypeSelectStep';
 import TemplateSelectStep from './steps/TemplateSelectStep';
 import { AnimatePresence, motion } from 'framer-motion';
 import ModeToggleBar from '@/shared/components/ModeToggleBar';
@@ -59,9 +60,9 @@ const resumeConversationSteps: ConversationStep<ResumeData>[] = [
   }
 ];
 
-const resumeSteps = ['템플릿 선택', '기본 정보', '학력 사항', '경력 사항', '자격증/주요활동', '최종 검토'];
-const contentSteps = resumeSteps.slice(1);
-const progressSteps = resumeSteps.slice(1);
+const resumeSteps = ['작성 유형 선택', '템플릿 선택', '기본 정보', '학력 사항', '경력 사항', '자격증/주요활동', '최종 검토'];
+const contentSteps = resumeSteps.slice(2);
+const progressSteps = resumeSteps.slice(2);
 
 interface Props {
   onFinishResume: () => void;
@@ -74,6 +75,7 @@ const Resume = ({ onFinishResume }: Props) => {
     resumeValidation,
     setResumeValidation,
     setValidationLock,
+    selectedCareerType,
     selectedTemplate,
   } = useResumeStore();
   const [activeStep, setActiveStep] = useState(0);
@@ -84,13 +86,15 @@ const Resume = ({ onFinishResume }: Props) => {
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const currentMode = stepInputModes[activeStep] || 'ai';
-  const isTemplateStep = activeStep === 0;
+  const isTypeStep = activeStep === 0;
+  const isTemplateStep = activeStep === 1;
   const isFinalStep = activeStep === resumeSteps.length - 1;
-  const contentStepIndex = Math.max(activeStep - 1, 0);
-  const progressActiveStep = Math.max(activeStep - 1, 0);
+  const contentStepIndex = Math.max(activeStep - 2, 0);
+  const progressActiveStep = Math.max(activeStep - 2, 0);
   const aiChatRef = useRef<AIChatViewHandle | null>(null);
 
   const directCompletedSteps = [
+    Boolean(selectedCareerType),
     Boolean(selectedTemplate),
     !!(resumeData.name && resumeData.desiredJob && resumeData.email && resumeData.phoneNumber),
     resumeValidation.education,
@@ -100,7 +104,7 @@ const Resume = ({ onFinishResume }: Props) => {
   ];
 
   const completedSteps = directCompletedSteps.map((completed, index) => {
-    if (index === 0 || index === resumeSteps.length - 1) {
+    if (index <= 1 || index === resumeSteps.length - 1) {
       return completed;
     }
     const mode = stepInputModes[index] ?? 'ai';
@@ -108,6 +112,18 @@ const Resume = ({ onFinishResume }: Props) => {
   });
 
   const handleNextStep = async () => {
+    if (isTypeStep && !selectedCareerType) {
+      setToastMessage('작성 유형(기본형/시니어용)을 먼저 선택해주세요.');
+      setToastOpen(true);
+      return;
+    }
+
+    if (isTemplateStep && !selectedTemplate) {
+      setToastMessage('템플릿을 먼저 선택해주세요.');
+      setToastOpen(true);
+      return;
+    }
+
     if (activeStep === resumeSteps.length - 1) {
       const incomplete = completedSteps
         .slice(0, resumeSteps.length - 1)
@@ -145,7 +161,7 @@ const Resume = ({ onFinishResume }: Props) => {
   };
 
   const handleProgressStepClick = (step: number) => {
-    handleStepClick(step + 1);
+    handleStepClick(step + 2);
   };
 
   const handleModeChange = (step: number, mode: InputMode) => {
@@ -153,7 +169,7 @@ const Resume = ({ onFinishResume }: Props) => {
   }
 
   const renderModeToggle = () => {
-    if (isFinalStep || isTemplateStep) return null;
+    if (isFinalStep || isTemplateStep || isTypeStep) return null;
     return (
       <ModeToggleBar
         currentMode={currentMode}
@@ -165,6 +181,10 @@ const Resume = ({ onFinishResume }: Props) => {
   };
 
   const renderStepBody = () => {
+    if (isTypeStep) {
+      return <CareerTypeSelectStep />;
+    }
+
     if (isTemplateStep) {
       return <TemplateSelectStep />;
     }
@@ -279,13 +299,13 @@ const Resume = ({ onFinishResume }: Props) => {
 
   return (
     <Box>
-      {!isTemplateStep && (
+      {!isTypeStep && !isTemplateStep && (
         <Box sx={{ mt: -3 }}>
           <ProgressStepper
             steps={progressSteps}
             activeStep={progressActiveStep}
             onStepClick={handleProgressStepClick}
-            completedSteps={completedSteps.slice(1)}
+            completedSteps={completedSteps.slice(2)}
           />
         </Box>
       )}

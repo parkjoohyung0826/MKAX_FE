@@ -1,12 +1,14 @@
 import { create } from 'zustand';
-import { CoverLetterData, CoverLetterTemplateId } from './types';
+import { CoverLetterCareerType, CoverLetterData, CoverLetterTemplateId } from './types';
 
 interface CoverLetterState {
   coverLetterData: CoverLetterData;
   setCoverLetterData: (data: Partial<CoverLetterData>) => void;
   resetCoverLetterData: () => void;
-  selectedTemplate: CoverLetterTemplateId;
+  selectedTemplate: CoverLetterTemplateId | null;
   setSelectedTemplate: (template: CoverLetterTemplateId) => void;
+  selectedCareerType: CoverLetterCareerType | null;
+  setSelectedCareerType: (careerType: CoverLetterCareerType) => void;
 }
 
 const initialState: CoverLetterData = {
@@ -20,7 +22,7 @@ const initialState: CoverLetterData = {
   motivationSummary: '',
 };
 
-const defaultTemplate: CoverLetterTemplateId = 'classic';
+const defaultTemplate: CoverLetterTemplateId | null = null;
 
 export const useCoverLetterStore = create<CoverLetterState>((set) => ({
   coverLetterData: initialState,
@@ -30,5 +32,11 @@ export const useCoverLetterStore = create<CoverLetterState>((set) => ({
     })),
   selectedTemplate: defaultTemplate,
   setSelectedTemplate: (template) => set({ selectedTemplate: template }),
-  resetCoverLetterData: () => set({ coverLetterData: initialState, selectedTemplate: defaultTemplate }),
+  selectedCareerType: null,
+  setSelectedCareerType: (careerType) => set({ selectedCareerType: careerType }),
+  resetCoverLetterData: () => set({
+    coverLetterData: initialState,
+    selectedTemplate: defaultTemplate,
+    selectedCareerType: null,
+  }),
 }));

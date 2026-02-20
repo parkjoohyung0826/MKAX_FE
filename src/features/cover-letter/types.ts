@@ -10,3 +10,4 @@ export interface CoverLetterData {
 }
 
 export type CoverLetterTemplateId = 'classic' | 'modern';
+export type CoverLetterCareerType = 'basic' | 'senior';

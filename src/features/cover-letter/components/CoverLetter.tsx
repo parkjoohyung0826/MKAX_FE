@@ -2,9 +2,11 @@
 
 import React, { useState, useRef } from 'react';
 import { Box, Button } from '@mui/material';
+import { Alert, Snackbar } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import AIChatView, { ConversationStep, AIChatViewHandle } from '@/features/resume/components/AIChatView';
+import CareerTypeSelectStep from './steps/CareerTypeSelectStep';
 import CoverLetterDirectInputStep from './steps/CoverLetterDirectInputStep';
 import CoverLetterTemplateSelectStep from './steps/CoverLetterTemplateSelectStep';
 import FinalReviewStep from './steps/FinalReviewStep';
@@ -15,9 +17,9 @@ import ModeToggleBar from '@/shared/components/ModeToggleBar';
 import { CoverLetterData } from '../types';
 import { useCoverLetterStore } from '../store';
 
-const coverLetterSteps = ['템플릿 선택', '성장과정', '성격의 장단점', '주요 경력 및 업무 강점', '지원 동기 및 포부', '최종 검토'];
-const contentSteps = coverLetterSteps.slice(1);
-const progressSteps = coverLetterSteps.slice(1);
+const coverLetterSteps = ['작성 유형 선택', '템플릿 선택', '성장과정', '성격의 장단점', '주요 경력 및 업무 강점', '지원 동기 및 포부', '최종 검토'];
+const contentSteps = coverLetterSteps.slice(2);
+const progressSteps = coverLetterSteps.slice(2);
 
 type InputMode = 'ai' | 'direct';
 
@@ -58,14 +60,17 @@ interface Props {
 }
 
 const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
-  const { coverLetterData, setCoverLetterData, selectedTemplate } = useCoverLetterStore();
+  const { coverLetterData, setCoverLetterData, selectedTemplate, selectedCareerType } = useCoverLetterStore();
   const [activeStep, setActiveStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isStepComplete, setIsStepComplete] = useState(false);
   const [stepInputModes, setStepInputModes] = useState<Record<number, InputMode>>({});
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const aiChatRef = useRef<AIChatViewHandle | null>(null);
 
   const coverLetterCompletedSteps = [
+    Boolean(selectedCareerType),
     Boolean(selectedTemplate),
     !!coverLetterData.growthProcess,
     !!coverLetterData.strengthsAndWeaknesses,
@@ -75,6 +80,18 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
   ];
 
   const handleNextStep = () => {
+    if (isTypeStep && !selectedCareerType) {
+      setToastMessage('작성 유형(기본형/시니어용)을 먼저 선택해주세요.');
+      setToastOpen(true);
+      return;
+    }
+
+    if (isTemplateStep && !selectedTemplate) {
+      setToastMessage('템플릿을 먼저 선택해주세요.');
+      setToastOpen(true);
+      return;
+    }
+
     if (activeStep === coverLetterSteps.length - 1) {
       handleGenerate();
     } else {
@@ -100,32 +117,33 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
   };
 
   const handleProgressStepClick = (step: number) => {
-    handleStepClick(step + 1);
+    handleStepClick(step + 2);
   };
 
   const handleModeChange = (step: number, mode: InputMode) => {
     setStepInputModes(prev => ({...prev, [step]: mode}));
   }
   
-  const isTemplateStep = activeStep === 0;
+  const isTypeStep = activeStep === 0;
+  const isTemplateStep = activeStep === 1;
   const isFinalStep = activeStep === coverLetterSteps.length - 1;
   const currentMode = stepInputModes[activeStep] || 'ai';
-  const contentStepIndex = Math.max(activeStep - 1, 0);
-  const progressActiveStep = Math.max(activeStep - 1, 0);
+  const contentStepIndex = Math.max(activeStep - 2, 0);
+  const progressActiveStep = Math.max(activeStep - 2, 0);
 
   return (
     <Box>
-      {!isTemplateStep && (
+      {!isTypeStep && !isTemplateStep && (
         <Box sx={{ mt: -3 }}>
           <ProgressStepper
             steps={progressSteps}
             activeStep={progressActiveStep}
             onStepClick={handleProgressStepClick}
-            completedSteps={coverLetterCompletedSteps.slice(1)}
+            completedSteps={coverLetterCompletedSteps.slice(2)}
           />
         </Box>
       )}
-      {!isFinalStep && !isTemplateStep && (
+      {!isFinalStep && !isTemplateStep && !isTypeStep && (
         <ModeToggleBar
           currentMode={currentMode}
           onModeChange={(mode) => handleModeChange(activeStep, mode)}
@@ -141,9 +159,10 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
           exit={{ opacity: 0, x: -24 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
         >
+          {isTypeStep && <CareerTypeSelectStep />}
           {isTemplateStep && <CoverLetterTemplateSelectStep />}
           {isFinalStep && <FinalReviewStep />}
-          <Box sx={{ display: currentMode === 'ai' ? (isFinalStep || isTemplateStep ? 'none' : 'block') : 'none' }}>
+          <Box sx={{ display: currentMode === 'ai' ? (isFinalStep || isTemplateStep || isTypeStep ? 'none' : 'block') : 'none' }}>
             <AIChatView
                 ref={aiChatRef}
                 activeStep={contentStepIndex}
@@ -201,7 +220,7 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
                 }}
             />
           </Box>
-          <Box sx={{ display: currentMode === 'direct' ? (isFinalStep || isTemplateStep ? 'none' : 'block') : 'none' }}>
+          <Box sx={{ display: currentMode === 'direct' ? (isFinalStep || isTemplateStep || isTypeStep ? 'none' : 'block') : 'none' }}>
             <CoverLetterDirectInputStep
                 activeStep={contentStepIndex}
                 isGenerating={isGenerating}
@@ -218,6 +237,22 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
           {activeStep === coverLetterSteps.length - 1 ? '자기소개서 완성하기' : '다음'}
         </Button>
       </Box>
+
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={3000}
+        onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setToastOpen(false)}
+          severity="warning"
+          variant="filled"
+          sx={{ width: '100%', borderRadius: '12px', fontWeight: 600 }}
+        >
+          {toastMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

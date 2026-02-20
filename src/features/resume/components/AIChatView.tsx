@@ -246,11 +246,12 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
       const decision = parseSectionFinalizeDecision(userInput);
       if (decision === 'move') {
         sectionFinalizePendingRef.current[currentField] = false;
-        moveToNextQuestion();
-        setIsTyping(false);
+        setTimeout(() => {
+          moveToNextQuestion();
+          setIsTyping(false);
+        }, 2000);
         return;
       }
-      // '다음/없음'이 아닌 입력은 추가 주요활동 내용으로 간주하여 그대로 처리한다.
       sectionFinalizePendingRef.current[currentField] = false;
     }
 

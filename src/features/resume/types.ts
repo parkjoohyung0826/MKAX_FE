@@ -15,6 +15,7 @@ export interface ResumeData {
 }
 
 export type ResumeTemplateId = 'classic' | 'modern';
+export type ResumeCareerType = 'basic' | 'senior';
 
 export interface ResumeEducationItem {
   schoolName: string;
