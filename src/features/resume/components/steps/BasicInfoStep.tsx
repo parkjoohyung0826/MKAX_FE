@@ -53,6 +53,8 @@ const Label = ({ children }: { children: React.ReactNode }) => (
 
 const BasicInfoStep = ({ data, handleChange }: Props) => {
   const [isAssistantOpen, setAssistantOpen] = useState(false);
+  const [isPhotoUploading, setIsPhotoUploading] = useState(false);
+  const [photoUploadError, setPhotoUploadError] = useState('');
 
   const handleOpenAssistant = () => setAssistantOpen(true);
   const handleCloseAssistant = () => setAssistantOpen(false);
@@ -65,16 +67,55 @@ const BasicInfoStep = ({ data, handleChange }: Props) => {
   //   handleCloseAssistant();
   // };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const syntheticEvent = {
-          target: { name: 'photo', value: event.target?.result as string },
-        } as React.ChangeEvent<HTMLInputElement>;
-        handleChange(syntheticEvent);
-      };
-      reader.readAsDataURL(e.target.files[0]);
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setPhotoUploadError('');
+    setIsPhotoUploading(true);
+
+    try {
+      const signRes = await fetch('/api/uploads/photo-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          fileName: file.name,
+          contentType: file.type || 'application/octet-stream',
+        }),
+      });
+
+      if (!signRes.ok) {
+        throw new Error('업로드 URL 발급에 실패했습니다.');
+      }
+
+      const { uploadUrl, viewUrl } = await signRes.json();
+      if (!uploadUrl || !viewUrl) {
+        throw new Error('업로드 URL 응답 형식이 올바르지 않습니다.');
+      }
+
+      const putRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream',
+        },
+        body: file,
+      });
+
+      if (!putRes.ok) {
+        throw new Error('GCS 업로드에 실패했습니다.');
+      }
+
+      console.log('photo upload viewUrl:', viewUrl);
+      const syntheticEvent = {
+        target: { name: 'photo', value: String(viewUrl) },
+      } as React.ChangeEvent<HTMLInputElement>;
+      handleChange(syntheticEvent);
+    } catch (error: any) {
+      setPhotoUploadError(error?.message ?? '사진 업로드 중 문제가 발생했습니다.');
+    } finally {
+      setIsPhotoUploading(false);
+      e.target.value = '';
     }
   };
 
@@ -193,6 +234,16 @@ const BasicInfoStep = ({ data, handleChange }: Props) => {
                 </>
               )}
             </Box>
+            {isPhotoUploading && (
+              <Typography variant="caption" sx={{ mt: 1, color: '#2563EB', fontWeight: 600 }}>
+                사진 업로드 중...
+              </Typography>
+            )}
+            {photoUploadError && (
+              <Typography variant="caption" sx={{ mt: 1, color: '#ef4444', fontWeight: 600, textAlign: 'center' }}>
+                {photoUploadError}
+              </Typography>
+            )}
           </Box>
 
           <Box sx={{ 

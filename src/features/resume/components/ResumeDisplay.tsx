@@ -76,6 +76,12 @@ interface Props {
 const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data, formattedData }, ref) => {
     const { resumeData, formattedResume } = useResumeStore();
     const displayData = formattedData ?? data ?? formattedResume ?? resumeData;
+    const photoSrc =
+      String((displayData as any)?.photo ?? '').trim() ||
+      String((formattedData as any)?.photo ?? '').trim() ||
+      String((data as any)?.photo ?? '').trim() ||
+      String((formattedResume as any)?.photo ?? '').trim() ||
+      String(resumeData?.photo ?? '').trim();
     
     // 빈 줄 렌더링을 위한 헬퍼 함수
     const renderEmptyRows = (count: number, cells: { width: string, isLast?: boolean }[]) => {
@@ -112,8 +118,8 @@ const ResumeDisplay = React.forwardRef<HTMLDivElement, Props>(({ data, formatted
                         flex-shrink: 0;
                         background-color: #f8f9fa;
                     `}>
-                        {displayData.photo ? (
-                          <img src={displayData.photo} alt="증명사진" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        {photoSrc ? (
+                          <img src={photoSrc} alt="증명사진" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
                           <Typography variant="body2" color="text.secondary">사진</Typography>
                         )}

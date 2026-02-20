@@ -82,6 +82,27 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
 }: AIChatViewProps<T>,
   ref: React.Ref<AIChatViewHandle>
 ) {
+  const normalizeDateInputValue = (raw: unknown): string => {
+    const text = String(raw ?? '').trim();
+    if (!text) return '';
+
+    const directIso = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (directIso) return text;
+
+    const compact = text.match(/^(\d{4})(\d{2})(\d{2})$/);
+    if (compact) return `${compact[1]}-${compact[2]}-${compact[3]}`;
+
+    const dottedOrSlashed = text.match(/^(\d{4})[./년\s-]+(\d{1,2})[./월\s-]+(\d{1,2})/);
+    if (dottedOrSlashed) {
+      const year = dottedOrSlashed[1];
+      const month = dottedOrSlashed[2].padStart(2, '0');
+      const day = dottedOrSlashed[3].padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    return text;
+  };
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -370,7 +391,7 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
           const profileUpdate = {
             name: String(data?.name ?? ''),
             englishName: String(data?.englishName ?? ''),
-            dateOfBirth: String(data?.dateOfBirth ?? ''),
+            dateOfBirth: normalizeDateInputValue(data?.dateOfBirth),
             email: String(data?.email ?? ''),
             phoneNumber: String(data?.phoneNumber ?? ''),
             emergencyContact: String(data?.emergencyContact ?? ''),
