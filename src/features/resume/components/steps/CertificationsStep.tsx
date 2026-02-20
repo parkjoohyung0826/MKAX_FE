@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Box, Typography } from '@mui/material';
-import { WorkspacePremium, Verified } from '@mui/icons-material';
+import { Box } from '@mui/material';
+import { Verified } from '@mui/icons-material';
 import { useResumeStore } from '../../store';
 import ResumeAssistantTextSection from './AssistantTextSection';
 import StepHeader from './StepHeader';
@@ -10,86 +10,19 @@ import StepHeader from './StepHeader';
 const CertificationsStep = () => {
   const { resumeData, setResumeData, setResumeValidation, validationLock, setValidationLock } = useResumeStore();
 
-  const submitCoreCompetencies = async (
-    text: string
-  ): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
-    const res = await fetch('/api/recommend/activity', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ userInput: text, currentSummary: resumeData.coreCompetencies }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err?.message ?? '교육사항/대외활동 생성에 실패했습니다.');
-    }
-
-    const data = await res.json();
-    const missingInfo = String(data?.missingInfo ?? '');
-    const isComplete =
-      typeof data?.isComplete === 'boolean'
-        ? data.isComplete
-        : missingInfo.trim().length === 0;
-    const fullDescription = String(data?.fullDescription ?? '').trim();
-    if (fullDescription.length > 0) {
-      setResumeData({ coreCompetencies: fullDescription });
-    }
-    setResumeValidation({ coreCompetencies: isComplete });
-    return {
-      missingInfo,
-      isComplete,
-    };
-  };
-
-  const handleValidateActivity = async (): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
-    const text = resumeData.coreCompetencies.trim();
-    const res = await fetch('/api/recommend/activity', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ userInput: text, currentSummary: resumeData.coreCompetencies }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err?.message ?? '교육사항/대외활동 검증에 실패했습니다.');
-    }
-
-    const data = await res.json();
-    const missingInfo = String(data?.missingInfo ?? '');
-    const isComplete =
-      typeof data?.isComplete === 'boolean'
-        ? data.isComplete
-        : missingInfo.trim().length === 0;
-    const fullDescription = String(data?.fullDescription ?? '').trim();
-    if (fullDescription.length > 0) {
-      setResumeData({ coreCompetencies: fullDescription });
-    }
-    setResumeValidation({ coreCompetencies: isComplete });
-    return { missingInfo, isComplete };
-  };
-
-  const handleChangeActivity = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { value } = e.target;
-    setResumeData({ coreCompetencies: value });
-    setResumeValidation({ coreCompetencies: false });
-    setValidationLock({ coreCompetencies: false });
-  };
-
   const submitCertifications = async (
     text: string
   ): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
-    const res = await fetch("/api/recommend/certification", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
+    const res = await fetch('/api/recommend/certification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ userInput: text, currentSummary: resumeData.certifications }),
     });
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err?.message ?? "자격증/어학 생성에 실패했습니다.");
+      throw new Error(err?.message ?? '자격증/어학 생성에 실패했습니다.');
     }
 
     const data = await res.json();
@@ -111,16 +44,16 @@ const CertificationsStep = () => {
 
   const handleValidateCertifications = async (): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
     const text = resumeData.certifications.trim();
-    const res = await fetch("/api/recommend/certification", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
+    const res = await fetch('/api/recommend/certification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ userInput: text, currentSummary: resumeData.certifications }),
     });
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err?.message ?? "자격증/어학 검증에 실패했습니다.");
+      throw new Error(err?.message ?? '자격증/어학 검증에 실패했습니다.');
     }
 
     const data = await res.json();
@@ -147,37 +80,14 @@ const CertificationsStep = () => {
   return (
     <Box sx={{ py: 2 }}>
       <StepHeader
-        title="주요 활동 및 자격"
-        subtitle="교육 및 대외활동, 자격증, 어학 능력 등 주요 활동과 자격 사항을 입력해주세요."
+        title="자격증"
+        subtitle="자격증 및 어학 정보를 입력해주세요."
       />
-      
-      <Box display="grid" gap={4}>
-        {/* 핵심 기술 */}
-        <ResumeAssistantTextSection
-          sectionTitle="교육사항 / 대외활동"
-          icon={<WorkspacePremium fontSize="small" sx={{ color: '#64748b' }} />}
-        assistantTitle="교육사항/대외활동 AI"
-        assistantPrompt="참여했던 교육 프로그램, 대외 활동, 동아리 활동 등에 대해 자유롭게 이야기해주세요."
-        onAssistantSubmit={submitCoreCompetencies}
-        onValidate={handleValidateActivity}
-        value={resumeData.coreCompetencies}
-        onChange={handleChangeActivity}
-        isValidated={validationLock.coreCompetencies}
-        onValidatedChange={(validated) => {
-          setValidationLock({ coreCompetencies: validated });
-          if (!validated) {
-            setResumeValidation({ coreCompetencies: false });
-          }
-        }}
-        rows={4}
-          name="coreCompetencies"
-          placeholder={`예: 삼성 청년 SW 아카데미 (SSAFY) 10기 수료 (2023.07 ~ 2024.01)\nOOO 대외활동 (2022.01 ~ 2022.06) - 프로젝트 관리 및 기획 담당`}
-        />
 
-        {/* 자격증 */}
-        <ResumeAssistantTextSection
-          sectionTitle="자격증 및 어학"
-          icon={<Verified fontSize="small" sx={{ color: '#64748b' }} />}
+      <ResumeAssistantTextSection
+        sectionTitle="자격증 및 어학"
+        sectionHint="취득일 최신순 기재 권장 (자격증명/점수, 발급기관, 취득일)"
+        icon={<Verified fontSize="small" sx={{ color: '#64748b' }} />}
         assistantTitle="자격증/어학 AI"
         assistantPrompt="취득한 자격증, 면허, 어학 성적 등에 대해 자유롭게 이야기해주세요."
         onAssistantSubmit={submitCertifications}
@@ -191,11 +101,10 @@ const CertificationsStep = () => {
             setResumeValidation({ certifications: false });
           }
         }}
-        rows={3}
-          name="certifications"
-          placeholder={`예: 정보처리기사 (2023.05)\nTOEIC 900 (2023.08)`}
-        />
-      </Box>
+        rows={6}
+        name="certifications"
+        placeholder={`예: 정보처리기사 (2023.05)\nTOEIC 900 (2023.08)`}
+      />
     </Box>
   );
 };

@@ -15,11 +15,27 @@ import { AnimatePresence, motion } from 'framer-motion';
 import ModeToggleBar from '@/shared/components/ModeToggleBar';
 
 import BasicInfoPanel from '@/features/resume/components/chat-panels/BasicInfoPanel';
+import CertificationsPanel from '@/features/resume/components/chat-panels/CertificationsPanel';
+import CoreCompetenciesPanel from '@/features/resume/components/chat-panels/CoreCompetenciesPanel';
 import EducationPanel from '@/features/resume/components/chat-panels/EducationPanel';
 import WorkExperiencePanel from '@/features/resume/components/chat-panels/WorkExperiencePanel';
-import SkillsPanel from '@/features/resume/components/chat-panels/SkillsPanel';
 
 type InputMode = 'direct' | 'ai';
+
+const stepSlideVariants = {
+  enter: (dir: number) => ({
+    opacity: 0,
+    x: dir >= 0 ? 32 : -32,
+  }),
+  center: {
+    opacity: 1,
+    x: 0,
+  },
+  exit: (dir: number) => ({
+    opacity: 0,
+    x: dir >= 0 ? -32 : 32,
+  }),
+};
 
 const resumeConversationSteps: ConversationStep<ResumeData>[] = [
   {
@@ -51,18 +67,24 @@ const resumeConversationSteps: ConversationStep<ResumeData>[] = [
     ]
   },
   {
-    title: '자격증/주요활동',
-    panel: (data: Partial<ResumeData>) => <SkillsPanel data={data} />,
+    title: '주요활동',
+    panel: (data: Partial<ResumeData>) => <CoreCompetenciesPanel data={data} />,
     fields: [
       { field: 'coreCompetencies', question: '참여했던 교육 프로그램, 대외 활동, 동아리 활동 등에 대해 자유롭게 이야기해주세요.' },
+    ]
+  },
+  {
+    title: '자격증',
+    panel: (data: Partial<ResumeData>) => <CertificationsPanel data={data} />,
+    fields: [
       { field: 'certifications', question: '자격증 또는 어학 성적이 있다면 알려주세요.' },
     ]
   }
 ];
 
-const resumeSteps = ['작성 유형 선택', '템플릿 선택', '기본 정보', '학력 사항', '경력 사항', '자격증/주요활동', '최종 검토'];
-const contentSteps = resumeSteps.slice(2);
-const progressSteps = resumeSteps.slice(2);
+const resumeSteps = ['작성 유형 선택', '템플릿 선택', '기본 정보', '학력 사항', '경력 사항', '주요활동', '자격증', '최종 검토'];
+const contentSteps = resumeSteps.slice(2, -1);
+const progressSteps = resumeSteps.slice(2, -1);
 
 interface Props {
   onFinishResume: () => void;
@@ -90,7 +112,7 @@ const Resume = ({ onFinishResume }: Props) => {
   const isTemplateStep = activeStep === 1;
   const isFinalStep = activeStep === resumeSteps.length - 1;
   const contentStepIndex = Math.max(activeStep - 2, 0);
-  const progressActiveStep = Math.max(activeStep - 2, 0);
+  const progressActiveStep = Math.min(Math.max(activeStep - 2, 0), progressSteps.length - 1);
   const aiChatRef = useRef<AIChatViewHandle | null>(null);
 
   const directCompletedSteps = [
@@ -99,7 +121,8 @@ const Resume = ({ onFinishResume }: Props) => {
     !!(resumeData.name && resumeData.desiredJob && resumeData.email && resumeData.phoneNumber),
     resumeValidation.education,
     resumeValidation.workExperience,
-    resumeValidation.coreCompetencies && resumeValidation.certifications,
+    resumeValidation.coreCompetencies,
+    resumeValidation.certifications,
     false,
   ];
 
@@ -299,22 +322,25 @@ const Resume = ({ onFinishResume }: Props) => {
 
   return (
     <Box>
-      {!isTypeStep && !isTemplateStep && (
+      {!isTypeStep && !isTemplateStep && !isFinalStep && (
         <Box sx={{ mt: -3 }}>
           <ProgressStepper
             steps={progressSteps}
             activeStep={progressActiveStep}
             onStepClick={handleProgressStepClick}
-            completedSteps={completedSteps.slice(2)}
+            completedSteps={completedSteps.slice(2, -1)}
           />
         </Box>
       )}
       {renderModeToggle()}
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div
-          initial={{ opacity: 0, x: 24 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -24 }}
+          key={activeStep}
+          custom={direction}
+          variants={stepSlideVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
           transition={{ duration: 0.25, ease: 'easeOut' }}
         >
           {renderStepBody()}

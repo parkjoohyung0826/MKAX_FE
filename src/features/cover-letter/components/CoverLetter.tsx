@@ -18,10 +18,25 @@ import { CoverLetterData } from '../types';
 import { useCoverLetterStore } from '../store';
 
 const coverLetterSteps = ['작성 유형 선택', '템플릿 선택', '성장과정', '성격의 장단점', '주요 경력 및 업무 강점', '지원 동기 및 포부', '최종 검토'];
-const contentSteps = coverLetterSteps.slice(2);
-const progressSteps = coverLetterSteps.slice(2);
+const contentSteps = coverLetterSteps.slice(2, -1);
+const progressSteps = coverLetterSteps.slice(2, -1);
 
 type InputMode = 'ai' | 'direct';
+
+const stepSlideVariants = {
+  enter: (dir: number) => ({
+    opacity: 0,
+    x: dir >= 0 ? 32 : -32,
+  }),
+  center: {
+    opacity: 1,
+    x: 0,
+  },
+  exit: (dir: number) => ({
+    opacity: 0,
+    x: dir >= 0 ? -32 : 32,
+  }),
+};
 
 const coverLetterConversationSteps: ConversationStep<CoverLetterData>[] = [
   {
@@ -129,17 +144,17 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
   const isFinalStep = activeStep === coverLetterSteps.length - 1;
   const currentMode = stepInputModes[activeStep] || 'ai';
   const contentStepIndex = Math.max(activeStep - 2, 0);
-  const progressActiveStep = Math.max(activeStep - 2, 0);
+  const progressActiveStep = Math.min(Math.max(activeStep - 2, 0), progressSteps.length - 1);
 
   return (
     <Box>
-      {!isTypeStep && !isTemplateStep && (
+      {!isTypeStep && !isTemplateStep && !isFinalStep && (
         <Box sx={{ mt: -3 }}>
           <ProgressStepper
             steps={progressSteps}
             activeStep={progressActiveStep}
             onStepClick={handleProgressStepClick}
-            completedSteps={coverLetterCompletedSteps.slice(2)}
+            completedSteps={coverLetterCompletedSteps.slice(2, -1)}
           />
         </Box>
       )}
@@ -151,12 +166,14 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
           resetDisabled={currentMode !== 'ai'}
         />
       )}
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div
+          custom={direction}
+          variants={stepSlideVariants}
           key={activeStep}
-          initial={{ opacity: 0, x: 24 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -24 }}
+          initial="enter"
+          animate="center"
+          exit="exit"
           transition={{ duration: 0.25, ease: 'easeOut' }}
         >
           {isTypeStep && <CareerTypeSelectStep />}

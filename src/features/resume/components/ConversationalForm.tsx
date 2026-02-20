@@ -6,8 +6,8 @@ import { Box, Typography, Container } from '@mui/material';
 import BasicInfoStep from './steps/BasicInfoStep';
 import EducationStep from './steps/EducationStep';
 import WorkExperienceStep from './steps/WorkExperienceStep';
+import CoreCompetenciesStep from './steps/CoreCompetenciesStep';
 import CertificationsStep from './steps/CertificationsStep';
-import FinalReviewStep from './steps/FinalReviewStep';
 
 import { useResumeStore } from '../store';
 
@@ -29,8 +29,8 @@ const ConversationalForm = ({ activeStep, direction, steps }: Props) => {
     <BasicInfoStep key="basic-info" data={resumeData} handleChange={handleChange} />,
     <EducationStep key="education" />,
     <WorkExperienceStep key="work-experience" />,
+    <CoreCompetenciesStep key="core-competencies" />,
     <CertificationsStep key="certifications" />,
-    <FinalReviewStep key="final-review" data={resumeData} />,
   ];
 
   return (
