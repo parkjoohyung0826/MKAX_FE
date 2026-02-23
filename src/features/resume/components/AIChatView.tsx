@@ -63,6 +63,116 @@ type SectionState = {
 
 type SectionFinalizeDecision = 'move' | 'stay' | 'unknown';
 
+type StepFieldConfig<T> = ConversationStep<T>['fields'][number];
+
+type StepViewState = {
+  messages: ChatMessage[];
+  userInput: string;
+  questionIndex: number;
+  isCurrentStepComplete: boolean;
+  isTyping: boolean;
+  isDrawerOpen: boolean;
+  hasUnreadChanges: boolean;
+};
+
+const normalizeDateInputValue = (raw: unknown): string => {
+  const text = String(raw ?? '').trim();
+  if (!text) return '';
+
+  const directIso = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (directIso) return text;
+
+  const compact = text.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (compact) return `${compact[1]}-${compact[2]}-${compact[3]}`;
+
+  const dottedOrSlashed = text.match(/^(\d{4})[./년\s-]+(\d{1,2})[./월\s-]+(\d{1,2})/);
+  if (dottedOrSlashed) {
+    const year = dottedOrSlashed[1];
+    const month = dottedOrSlashed[2].padStart(2, '0');
+    const day = dottedOrSlashed[3].padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  return text;
+};
+
+const parseSectionFinalizeDecision = (raw: string): SectionFinalizeDecision => {
+  const normalized = raw.replace(/\s+/g, '').toLowerCase();
+  const moveKeywords = ['다음', '넘어가', '없음', '없어요', '없습니다', '끝', '마침', '그만'];
+
+  if (moveKeywords.some((keyword) => normalized.includes(keyword))) return 'move';
+  return 'stay';
+};
+
+const createAiMessage = (text: string): ChatMessage => ({
+  id: Date.now() + 1,
+  sender: 'ai',
+  text,
+});
+
+async function requestAiJson<T>(res: Response): Promise<T> {
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({} as { message?: string }));
+    throw new Error(err?.message ?? 'AI 응답 생성에 실패했습니다.');
+  }
+  return res.json() as Promise<T>;
+}
+
+function getResumeRecommendationRequest<T extends Record<string, any>>(args: {
+  isProfileStep: boolean;
+  currentField?: keyof T;
+  resumeType: 'basic' | 'senior';
+  userInput: string;
+}) {
+  const { isProfileStep, currentField, resumeType, userInput } = args;
+
+  const endpoint = isProfileStep
+    ? '/api/recommend/profile'
+    : currentField === 'education'
+      ? '/api/recommend/education'
+      : currentField === 'workExperience'
+        ? '/api/recommend/career'
+        : currentField === 'coreCompetencies'
+          ? resumeApiByMode[resumeType].activity
+          : resumeApiByMode[resumeType].certification;
+
+  const body =
+    isProfileStep || currentField === 'education' ? { description: userInput } : { userInput };
+
+  return { endpoint, body };
+}
+
+function buildResetPlan<T extends Record<string, any>>(args: {
+  fields: StepFieldConfig<T>[];
+  fieldApiConfigs?: Partial<Record<keyof T, FieldApiConfig<T>>>;
+  resetSectionMap?: Partial<Record<keyof T, string>>;
+}) {
+  const { fields, fieldApiConfigs, resetSectionMap } = args;
+  const resetSections = new Set<string>();
+  const resetFields: Array<keyof T> = [];
+  const updates: Partial<T> = {};
+
+  fields.forEach(({ field }) => {
+    const apiConfig = fieldApiConfigs?.[field];
+    const summaryField = apiConfig?.summaryField ?? field;
+    const resetSection = apiConfig?.resetSection ?? resetSectionMap?.[field];
+
+    if (resetSection) {
+      resetSections.add(resetSection);
+    }
+
+    resetFields.push(field);
+    updates[summaryField] = '' as T[keyof T];
+    updates[field] = '' as T[keyof T];
+  });
+
+  return {
+    resetSections: Array.from(resetSections),
+    resetFields,
+    updates,
+  };
+}
+
 export interface AIChatViewHandle {
   resetCurrentStep: () => void;
 }
@@ -85,27 +195,6 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
 }: AIChatViewProps<T>,
   ref: React.Ref<AIChatViewHandle>
 ) {
-  const normalizeDateInputValue = (raw: unknown): string => {
-    const text = String(raw ?? '').trim();
-    if (!text) return '';
-
-    const directIso = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (directIso) return text;
-
-    const compact = text.match(/^(\d{4})(\d{2})(\d{2})$/);
-    if (compact) return `${compact[1]}-${compact[2]}-${compact[3]}`;
-
-    const dottedOrSlashed = text.match(/^(\d{4})[./년\s-]+(\d{1,2})[./월\s-]+(\d{1,2})/);
-    if (dottedOrSlashed) {
-      const year = dottedOrSlashed[1];
-      const month = dottedOrSlashed[2].padStart(2, '0');
-      const day = dottedOrSlashed[3].padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-
-    return text;
-  };
-
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -120,15 +209,7 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
   const messageListRef = useRef<HTMLDivElement>(null);
   const sectionStateRef = useRef<Partial<Record<keyof T, SectionState>>>({});
   const sectionFinalizePendingRef = useRef<Partial<Record<keyof T, boolean>>>({});
-  const stepStateRef = useRef<Record<number, {
-    messages: ChatMessage[];
-    userInput: string;
-    questionIndex: number;
-    isCurrentStepComplete: boolean;
-    isTyping: boolean;
-    isDrawerOpen: boolean;
-    hasUnreadChanges: boolean;
-  }>>({});
+  const stepStateRef = useRef<Record<number, StepViewState>>({});
   const prevStepRef = useRef<number | null>(null);
 
   const currentStepConfig = conversationSteps[activeStep];
@@ -217,36 +298,259 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
     return () => clearTimeout(scrollTimer);
   }, [messages, isTyping]);
 
-  const handleSendMessage = async () => {
-    if (!userInput.trim()) return;
+  const appendAiText = (text: string) => {
+    setMessages((prev) => [...prev, createAiMessage(text)]);
+  };
 
-    const newUserMessage: ChatMessage = { id: Date.now(), sender: 'user', text: userInput };
+  const appendAiError = (error: unknown) => {
+    appendAiText(error instanceof Error ? error.message : '응답 처리 중 문제가 발생했습니다.');
+  };
+
+  const moveToNextQuestion = () => {
+    if (!currentStepConfig?.fields?.[questionIndex + 1]) return false;
+    const nextQuestion = currentStepConfig.fields[questionIndex + 1].question;
+    setQuestionIndex(questionIndex + 1);
+    appendAiText(nextQuestion);
+    return true;
+  };
+
+  const getSectionState = (field: keyof T): SectionState => {
+    const saved = sectionStateRef.current[field];
+    if (saved) return saved;
+    const raw = String(data?.[field] ?? '').trim();
+    const items =
+      raw.length > 0 ? raw.split(/\n{2,}/).map((item) => item.trim()).filter(Boolean) : [];
+    const nextState: SectionState = {
+      draftInput: '',
+      items,
+      followUpQuestion: '',
+    };
+    sectionStateRef.current[field] = nextState;
+    return nextState;
+  };
+
+  const completeCurrentStep = (message: string) => {
+    setIsCurrentStepComplete(true);
+    onStepComplete();
+    appendAiText(message);
+    setIsDrawerOpen(true);
+  };
+
+  const handleConfiguredFieldApiStep = async (inputText: string) => {
+    if (!fieldApiConfig || !currentField) return;
+
+    const summaryField = fieldApiConfig.summaryField ?? currentField;
+    const currentSummary = String(data?.[summaryField] ?? '');
+    const body = fieldApiConfig.buildBody
+      ? fieldApiConfig.buildBody({ userInput: inputText, currentSummary, data })
+      : { userInput: inputText, currentSummary };
+
+    if (fieldApiConfig.endpoint.startsWith('/api/cover-letter/')) {
+      console.info('[cover-letter chat] sending request with cookies', {
+        endpoint: fieldApiConfig.endpoint,
+        credentials: 'include',
+        hasDocumentCookie: typeof document !== 'undefined' && Boolean(document.cookie),
+      });
+    }
+
+    try {
+      const res = await fetch(fieldApiConfig.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body),
+      });
+      const responseData = await requestAiJson<any>(res);
+      const nextQuestion = String(responseData?.nextQuestion ?? '추가 정보를 알려주세요.').trim();
+      const summary = String(responseData?.summary ?? '').trim();
+      const finalDraft = String(responseData?.finalDraft ?? '').trim();
+      const isComplete = Boolean(responseData?.isComplete);
+
+      if (summary.length > 0 || finalDraft.length > 0) {
+        let hasDiff = false;
+        setData((prev) => {
+          const next = { ...prev };
+          if (summary.length > 0) {
+            hasDiff = summary !== String(prev?.[summaryField] ?? '') || hasDiff;
+            next[summaryField] = summary as T[keyof T];
+          }
+          if (finalDraft.length > 0 && currentField) {
+            hasDiff = finalDraft !== String(prev?.[currentField] ?? '') || hasDiff;
+            next[currentField] = finalDraft as T[keyof T];
+          }
+          return next;
+        });
+        if (hasDiff) {
+          setHasUnreadChanges(true);
+        }
+      }
+
+      if (isComplete) {
+        onFieldComplete?.(currentField);
+        setIsCurrentStepComplete(true);
+        onStepComplete();
+        setIsDrawerOpen(true);
+      }
+
+      appendAiText(nextQuestion);
+    } catch (error) {
+      appendAiError(error);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const handleRecommendationApiStep = async (inputText: string) => {
+    const sectionState = currentField ? getSectionState(currentField) : null;
+    if (sectionState) {
+      sectionState.draftInput = sectionState.draftInput
+        ? `${sectionState.draftInput}\n${inputText}`
+        : inputText;
+    }
+
+    try {
+      const { endpoint, body } = getResumeRecommendationRequest<T>({
+        isProfileStep,
+        currentField,
+        resumeType,
+        userInput: inputText,
+      });
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body),
+      });
+      const responseData = await requestAiJson<any>(res);
+      const missingInfo = String(responseData?.missingInfo ?? '');
+      const isComplete =
+        typeof responseData?.isComplete === 'boolean'
+          ? responseData.isComplete
+          : missingInfo.trim().length === 0;
+
+      if (isProfileStep) {
+        const profileUpdate = {
+          name: String(responseData?.name ?? ''),
+          englishName: String(responseData?.englishName ?? ''),
+          dateOfBirth: normalizeDateInputValue(responseData?.dateOfBirth),
+          email: String(responseData?.email ?? ''),
+          phoneNumber: String(responseData?.phoneNumber ?? ''),
+          emergencyContact: String(responseData?.emergencyContact ?? ''),
+          address: String(responseData?.address ?? ''),
+          desiredJob: String(responseData?.desiredJob ?? ''),
+        };
+        let hasDiff = false;
+        setData((prev) => {
+          hasDiff = (Object.keys(profileUpdate) as Array<keyof typeof profileUpdate>).some(
+            (key) => profileUpdate[key].trim().length > 0 && profileUpdate[key] !== String(prev[key] ?? '')
+          );
+          return { ...prev, ...profileUpdate };
+        });
+        if (hasDiff) {
+          setHasUnreadChanges(true);
+        }
+      } else {
+        const fullDescription = String(responseData?.fullDescription ?? '').trim();
+        if (currentField && sectionState) {
+          if (isComplete) {
+            const finalizedItem =
+              fullDescription.length > 0 ? fullDescription : sectionState.draftInput.trim();
+
+            if (finalizedItem.length > 0) {
+              sectionState.items = [...sectionState.items, finalizedItem];
+            }
+            sectionState.draftInput = '';
+            sectionState.followUpQuestion = '추가 항목이 있으면 이어서 입력해주세요.';
+
+            let hasDiff = false;
+            setData((prev) => {
+              const joinedValue = sectionState.items.join('\n\n');
+              hasDiff = joinedValue !== String(prev[currentField] ?? '');
+              return { ...prev, [currentField]: joinedValue };
+            });
+            if (hasDiff) {
+              setHasUnreadChanges(true);
+            }
+          } else {
+            sectionState.draftInput =
+              fullDescription.length > 0 ? fullDescription : sectionState.draftInput;
+
+            const previewItems =
+              sectionState.draftInput.trim().length > 0
+                ? [...sectionState.items, sectionState.draftInput.trim()]
+                : [...sectionState.items];
+            let hasDiff = false;
+            setData((prev) => {
+              const joinedValue = previewItems.join('\n\n');
+              hasDiff = joinedValue !== String(prev[currentField] ?? '');
+              return { ...prev, [currentField]: joinedValue };
+            });
+            if (hasDiff) {
+              setHasUnreadChanges(true);
+            }
+          }
+        }
+      }
+
+      if (isComplete) {
+        if (currentField) {
+          onFieldComplete?.(currentField);
+        }
+        if (currentField === 'coreCompetencies' && currentStepConfig?.fields[questionIndex + 1]) {
+          sectionFinalizePendingRef.current[currentField] = true;
+          appendAiText(
+            "현재 항목을 저장했어요. 추가 내용이 있으면 이어서 입력해주세요. 없으면 '다음'이라고 입력하면 다음 항목 작성으로 넘어갈게요."
+          );
+        } else if (currentStepConfig) {
+          completeCurrentStep(`'${currentStepConfig.title}' 작성이 완료되었습니다. 추가 항목이 있으면 이어서 입력해주세요.`);
+        }
+      } else {
+        const nextQuestion = missingInfo.trim().length > 0 ? missingInfo : '추가 정보를 알려주세요.';
+        if (currentField && sectionState) {
+          sectionState.followUpQuestion = nextQuestion;
+        }
+        appendAiText(nextQuestion);
+      }
+    } catch (error) {
+      appendAiError(error);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const handlePlainStepProgression = () => {
+    setHasUnreadChanges(true);
+
+    const nextQuestionIndex = questionIndex + 1;
+
+    setTimeout(() => {
+      setIsTyping(false);
+
+      if (!currentStepConfig) return;
+
+      if (nextQuestionIndex < currentStepConfig.fields.length) {
+        setQuestionIndex(nextQuestionIndex);
+        appendAiText(currentStepConfig.fields[nextQuestionIndex].question);
+      } else {
+        completeCurrentStep(
+          `'${currentStepConfig.title}' 작성이 완료되었습니다. 추가로 수정하거나 보완할 내용이 있으면 계속 입력해주세요.`
+        );
+      }
+    }, 1000);
+  };
+
+  const handleSendMessage = async () => {
+    const inputText = userInput;
+    if (!inputText.trim()) return;
+
+    const newUserMessage: ChatMessage = { id: Date.now(), sender: 'user', text: inputText };
 
     setMessages((prev) => [...prev, newUserMessage]);
     setUserInput('');
     setIsTyping(true);
 
-    const parseSectionFinalizeDecision = (raw: string): SectionFinalizeDecision => {
-      const normalized = raw.replace(/\s+/g, '').toLowerCase();
-      const moveKeywords = ['다음', '넘어가', '없음', '없어요', '없습니다', '끝', '마침', '그만'];
-
-      if (moveKeywords.some((keyword) => normalized.includes(keyword))) return 'move';
-      return 'stay';
-    };
-
-    const moveToNextQuestion = () => {
-      if (!currentStepConfig?.fields?.[questionIndex + 1]) return false;
-      const nextQuestion = currentStepConfig.fields[questionIndex + 1].question;
-      setQuestionIndex(questionIndex + 1);
-      setMessages((prev) => [
-        ...prev,
-        { id: Date.now() + 1, sender: 'ai', text: nextQuestion },
-      ]);
-      return true;
-    };
-
     if (currentField === 'coreCompetencies' && sectionFinalizePendingRef.current[currentField]) {
-      const decision = parseSectionFinalizeDecision(userInput);
+      const decision = parseSectionFinalizeDecision(inputText);
       if (decision === 'move') {
         sectionFinalizePendingRef.current[currentField] = false;
         setTimeout(() => {
@@ -260,274 +564,14 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
 
     if (isApiStep) {
       if (fieldApiConfig && currentField) {
-        const summaryField = fieldApiConfig.summaryField ?? currentField;
-        const currentSummary = String(data?.[summaryField] ?? '');
-        const body = fieldApiConfig.buildBody
-          ? fieldApiConfig.buildBody({ userInput, currentSummary, data })
-          : { userInput, currentSummary };
-
-        if (fieldApiConfig.endpoint.startsWith('/api/cover-letter/')) {
-          console.info('[cover-letter chat] sending request with cookies', {
-            endpoint: fieldApiConfig.endpoint,
-            credentials: 'include',
-            hasDocumentCookie: typeof document !== 'undefined' && Boolean(document.cookie),
-          });
-        }
-
-        try {
-          const res = await fetch(fieldApiConfig.endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(body),
-          });
-
-          if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err?.message ?? 'AI 응답 생성에 실패했습니다.');
-          }
-
-          const responseData = await res.json();
-          const nextQuestion = String(responseData?.nextQuestion ?? '추가 정보를 알려주세요.').trim();
-          const summary = String(responseData?.summary ?? '').trim();
-          const finalDraft = String(responseData?.finalDraft ?? '').trim();
-          const isComplete = Boolean(responseData?.isComplete);
-
-          if (summary.length > 0 || finalDraft.length > 0) {
-            let hasDiff = false;
-            setData((prev) => {
-              const next = { ...prev };
-              if (summary.length > 0) {
-                hasDiff = summary !== String(prev?.[summaryField] ?? '') || hasDiff;
-                next[summaryField] = summary as T[keyof T];
-              }
-              if (finalDraft.length > 0 && currentField) {
-                hasDiff = finalDraft !== String(prev?.[currentField] ?? '') || hasDiff;
-                next[currentField] = finalDraft as T[keyof T];
-              }
-              return next;
-            });
-            if (hasDiff) {
-              setHasUnreadChanges(true);
-            }
-          }
-
-          if (isComplete) {
-            if (currentField) {
-              onFieldComplete?.(currentField);
-            }
-            setIsCurrentStepComplete(true);
-            onStepComplete();
-            setIsDrawerOpen(true);
-          }
-
-          setMessages((prev) => [
-            ...prev,
-            { id: Date.now() + 1, sender: 'ai', text: nextQuestion },
-          ]);
-        } catch (e: any) {
-          setMessages((prev) => [
-            ...prev,
-            { id: Date.now() + 1, sender: 'ai', text: e?.message ?? '응답 처리 중 문제가 발생했습니다.' },
-          ]);
-        } finally {
-          setIsTyping(false);
-        }
+        await handleConfiguredFieldApiStep(inputText);
         return;
       }
-
-      const getSectionState = (field: keyof T): SectionState => {
-        const saved = sectionStateRef.current[field];
-        if (saved) return saved;
-        const raw = String(data?.[field] ?? '').trim();
-        const items = raw.length > 0 ? raw.split(/\n{2,}/).map((item) => item.trim()).filter(Boolean) : [];
-        const nextState: SectionState = {
-          draftInput: '',
-          items,
-          followUpQuestion: '',
-        };
-        sectionStateRef.current[field] = nextState;
-        return nextState;
-      };
-
-      const sectionState = currentField ? getSectionState(currentField) : null;
-      if (sectionState) {
-        sectionState.draftInput = sectionState.draftInput
-          ? `${sectionState.draftInput}\n${userInput}`
-          : userInput;
-      }
-
-      try {
-        const endpoint = isProfileStep
-          ? '/api/recommend/profile'
-          : currentField === 'education'
-            ? '/api/recommend/education'
-            : currentField === 'workExperience'
-              ? '/api/recommend/career'
-              : currentField === 'coreCompetencies'
-                ? resumeApiByMode[resumeType].activity
-                : resumeApiByMode[resumeType].certification;
-        const body = isProfileStep
-          ? { description: userInput }
-          : currentField === 'education'
-            ? { description: userInput }
-            : { userInput };
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(body),
-        });
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err?.message ?? 'AI 응답 생성에 실패했습니다.');
-        }
-
-        const data = await res.json();
-        const missingInfo = String(data?.missingInfo ?? '');
-        const isComplete =
-          typeof data?.isComplete === 'boolean'
-            ? data.isComplete
-            : missingInfo.trim().length === 0;
-
-        if (isProfileStep) {
-          const profileUpdate = {
-            name: String(data?.name ?? ''),
-            englishName: String(data?.englishName ?? ''),
-            dateOfBirth: normalizeDateInputValue(data?.dateOfBirth),
-            email: String(data?.email ?? ''),
-            phoneNumber: String(data?.phoneNumber ?? ''),
-            emergencyContact: String(data?.emergencyContact ?? ''),
-            address: String(data?.address ?? ''),
-            desiredJob: String(data?.desiredJob ?? ''),
-          };
-          let hasDiff = false;
-          setData((prev) => {
-            hasDiff = (Object.keys(profileUpdate) as Array<keyof typeof profileUpdate>).some(
-              (key) => profileUpdate[key].trim().length > 0 && profileUpdate[key] !== String(prev[key] ?? '')
-            );
-            return { ...prev, ...profileUpdate };
-          });
-          if (hasDiff) {
-            setHasUnreadChanges(true);
-          }
-        } else {
-          const fullDescription = String(data?.fullDescription ?? '').trim();
-          if (currentField && sectionState) {
-            if (isComplete) {
-              const finalizedItem = fullDescription.length > 0
-                ? fullDescription
-                : sectionState.draftInput.trim();
-
-              if (finalizedItem.length > 0) {
-                const nextItems = [...sectionState.items, finalizedItem];
-                sectionState.items = nextItems;
-              }
-              sectionState.draftInput = '';
-              sectionState.followUpQuestion = '추가 항목이 있으면 이어서 입력해주세요.';
-
-              let hasDiff = false;
-              setData((prev) => {
-                const joinedValue = sectionState.items.join('\n\n');
-                hasDiff = joinedValue !== String(prev[currentField] ?? '');
-                return { ...prev, [currentField]: joinedValue };
-              });
-              if (hasDiff) {
-                setHasUnreadChanges(true);
-              }
-            } else {
-              sectionState.draftInput = fullDescription.length > 0 ? fullDescription : sectionState.draftInput;
-
-              const previewItems = sectionState.draftInput.trim().length > 0
-                ? [...sectionState.items, sectionState.draftInput.trim()]
-                : [...sectionState.items];
-              let hasDiff = false;
-              setData((prev) => {
-                const joinedValue = previewItems.join('\n\n');
-                hasDiff = joinedValue !== String(prev[currentField] ?? '');
-                return { ...prev, [currentField]: joinedValue };
-              });
-              if (hasDiff) {
-                setHasUnreadChanges(true);
-              }
-            }
-          }
-        }
-
-        if (isComplete) {
-          if (currentField) {
-            onFieldComplete?.(currentField);
-          }
-          if (currentField === 'coreCompetencies' && currentStepConfig.fields[questionIndex + 1]) {
-            sectionFinalizePendingRef.current[currentField] = true;
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: Date.now() + 1,
-                sender: 'ai',
-                text: "현재 항목을 저장했어요. 추가 내용이 있으면 이어서 입력해주세요. 없으면 '다음'이라고 입력하면 다음 항목 작성으로 넘어갈게요.",
-              },
-            ]);
-          } else {
-            setIsCurrentStepComplete(true);
-            onStepComplete();
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: Date.now() + 1,
-                sender: 'ai',
-                text: `'${currentStepConfig.title}' 작성이 완료되었습니다. 추가 항목이 있으면 이어서 입력해주세요.`,
-              },
-            ]);
-            setIsDrawerOpen(true);
-          }
-        } else {
-          const nextQuestion = missingInfo.trim().length > 0 ? missingInfo : '추가 정보를 알려주세요.';
-          if (currentField && sectionState) {
-            sectionState.followUpQuestion = nextQuestion;
-          }
-          setMessages((prev) => [
-            ...prev,
-            { id: Date.now() + 1, sender: 'ai', text: nextQuestion },
-          ]);
-        }
-      } catch (e: any) {
-        setMessages((prev) => [
-          ...prev,
-          { id: Date.now() + 1, sender: 'ai', text: e?.message ?? '응답 처리 중 문제가 발생했습니다.' },
-        ]);
-      } finally {
-        setIsTyping(false);
-      }
+      await handleRecommendationApiStep(inputText);
       return;
     }
 
-    setHasUnreadChanges(true);
-
-    const nextQuestionIndex = questionIndex + 1;
-
-    setTimeout(() => {
-      setIsTyping(false);
-
-        if (nextQuestionIndex < currentStepConfig.fields.length) {
-          setQuestionIndex(nextQuestionIndex);
-          const nextQuestion = currentStepConfig.fields[nextQuestionIndex].question;
-          setMessages((prev) => [...prev, { id: Date.now() + 1, sender: 'ai', text: nextQuestion }]);
-        } else {
-          setIsCurrentStepComplete(true);
-          onStepComplete();
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: Date.now() + 1,
-              sender: 'ai',
-              text: `'${currentStepConfig.title}' 작성이 완료되었습니다. 추가로 수정하거나 보완할 내용이 있으면 계속 입력해주세요.`,
-            },
-          ]);
-          setIsDrawerOpen(true);
-        }
-    }, 1000);
+    handlePlainStepProgression();
   };
 
   const toggleDrawer = (newOpen: boolean) => () => {
@@ -538,7 +582,7 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
   };
 
   const resetCurrentStepState = () => {
-    stepStateRef.current[activeStep] = undefined as unknown as typeof stepStateRef.current[number];
+    delete stepStateRef.current[activeStep];
     setMessages([]);
     setUserInput('');
     setQuestionIndex(0);
@@ -550,36 +594,25 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
   };
 
   const handleResetChat = async () => {
-    try {
-      const resetSections = new Set<string>();
-      (currentStepConfig?.fields ?? []).forEach((fieldConfig) => {
-        const field = fieldConfig.field;
-        const fieldConfigApi = fieldApiConfigs?.[field];
-        const resetSection = fieldConfigApi?.resetSection ?? resetSectionMap?.[field];
-        if (resetSection) {
-          resetSections.add(resetSection);
-        }
-      });
+    const stepFields = currentStepConfig?.fields ?? [];
+    const { resetSections, resetFields, updates } = buildResetPlan<T>({
+      fields: stepFields,
+      fieldApiConfigs,
+      resetSectionMap,
+    });
 
-      if (resetSections.size > 1) {
-        await onResetChat?.({ sections: Array.from(resetSections) });
+    try {
+      if (resetSections.length > 1) {
+        await onResetChat?.({ sections: resetSections });
       } else {
-        const [section] = Array.from(resetSections);
+        const [section] = resetSections;
         await onResetChat?.(section ? { section } : undefined);
       }
     } finally {
-      if (currentStepConfig?.fields?.length) {
-        const updates: Partial<T> = {};
-        const resetFields: Array<keyof T> = [];
-        currentStepConfig.fields.forEach((fieldConfig) => {
-          const field = fieldConfig.field;
-          const fieldConfigApi = fieldApiConfigs?.[field];
-          const summaryField = fieldConfigApi?.summaryField ?? field;
+      if (stepFields.length) {
+        stepFields.forEach(({ field }) => {
           sectionStateRef.current[field] = undefined;
           sectionFinalizePendingRef.current[field] = false;
-          resetFields.push(field);
-          updates[summaryField] = '' as T[keyof T];
-          updates[field] = '' as T[keyof T];
         });
         setData((prev) => ({
           ...prev,
