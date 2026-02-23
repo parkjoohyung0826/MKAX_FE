@@ -18,6 +18,7 @@ import ConversationalAssistant from '@/shared/components/ConversationalAssistant
 import WritingGuide from '../cover-letter/WritingGuide';
 import { CoverLetterData } from '../../types';
 import { useCoverLetterStore } from '../../store';
+import { coverLetterSectionOrder, getCoverLetterCareerTypeCopy } from '../../careerTypeCopy';
 
 /* ================= 스타일 ================= */
 
@@ -68,33 +69,6 @@ const actionButtonSx = {
 
 /* ================= 문항 정의 ================= */
 
-const coverLetterSections = [
-  {
-    id: 'growthProcess',
-    label: '성장과정',
-    rows: 8,
-    desc: '직무에 관심을 갖게 된 계기나 가치관 형성 과정',
-  },
-  {
-    id: 'strengthsAndWeaknesses',
-    label: '성격의 장단점',
-    rows: 8,
-    desc: '직무 수행에 도움이 되는 장점과 개선 노력',
-  },
-  {
-    id: 'keyExperience',
-    label: '주요 경력 및 업무 강점',
-    rows: 8,
-    desc: '관련 경험에서의 구체적인 역할과 성과',
-  },
-  {
-    id: 'motivation',
-    label: '지원 동기 및 포부',
-    rows: 8,
-    desc: '회사 지원 이유와 입사 후 구체적 목표',
-  },
-];
-
 /* ================= section → backend enum ================= */
 
 const SECTION_TO_BACKEND: Record<string, string> = {
@@ -114,7 +88,7 @@ interface Props {
 /* ================= Component ================= */
 
 const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
-  const { coverLetterData, setCoverLetterData } = useCoverLetterStore();
+  const { coverLetterData, setCoverLetterData, selectedCareerType } = useCoverLetterStore();
   const [isGuideModalOpen, setGuideModalOpen] = useState(false);
   const [isAIModalOpen, setAIModalOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState<string>('');
@@ -124,6 +98,13 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
   const [toastSeverity, setToastSeverity] = useState<'success' | 'error'>(
     'success'
   );
+  const copy = getCoverLetterCareerTypeCopy(selectedCareerType);
+  const coverLetterSections = coverLetterSectionOrder.map((sectionId) => ({
+    id: sectionId,
+    label: copy.sections[sectionId].directLabel,
+    rows: 8,
+    desc: copy.sections[sectionId].directDescription,
+  }));
 
   const section = coverLetterSections[activeStep];
   if (!section) return null;

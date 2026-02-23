@@ -4,6 +4,7 @@ import { Box, Paper, Typography } from '@mui/material';
 import { css } from '@emotion/react';
 import { useCoverLetterStore } from '../store';
 import { CoverLetterData } from '../types'; 
+import { getCoverLetterCareerTypeCopy } from '../careerTypeCopy';
 
 // --- 스타일 정의 ---
 const tableContainerStyle = css`
@@ -57,8 +58,9 @@ interface Props {
 }
 
 const CoverLetterDisplay = React.forwardRef<HTMLDivElement, Props>(({ resumeName, data }, ref) => {
-  const { coverLetterData } = useCoverLetterStore();
+  const { coverLetterData, selectedCareerType } = useCoverLetterStore();
   const displayData = data ?? coverLetterData;
+  const copy = getCoverLetterCareerTypeCopy(selectedCareerType);
 
   const normalizeContent = (value: unknown) => {
     if (typeof value === 'string') return value;
@@ -72,10 +74,10 @@ const CoverLetterDisplay = React.forwardRef<HTMLDivElement, Props>(({ resumeName
   };
 
   const sections = [
-    { label: '성장과정', key: 'growthProcess' as keyof CoverLetterData },
-    { label: '성격의 장, 단점', key: 'strengthsAndWeaknesses' as keyof CoverLetterData },
-    { label: '주요 경력\n및\n업무 강점', key: 'keyExperience' as keyof CoverLetterData },
-    { label: '지원 동기\n및\n입사 포부', key: 'motivation' as keyof CoverLetterData },
+    { label: copy.sections.growthProcess.classicDisplayLabel, key: 'growthProcess' as keyof CoverLetterData },
+    { label: copy.sections.strengthsAndWeaknesses.classicDisplayLabel, key: 'strengthsAndWeaknesses' as keyof CoverLetterData },
+    { label: copy.sections.keyExperience.classicDisplayLabel, key: 'keyExperience' as keyof CoverLetterData },
+    { label: copy.sections.motivation.classicDisplayLabel, key: 'motivation' as keyof CoverLetterData },
   ];
 
   return (

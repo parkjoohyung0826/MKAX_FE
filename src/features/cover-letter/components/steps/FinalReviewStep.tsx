@@ -4,6 +4,7 @@ import { Box, Typography } from '@mui/material';
 import { Create, FavoriteBorder, StarBorder, Flare } from '@mui/icons-material';
 import { CoverLetterData } from '../../types';
 import { useCoverLetterStore } from '../../store';
+import { getCoverLetterCareerTypeCopy } from '../../careerTypeCopy';
 
 const glassBox = {
   backgroundColor: 'rgba(255, 255, 255, 0.6)',
@@ -45,12 +46,13 @@ const SectionContent = ({ content }: { content: string }) => (
 );
 
 const FinalReviewStep = () => {
-  const { coverLetterData } = useCoverLetterStore();
+  const { coverLetterData, selectedCareerType } = useCoverLetterStore();
+  const copy = getCoverLetterCareerTypeCopy(selectedCareerType);
   const sections = [
-    { id: 'growthProcess', label: '성장과정', icon: Create },
-    { id: 'strengthsAndWeaknesses', label: '성격의 장단점', icon: FavoriteBorder },
-    { id: 'keyExperience', label: '주요 경력 및 업무 강점', icon: StarBorder },
-    { id: 'motivation', label: '지원 동기 및 포부', icon: Flare },
+    { id: 'growthProcess', label: copy.sections.growthProcess.finalReviewLabel, icon: Create },
+    { id: 'strengthsAndWeaknesses', label: copy.sections.strengthsAndWeaknesses.finalReviewLabel, icon: FavoriteBorder },
+    { id: 'keyExperience', label: copy.sections.keyExperience.finalReviewLabel, icon: StarBorder },
+    { id: 'motivation', label: copy.sections.motivation.finalReviewLabel, icon: Flare },
   ];
 
   return (

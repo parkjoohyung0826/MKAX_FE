@@ -2,22 +2,23 @@ import React from 'react';
 import { Box, Typography, Paper, Divider } from '@mui/material';
 import { useCoverLetterStore } from '../store';
 import { CoverLetterData } from '../types';
+import { getCoverLetterCareerTypeCopy } from '../careerTypeCopy';
 
 interface Props {
   resumeName: string;
   data?: CoverLetterData;
 }
 
-const sections: Array<{ label: string; key: keyof CoverLetterData }> = [
-  { label: '성장과정', key: 'growthProcess' },
-  { label: '성격의 장, 단점', key: 'strengthsAndWeaknesses' },
-  { label: '주요 경력 및 업무 강점', key: 'keyExperience' },
-  { label: '지원 동기 및 입사 포부', key: 'motivation' },
-];
-
 const ModernCoverLetterTemplate = React.forwardRef<HTMLDivElement, Props>(({ resumeName, data }, ref) => {
-  const { coverLetterData } = useCoverLetterStore();
+  const { coverLetterData, selectedCareerType } = useCoverLetterStore();
   const displayData = data ?? coverLetterData;
+  const copy = getCoverLetterCareerTypeCopy(selectedCareerType);
+  const sections: Array<{ label: string; key: keyof CoverLetterData }> = [
+    { label: copy.sections.growthProcess.modernDisplayLabel, key: 'growthProcess' },
+    { label: copy.sections.strengthsAndWeaknesses.modernDisplayLabel, key: 'strengthsAndWeaknesses' },
+    { label: copy.sections.keyExperience.modernDisplayLabel, key: 'keyExperience' },
+    { label: copy.sections.motivation.modernDisplayLabel, key: 'motivation' },
+  ];
 
   return (
     <Paper

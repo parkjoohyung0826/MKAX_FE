@@ -12,7 +12,7 @@ import { useResumeStore } from '../store';
 import { getResumeCareerTypeCopy } from '../careerTypeCopy';
 import CareerTypeSelectStep from './steps/CareerTypeSelectStep';
 import TemplateSelectStep from './steps/TemplateSelectStep';
-import { motion, useAnimation } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import ModeToggleBar from '@/shared/components/ModeToggleBar';
 
 import BasicInfoPanel from '@/features/resume/components/chat-panels/BasicInfoPanel';
@@ -22,6 +22,21 @@ import EducationPanel from '@/features/resume/components/chat-panels/EducationPa
 import WorkExperiencePanel from '@/features/resume/components/chat-panels/WorkExperiencePanel';
 
 type InputMode = 'direct' | 'ai';
+
+const stepSlideVariants = {
+  enter: (dir: number) => ({
+    opacity: 0,
+    x: dir >= 0 ? 32 : -32,
+  }),
+  center: {
+    opacity: 1,
+    x: 0,
+  },
+  exit: (dir: number) => ({
+    opacity: 0,
+    x: dir >= 0 ? -32 : 32,
+  }),
+};
 
 const baseConversationSteps: ConversationStep<ResumeData>[] = [
   {
@@ -124,7 +139,6 @@ const Resume = ({ onFinishResume }: Props) => {
   const contentStepIndex = Math.max(activeStep - 2, 0);
   const progressActiveStep = Math.min(Math.max(activeStep - 2, 0), progressSteps.length - 1);
   const aiChatRef = useRef<AIChatViewHandle | null>(null);
-  const transitionControls = useAnimation();
   const isContentStep = !isTypeStep && !isTemplateStep && !isFinalStep;
   const [persistentContentStepIndex, setPersistentContentStepIndex] = useState(0);
 
@@ -133,17 +147,6 @@ const Resume = ({ onFinishResume }: Props) => {
       setPersistentContentStepIndex(contentStepIndex);
     }
   }, [contentStepIndex, isContentStep]);
-
-  useEffect(() => {
-    transitionControls.set({
-      opacity: 1,
-    });
-    transitionControls.start({
-      x: 0,
-      opacity: 1,
-      transition: { duration: 0.16, ease: 'linear' },
-    });
-  }, [activeStep, direction, transitionControls]);
 
   const directCompletedSteps = [
     Boolean(selectedCareerType),
@@ -233,6 +236,9 @@ const Resume = ({ onFinishResume }: Props) => {
     );
   };
 
+  const showAiChatView = currentMode === 'ai' && isContentStep;
+  const showAnimatedPanel = !showAiChatView;
+
   return (
     <Box>
       {!isTypeStep && !isTemplateStep && !isFinalStep && (
@@ -246,13 +252,8 @@ const Resume = ({ onFinishResume }: Props) => {
         </Box>
       )}
       {renderModeToggle()}
-      <motion.div initial={false} animate={transitionControls}>
-        {isTypeStep && <CareerTypeSelectStep />}
-        {isTemplateStep && <TemplateSelectStep />}
-        {isFinalStep && <FinalReviewStep data={resumeData} />}
-
-        <Box sx={{ display: currentMode === 'ai' && isContentStep ? 'block' : 'none' }}>
-          <AIChatView
+      {showAiChatView ? (
+        <AIChatView
             ref={aiChatRef}
             activeStep={persistentContentStepIndex}
             steps={contentSteps}
@@ -342,15 +343,31 @@ const Resume = ({ onFinishResume }: Props) => {
             conversationSteps={resumeConversationSteps}
             resumeType={selectedCareerType ?? 'basic'}
           />
-        </Box>
-        <Box sx={{ display: currentMode === 'direct' && isContentStep ? 'block' : 'none' }}>
-          <ConversationalForm
-            activeStep={persistentContentStepIndex}
-            direction={direction}
-            steps={contentSteps}
-          />
-        </Box>
-      </motion.div>
+      ) : (
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={`${activeStep}-${currentMode}`}
+            custom={direction}
+            variants={stepSlideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+          >
+            {isTypeStep && <CareerTypeSelectStep />}
+            {isTemplateStep && <TemplateSelectStep />}
+            {isFinalStep && <FinalReviewStep data={resumeData} />}
+
+            <Box sx={{ display: currentMode === 'direct' && isContentStep ? 'block' : 'none' }}>
+              <ConversationalForm
+                activeStep={persistentContentStepIndex}
+                direction={direction}
+                steps={contentSteps}
+              />
+            </Box>
+          </motion.div>
+        </AnimatePresence>
+      )}
 
       <Box
         sx={{

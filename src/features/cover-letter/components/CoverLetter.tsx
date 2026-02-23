@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Box, Button } from '@mui/material';
 import { Alert, Snackbar } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -16,10 +16,7 @@ import ModeToggleBar from '@/shared/components/ModeToggleBar';
 
 import { CoverLetterData } from '../types';
 import { useCoverLetterStore } from '../store';
-
-const coverLetterSteps = ['작성 유형 선택', '템플릿 선택', '성장과정', '성격의 장단점', '주요 경력 및 업무 강점', '지원 동기 및 포부', '최종 검토'];
-const contentSteps = coverLetterSteps.slice(2, -1);
-const progressSteps = coverLetterSteps.slice(2, -1);
+import { coverLetterSectionOrder, getCoverLetterCareerTypeCopy } from '../careerTypeCopy';
 
 type InputMode = 'ai' | 'direct';
 
@@ -38,37 +35,6 @@ const stepSlideVariants = {
   }),
 };
 
-const coverLetterConversationSteps: ConversationStep<CoverLetterData>[] = [
-  {
-    title: '성장과정',
-    panel: (data) => <QuestionPanel data={data} section="growthProcess" title="성장과정" />,
-    fields: [
-      { field: 'growthProcess', question: '훌륭해요! 자기소개서 작성을 시작해볼까요?\n첫 번째로, 당신의 성장과정에 대해 알려주세요. 어떤 경험이 지금의 당신을 만들었나요?' },
-    ]
-  },
-  {
-    title: '성격의 장단점',
-    panel: (data) => <QuestionPanel data={data} section="strengthsAndWeaknesses" title="성격의 장단점" />,
-    fields: [
-      { field: 'strengthsAndWeaknesses', question: '좋습니다. 다음으로 당신의 성격적인 장점과 단점에 대해 솔직하게 이야기해주세요.' },
-    ]
-  },
-  {
-    title: '주요 경력 및 업무 강점',
-    panel: (data) => <QuestionPanel data={data} section="keyExperience" title="주요 경력 및 업무 강점" />,
-    fields: [
-      { field: 'keyExperience', question: '이제 당신의 핵심 역량을 보여줄 차례입니다.\n가장 자신있는 주요 경력이나 업무 강점에 대해 구체적인 경험을 바탕으로 설명해주세요.' },
-    ]
-  },
-  {
-    title: '지원 동기 및 포부',
-    panel: (data) => <QuestionPanel data={data} section="motivation" title="지원 동기 및 포부" />,
-    fields: [
-      { field: 'motivation', question: '거의 다 왔어요! 마지막으로 이 회사, 그리고 이 직무에 지원하는 동기는 무엇인가요?\n입사 후 어떤 목표를 이루고 싶으신가요?' },
-    ]
-  },
-];
-
 interface Props {
   handleGenerate: () => void | Promise<void>;
   isGenerating: boolean;
@@ -83,6 +49,52 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const aiChatRef = useRef<AIChatViewHandle | null>(null);
+  const copy = useMemo(() => getCoverLetterCareerTypeCopy(selectedCareerType), [selectedCareerType]);
+  const contentSteps = useMemo(
+    () => coverLetterSectionOrder.map((sectionId) => copy.sections[sectionId].stepLabel),
+    [copy],
+  );
+  const progressSteps = contentSteps;
+  const coverLetterSteps = useMemo(
+    () => ['작성 유형 선택', '템플릿 선택', ...contentSteps, '최종 검토'],
+    [contentSteps],
+  );
+  const coverLetterConversationSteps = useMemo<ConversationStep<CoverLetterData>[]>(() => [
+    {
+      title: copy.sections.growthProcess.stepLabel,
+      panel: (data) => <QuestionPanel data={data} section="growthProcess" title={copy.sections.growthProcess.panelTitle} />,
+      fields: [
+        { field: 'growthProcess', question: copy.sections.growthProcess.chatQuestion },
+      ]
+    },
+    {
+      title: copy.sections.strengthsAndWeaknesses.stepLabel,
+      panel: (data) => (
+        <QuestionPanel
+          data={data}
+          section="strengthsAndWeaknesses"
+          title={copy.sections.strengthsAndWeaknesses.panelTitle}
+        />
+      ),
+      fields: [
+        { field: 'strengthsAndWeaknesses', question: copy.sections.strengthsAndWeaknesses.chatQuestion },
+      ]
+    },
+    {
+      title: copy.sections.keyExperience.stepLabel,
+      panel: (data) => <QuestionPanel data={data} section="keyExperience" title={copy.sections.keyExperience.panelTitle} />,
+      fields: [
+        { field: 'keyExperience', question: copy.sections.keyExperience.chatQuestion },
+      ]
+    },
+    {
+      title: copy.sections.motivation.stepLabel,
+      panel: (data) => <QuestionPanel data={data} section="motivation" title={copy.sections.motivation.panelTitle} />,
+      fields: [
+        { field: 'motivation', question: copy.sections.motivation.chatQuestion },
+      ]
+    },
+  ], [copy]);
 
   const coverLetterCompletedSteps = [
     Boolean(selectedCareerType),
