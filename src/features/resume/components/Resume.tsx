@@ -141,12 +141,19 @@ const Resume = ({ onFinishResume }: Props) => {
   const aiChatRef = useRef<AIChatViewHandle | null>(null);
   const isContentStep = !isTypeStep && !isTemplateStep && !isFinalStep;
   const [persistentContentStepIndex, setPersistentContentStepIndex] = useState(0);
+  const [shouldPersistAiChat, setShouldPersistAiChat] = useState(false);
 
   useEffect(() => {
     if (isContentStep) {
       setPersistentContentStepIndex(contentStepIndex);
     }
   }, [contentStepIndex, isContentStep]);
+
+  useEffect(() => {
+    if (isContentStep) {
+      setShouldPersistAiChat(true);
+    }
+  }, [isContentStep]);
 
   const directCompletedSteps = [
     Boolean(selectedCareerType),
@@ -237,6 +244,7 @@ const Resume = ({ onFinishResume }: Props) => {
   };
 
   const showAiChatView = currentMode === 'ai' && isContentStep;
+  const showNonAiPanel = !showAiChatView;
 
   return (
     <Box>
@@ -251,99 +259,103 @@ const Resume = ({ onFinishResume }: Props) => {
         </Box>
       )}
       {renderModeToggle()}
-      {showAiChatView ? (
-        <AIChatView
-            ref={aiChatRef}
-            activeStep={persistentContentStepIndex}
-            steps={contentSteps}
-            onStepComplete={() => {
-              setIsStepComplete(true);
-              setAiCompletedSteps((prev) => ({ ...prev, [activeStep]: true }));
-            }}
-            onResetChat={async (args) => {
-              const sections = args?.sections?.length
-                ? args.sections
-                : args?.section
-                  ? [args.section]
-                  : [];
-              if (sections.length === 0) return;
-              await Promise.all(
-                sections.map((section) =>
-                  fetch('/api/recommend/chat/reset', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ section }),
-                  })
-                )
-              );
-            }}
-            onFieldsReset={(fields) => {
-              fields.forEach((field) => {
+      {shouldPersistAiChat && (
+        <Box sx={{ display: showAiChatView ? 'block' : 'none' }}>
+          <AIChatView
+              ref={aiChatRef}
+              activeStep={persistentContentStepIndex}
+              steps={contentSteps}
+              onStepComplete={() => {
+                setIsStepComplete(true);
+                setAiCompletedSteps((prev) => ({ ...prev, [activeStep]: true }));
+              }}
+              onResetChat={async (args) => {
+                const sections = args?.sections?.length
+                  ? args.sections
+                  : args?.section
+                    ? [args.section]
+                    : [];
+                if (sections.length === 0) return;
+                await Promise.all(
+                  sections.map((section) =>
+                    fetch('/api/recommend/chat/reset', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      credentials: 'include',
+                      body: JSON.stringify({ section }),
+                    })
+                  )
+                );
+              }}
+              onFieldsReset={(fields) => {
+                fields.forEach((field) => {
+                  if (field === 'education') {
+                    setResumeValidation({ education: false });
+                    setValidationLock({ education: false });
+                  }
+                  if (field === 'workExperience') {
+                    setResumeValidation({ workExperience: false });
+                    setValidationLock({ workExperience: false });
+                  }
+                  if (field === 'coreCompetencies') {
+                    setResumeValidation({ coreCompetencies: false });
+                    setValidationLock({ coreCompetencies: false });
+                  }
+                  if (field === 'certifications') {
+                    setResumeValidation({ certifications: false });
+                    setValidationLock({ certifications: false });
+                  }
+                });
+              }}
+              onFieldComplete={(field) => {
                 if (field === 'education') {
-                  setResumeValidation({ education: false });
-                  setValidationLock({ education: false });
+                  setResumeValidation({ education: true });
+                  setValidationLock({ education: true });
                 }
                 if (field === 'workExperience') {
-                  setResumeValidation({ workExperience: false });
-                  setValidationLock({ workExperience: false });
+                  setResumeValidation({ workExperience: true });
+                  setValidationLock({ workExperience: true });
                 }
                 if (field === 'coreCompetencies') {
-                  setResumeValidation({ coreCompetencies: false });
-                  setValidationLock({ coreCompetencies: false });
+                  setResumeValidation({ coreCompetencies: true });
+                  setValidationLock({ coreCompetencies: true });
                 }
                 if (field === 'certifications') {
-                  setResumeValidation({ certifications: false });
-                  setValidationLock({ certifications: false });
+                  setResumeValidation({ certifications: true });
+                  setValidationLock({ certifications: true });
                 }
-              });
-            }}
-            onFieldComplete={(field) => {
-              if (field === 'education') {
-                setResumeValidation({ education: true });
-                setValidationLock({ education: true });
-              }
-              if (field === 'workExperience') {
-                setResumeValidation({ workExperience: true });
-                setValidationLock({ workExperience: true });
-              }
-              if (field === 'coreCompetencies') {
-                setResumeValidation({ coreCompetencies: true });
-                setValidationLock({ coreCompetencies: true });
-              }
-              if (field === 'certifications') {
-                setResumeValidation({ certifications: true });
-                setValidationLock({ certifications: true });
-              }
-            }}
-            hideResetButton
-            data={resumeData}
-            setData={(update) => {
-              setResumeData((prev) => (
-                typeof update === 'function'
-                  ? update(prev)
-                  : update
-              ));
-            }}
-            resetSectionMap={{
-              name: 'PROFILE',
-              englishName: 'PROFILE',
-              desiredJob: 'PROFILE',
-              dateOfBirth: 'PROFILE',
-              email: 'PROFILE',
-              phoneNumber: 'PROFILE',
-              address: 'PROFILE',
-              emergencyContact: 'PROFILE',
-              education: 'EDUCATION',
-              workExperience: 'CAREER',
-              coreCompetencies: 'ACTIVITY',
-              certifications: 'CERTIFICATION',
-            }}
-            conversationSteps={resumeConversationSteps}
-            resumeType={selectedCareerType ?? 'basic'}
-          />
-      ) : (
-        <AnimatePresence mode="wait" initial={false}>
+              }}
+              hideResetButton
+              data={resumeData}
+              setData={(update) => {
+                setResumeData((prev) => (
+                  typeof update === 'function'
+                    ? update(prev)
+                    : update
+                ));
+              }}
+              resetSectionMap={{
+                name: 'PROFILE',
+                englishName: 'PROFILE',
+                desiredJob: 'PROFILE',
+                dateOfBirth: 'PROFILE',
+                email: 'PROFILE',
+                phoneNumber: 'PROFILE',
+                address: 'PROFILE',
+                emergencyContact: 'PROFILE',
+                education: 'EDUCATION',
+                workExperience: 'CAREER',
+                coreCompetencies: 'ACTIVITY',
+                certifications: 'CERTIFICATION',
+              }}
+              conversationSteps={resumeConversationSteps}
+              resumeType={selectedCareerType ?? 'basic'}
+            />
+        </Box>
+      )}
+
+      <AnimatePresence mode="wait" initial={false}>
+        {showNonAiPanel && (
           <motion.div
             key={`${activeStep}-${currentMode}`}
             custom={direction}
@@ -365,8 +377,8 @@ const Resume = ({ onFinishResume }: Props) => {
               />
             </Box>
           </motion.div>
-        </AnimatePresence>
-      )}
+        )}
+      </AnimatePresence>
 
       <Box
         sx={{

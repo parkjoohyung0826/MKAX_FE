@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Button } from '@mui/material';
 import { Alert, Snackbar } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -159,6 +159,24 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
   const currentMode = stepInputModes[activeStep] || 'ai';
   const contentStepIndex = Math.max(activeStep - 2, 0);
   const progressActiveStep = Math.min(Math.max(activeStep - 2, 0), progressSteps.length - 1);
+  const isContentStep = !isTypeStep && !isTemplateStep && !isFinalStep;
+  const [persistentContentStepIndex, setPersistentContentStepIndex] = useState(0);
+  const [shouldPersistAiChat, setShouldPersistAiChat] = useState(false);
+
+  useEffect(() => {
+    if (isContentStep) {
+      setPersistentContentStepIndex(contentStepIndex);
+    }
+  }, [contentStepIndex, isContentStep]);
+
+  useEffect(() => {
+    if (isContentStep) {
+      setShouldPersistAiChat(true);
+    }
+  }, [isContentStep]);
+
+  const showAiChatView = currentMode === 'ai' && isContentStep;
+  const showNonAiPanel = !showAiChatView;
 
   return (
     <Box>
@@ -180,84 +198,88 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
           resetDisabled={currentMode !== 'ai'}
         />
       )}
+      {shouldPersistAiChat && (
+        <Box sx={{ display: showAiChatView ? 'block' : 'none' }}>
+          <AIChatView
+            ref={aiChatRef}
+            activeStep={persistentContentStepIndex}
+            steps={contentSteps}
+            onStepComplete={() => setIsStepComplete(true)}
+            onResetChat={async (args) => {
+              const sections = args?.sections?.length
+                ? args.sections
+                : args?.section
+                  ? [args.section]
+                  : [];
+              if (sections.length === 0) return;
+              await Promise.all(
+                sections.map((section) =>
+                  fetch('/api/cover-letter/chat/reset', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ section }),
+                  })
+                )
+              );
+            }}
+            data={coverLetterData}
+            setData={(update) => {
+              const newValues =
+                typeof update === 'function'
+                  ? update(coverLetterData)
+                  : update;
+              setCoverLetterData({ ...coverLetterData, ...newValues });
+            }}
+            conversationSteps={coverLetterConversationSteps}
+            hideResetButton
+            fieldApiConfigs={{
+              growthProcess: {
+                endpoint: coverLetterApiByMode[mode].growthProcess,
+                summaryField: 'growthProcessSummary',
+                resetSection: 'GROWTH_PROCESS',
+              },
+              strengthsAndWeaknesses: {
+                endpoint: coverLetterApiByMode[mode].strengthsAndWeaknesses,
+                summaryField: 'strengthsAndWeaknessesSummary',
+                resetSection: 'PERSONALITY',
+              },
+              keyExperience: {
+                endpoint: coverLetterApiByMode[mode].keyExperience,
+                summaryField: 'keyExperienceSummary',
+                resetSection: 'CAREER_STRENGTH',
+              },
+              motivation: {
+                endpoint: coverLetterApiByMode[mode].motivation,
+                summaryField: 'motivationSummary',
+                resetSection: 'MOTIVATION_ASPIRATION',
+              },
+            }}
+          />
+        </Box>
+      )}
       <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          custom={direction}
-          variants={stepSlideVariants}
-          key={activeStep}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{ duration: 0.25, ease: 'easeOut' }}
-        >
-          {isTypeStep && <CareerTypeSelectStep />}
-          {isTemplateStep && <CoverLetterTemplateSelectStep />}
-          {isFinalStep && <FinalReviewStep />}
-          <Box sx={{ display: currentMode === 'ai' ? (isFinalStep || isTemplateStep || isTypeStep ? 'none' : 'block') : 'none' }}>
-            <AIChatView
-                ref={aiChatRef}
-                activeStep={contentStepIndex}
-                steps={contentSteps}
-                onStepComplete={() => setIsStepComplete(true)}
-                onResetChat={async (args) => {
-                  const sections = args?.sections?.length
-                    ? args.sections
-                    : args?.section
-                      ? [args.section]
-                      : [];
-                  if (sections.length === 0) return;
-                  await Promise.all(
-                    sections.map((section) =>
-                      fetch('/api/cover-letter/chat/reset', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
-                        body: JSON.stringify({ section }),
-                      })
-                    )
-                  );
-                }}
-                data={coverLetterData}
-                setData={(update) => {
-                  const newValues =
-                    typeof update === 'function'
-                      ? update(coverLetterData)
-                      : update;
-                  setCoverLetterData({ ...coverLetterData, ...newValues });
-                }}
-                conversationSteps={coverLetterConversationSteps}
-                hideResetButton
-                fieldApiConfigs={{
-                  growthProcess: {
-                    endpoint: coverLetterApiByMode[mode].growthProcess,
-                    summaryField: 'growthProcessSummary',
-                    resetSection: 'GROWTH_PROCESS',
-                  },
-                  strengthsAndWeaknesses: {
-                    endpoint: coverLetterApiByMode[mode].strengthsAndWeaknesses,
-                    summaryField: 'strengthsAndWeaknessesSummary',
-                    resetSection: 'PERSONALITY',
-                  },
-                  keyExperience: {
-                    endpoint: coverLetterApiByMode[mode].keyExperience,
-                    summaryField: 'keyExperienceSummary',
-                    resetSection: 'CAREER_STRENGTH',
-                  },
-                  motivation: {
-                    endpoint: coverLetterApiByMode[mode].motivation,
-                    summaryField: 'motivationSummary',
-                    resetSection: 'MOTIVATION_ASPIRATION',
-                  },
-                }}
-            />
-          </Box>
-          <Box sx={{ display: currentMode === 'direct' ? (isFinalStep || isTemplateStep || isTypeStep ? 'none' : 'block') : 'none' }}>
-            <CoverLetterDirectInputStep
-                activeStep={contentStepIndex}
-                isGenerating={isGenerating}
-            />
-          </Box>
-        </motion.div>
+        {showNonAiPanel && (
+          <motion.div
+            custom={direction}
+            variants={stepSlideVariants}
+            key={`${activeStep}-${currentMode}`}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+          >
+            {isTypeStep && <CareerTypeSelectStep />}
+            {isTemplateStep && <CoverLetterTemplateSelectStep />}
+            {isFinalStep && <FinalReviewStep />}
+            <Box sx={{ display: currentMode === 'direct' ? (isFinalStep || isTemplateStep || isTypeStep ? 'none' : 'block') : 'none' }}>
+              <CoverLetterDirectInputStep
+                  activeStep={contentStepIndex}
+                  isGenerating={isGenerating}
+              />
+            </Box>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 6, pt: 3, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
