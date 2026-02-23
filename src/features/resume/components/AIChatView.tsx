@@ -9,6 +9,7 @@ import ChatInputBar from './ai-chat/ChatInputBar';
 import PreviewFab from './ai-chat/PreviewFab';
 import PreviewDrawer from './ai-chat/PreviewDrawer';
 import { ChatMessage } from './ai-chat/types';
+import { resumeApiByMode } from '@/shared/constants/careerModeApi';
 
 const mainContainerSx = {
   height: '75vh',
@@ -364,12 +365,8 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
             : currentField === 'workExperience'
               ? '/api/recommend/career'
               : currentField === 'coreCompetencies'
-                ? resumeType === 'senior'
-                  ? '/api/recommend/senior-training'
-                  : '/api/recommend/activity'
-                : resumeType === 'senior'
-                  ? '/api/recommend/senior-license-skill'
-                  : '/api/recommend/certification';
+                ? resumeApiByMode[resumeType].activity
+                : resumeApiByMode[resumeType].certification;
         const body = isProfileStep
           ? { description: userInput }
           : currentField === 'education'

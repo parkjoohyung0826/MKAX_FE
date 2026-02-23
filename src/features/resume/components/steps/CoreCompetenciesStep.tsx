@@ -7,13 +7,12 @@ import { useResumeStore } from '../../store';
 import { getResumeCareerTypeCopy } from '../../careerTypeCopy';
 import ResumeAssistantTextSection from './AssistantTextSection';
 import StepHeader from './StepHeader';
+import { resumeApiByMode, toCareerMode } from '@/shared/constants/careerModeApi';
 
 const CoreCompetenciesStep = () => {
   const { resumeData, setResumeData, setResumeValidation, validationLock, setValidationLock, selectedCareerType } = useResumeStore();
   const copy = getResumeCareerTypeCopy(selectedCareerType);
-  const activityEndpoint = selectedCareerType === 'senior'
-    ? '/api/recommend/senior-training'
-    : '/api/recommend/activity';
+  const activityEndpoint = resumeApiByMode[toCareerMode(selectedCareerType)].activity;
 
   const submitCoreCompetencies = async (
     text: string

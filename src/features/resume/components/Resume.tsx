@@ -237,7 +237,6 @@ const Resume = ({ onFinishResume }: Props) => {
   };
 
   const showAiChatView = currentMode === 'ai' && isContentStep;
-  const showAnimatedPanel = !showAiChatView;
 
   return (
     <Box>

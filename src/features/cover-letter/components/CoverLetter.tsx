@@ -17,6 +17,7 @@ import ModeToggleBar from '@/shared/components/ModeToggleBar';
 import { CoverLetterData } from '../types';
 import { useCoverLetterStore } from '../store';
 import { coverLetterSectionOrder, getCoverLetterCareerTypeCopy } from '../careerTypeCopy';
+import { coverLetterApiByMode, toCareerMode } from '@/shared/constants/careerModeApi';
 
 type InputMode = 'ai' | 'direct';
 
@@ -49,6 +50,7 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const aiChatRef = useRef<AIChatViewHandle | null>(null);
+  const mode = toCareerMode(selectedCareerType);
   const copy = useMemo(() => getCoverLetterCareerTypeCopy(selectedCareerType), [selectedCareerType]);
   const contentSteps = useMemo(
     () => coverLetterSectionOrder.map((sectionId) => copy.sections[sectionId].stepLabel),
@@ -227,22 +229,22 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
                 hideResetButton
                 fieldApiConfigs={{
                   growthProcess: {
-                    endpoint: '/api/cover-letter/growth-process',
+                    endpoint: coverLetterApiByMode[mode].growthProcess,
                     summaryField: 'growthProcessSummary',
                     resetSection: 'GROWTH_PROCESS',
                   },
                   strengthsAndWeaknesses: {
-                    endpoint: '/api/cover-letter/personality',
+                    endpoint: coverLetterApiByMode[mode].strengthsAndWeaknesses,
                     summaryField: 'strengthsAndWeaknessesSummary',
                     resetSection: 'PERSONALITY',
                   },
                   keyExperience: {
-                    endpoint: '/api/cover-letter/career-strength',
+                    endpoint: coverLetterApiByMode[mode].keyExperience,
                     summaryField: 'keyExperienceSummary',
                     resetSection: 'CAREER_STRENGTH',
                   },
                   motivation: {
-                    endpoint: '/api/cover-letter/motivation-aspiration',
+                    endpoint: coverLetterApiByMode[mode].motivation,
                     summaryField: 'motivationSummary',
                     resetSection: 'MOTIVATION_ASPIRATION',
                   },
