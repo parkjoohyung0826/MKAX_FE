@@ -29,3 +29,4 @@ export const coverLetterApiByMode = {
   },
 } as const;
 
+export const coverLetterDraftApi = '/api/cover-letter/draft' as const;

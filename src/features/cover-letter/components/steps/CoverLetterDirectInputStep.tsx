@@ -19,6 +19,7 @@ import WritingGuide from '../cover-letter/WritingGuide';
 import { CoverLetterData } from '../../types';
 import { useCoverLetterStore } from '../../store';
 import { coverLetterSectionOrder, getCoverLetterCareerTypeCopy } from '../../careerTypeCopy';
+import { coverLetterDraftApi, toCareerMode } from '@/shared/constants/careerModeApi';
 
 /* ================= 스타일 ================= */
 
@@ -98,6 +99,7 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
   const [toastSeverity, setToastSeverity] = useState<'success' | 'error'>(
     'success'
   );
+  const mode = toCareerMode(selectedCareerType);
   const copy = getCoverLetterCareerTypeCopy(selectedCareerType);
   const coverLetterSections = coverLetterSectionOrder.map((sectionId) => ({
     id: sectionId,
@@ -144,12 +146,13 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
 
       setIsGenerating(true);
 
-      const res = await fetch('/api/cover-letter/draft', {
+      const res = await fetch(coverLetterDraftApi, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           section: backendSection,
           userInput: prompt,
+          mode,
         }),
       });
 
