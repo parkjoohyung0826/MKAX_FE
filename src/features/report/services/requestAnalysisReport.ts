@@ -1,5 +1,6 @@
 import { ResumeFormatResult } from '@/features/resume/types';
 import { CoverLetterData } from '@/features/cover-letter/types';
+import { requestJson } from './http';
 
 type AnalysisReportPayload = {
   resume: ResumeFormatResult;
@@ -18,10 +19,5 @@ export async function requestAnalysisReport(payload: AnalysisReportPayload) {
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.message ?? '분석 리포트 요청 실패');
-  }
-
-  return res.json();
+  return requestJson(res, { fallbackMessage: '분석 리포트 요청 실패' });
 }

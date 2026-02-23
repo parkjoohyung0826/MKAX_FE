@@ -1,3 +1,5 @@
+import { requestJson } from './http';
+
 export async function requestArchiveDelete(code: string) {
   const res = await fetch('/api/archive/delete', {
     method: 'POST',
@@ -6,10 +8,5 @@ export async function requestArchiveDelete(code: string) {
     body: JSON.stringify({ code }),
   });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.message ?? '삭제 요청 실패');
-  }
-
-  return res.json();
+  return requestJson(res, { fallbackMessage: '삭제 요청 실패' });
 }

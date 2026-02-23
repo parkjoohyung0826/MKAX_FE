@@ -1,5 +1,6 @@
 import { JobPosting } from '../types';
 import { mapMatchedRecruitmentsToJobPostings } from './fetchMatchedRecruitments';
+import { requestJson } from './http';
 
 type RecruitmentsApiResponse = {
   items?: any[];
@@ -71,12 +72,9 @@ export async function fetchRecruitments(
     credentials: 'include',
   });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.message ?? '전체 채용 공고 조회 실패');
-  }
-
-  const raw: RecruitmentsApiResponse = await res.json();
+  const raw = await requestJson<RecruitmentsApiResponse>(res, {
+    fallbackMessage: '전체 채용 공고 조회 실패',
+  });
   const envelope = extractEnvelope(raw);
   const rawItems = Array.isArray(envelope.items) ? envelope.items : [];
 
@@ -106,12 +104,9 @@ export async function fetchRecruitmentFilterOptions(
     credentials: 'include',
   });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.message ?? '필터 옵션 조회 실패');
-  }
-
-  const raw = (await res.json()) as Partial<RecruitmentFilterOptions>;
+  const raw = await requestJson<Partial<RecruitmentFilterOptions>>(res, {
+    fallbackMessage: '필터 옵션 조회 실패',
+  });
   return {
     regions: Array.isArray(raw.regions) ? raw.regions : [],
     fields: Array.isArray(raw.fields) ? raw.fields : [],

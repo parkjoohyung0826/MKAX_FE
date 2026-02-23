@@ -125,7 +125,7 @@ const AppShell = ({ children, showParticles = false }: Props) => {
             <Box
               display="flex"
               alignItems="center"
-              onClick={() => router.push('/resume')}
+              onClick={() => window.location.reload()}
               sx={{
                 cursor: 'pointer',
                 borderRadius: '999px',

@@ -1,4 +1,5 @@
 import { JobPosting } from '../types';
+import { requestJson } from './http';
 
 type MatchedRecruitmentItem = {
   recrutPblntSn?: number;
@@ -100,12 +101,9 @@ export async function fetchMatchedRecruitments(
     body: JSON.stringify({ code, offset, limit }),
   });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.message ?? '채용 공고 조회 실패');
-  }
-
-  const raw = await res.json();
+  const raw = await requestJson<unknown>(res, {
+    fallbackMessage: '채용 공고 조회 실패',
+  });
   const items = extractMatchedItems(raw);
   const top = raw && typeof raw === 'object' ? (raw as Record<string, any>) : {};
   const envelope =
