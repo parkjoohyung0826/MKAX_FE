@@ -99,9 +99,9 @@ const AppShell = ({ children, showParticles = false }: Props) => {
         minHeight: '100vh',
         overflow: 'hidden',
         backgroundImage: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-        backgroundAttachment: 'fixed',
+        backgroundAttachment: { xs: 'scroll', sm: 'fixed' },
         backgroundRepeat: 'no-repeat',
-        backgroundSize: '100% 100vh',
+        backgroundSize: { xs: '100% 100%', sm: '100% 100vh' },
       }}
     >
       {showParticles &&

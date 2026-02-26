@@ -11,8 +11,10 @@ import {
   Tooltip,
   Snackbar,
   Alert,
+  useMediaQuery,
 } from '@mui/material';
 import { AutoAwesome, HelpOutline } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 import CustomModal from '@/shared/components/CustomModal';
 import ConversationalAssistant from '@/shared/components/ConversationalAssistant';
 import WritingGuide from '../cover-letter/WritingGuide';
@@ -89,6 +91,8 @@ interface Props {
 /* ================= Component ================= */
 
 const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { coverLetterData, setCoverLetterData, selectedCareerType } = useCoverLetterStore();
   const [isGuideModalOpen, setGuideModalOpen] = useState(false);
   const [isAIModalOpen, setAIModalOpen] = useState(false);
@@ -201,28 +205,32 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
           sx={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'flex-start',
+            alignItems: isMobile ? 'stretch' : 'flex-start',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: isMobile ? 1.25 : 0,
             mb: 3,
           }}
         >
           <Box>
             <Typography
               variant="h6"
-              sx={{ fontWeight: 700, color: '#334155', mb: 0.5 }}
+              sx={{ fontWeight: 700, color: '#334155', mb: 0.5, fontSize: { xs: '1rem', sm: '1.25rem' } }}
             >
               {section.label}
             </Typography>
-            <Typography variant="body2" sx={{ color: '#94a3b8' }}>
+            <Typography variant="body2" sx={{ color: '#94a3b8', fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
               {section.desc}
             </Typography>
           </Box>
 
-          <Stack direction="row" spacing={1}>
+          <Stack direction="row" spacing={1} justifyContent={isMobile ? 'flex-start' : 'flex-end'} flexWrap="wrap" useFlexGap>
             <Tooltip title="작성 가이드 보기">
               <IconButton
                 onClick={() => handleGuideClick(section.id)}
                 sx={{
                   color: '#94a3b8',
+                  width: { xs: 34, sm: 40 },
+                  height: { xs: 34, sm: 40 },
                   '&:hover': {
                     color: '#2563EB',
                     bgcolor: 'rgba(37,99,235,0.05)',
@@ -241,6 +249,16 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
               disabled={isGenerating}
               sx={{
                 ...actionButtonSx,
+                borderRadius: isMobile ? '10px' : '12px',
+                px: isMobile ? 1.2 : 2,
+                py: isMobile ? 0.35 : undefined,
+                minHeight: isMobile ? 34 : undefined,
+                fontSize: isMobile ? '0.78rem' : '0.875rem',
+                whiteSpace: 'nowrap',
+                '& .MuiButton-startIcon': {
+                  mr: isMobile ? 0.5 : undefined,
+                  '& svg': { fontSize: isMobile ? '1rem' : '1.1rem' },
+                },
                 borderColor: 'rgba(37, 99, 235, 0.3)',
                 color: '#2563EB',
                 bgcolor: 'rgba(255,255,255,0.5)',
@@ -250,7 +268,7 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
                 },
               }}
             >
-              AI 초안 작성
+              {isMobile ? 'AI 초안' : 'AI 초안 작성'}
             </Button>
           </Stack>
         </Box>
