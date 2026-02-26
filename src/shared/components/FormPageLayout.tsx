@@ -85,7 +85,13 @@ const FormPageLayout = ({ activeTab, onTabChange, children, isLoading = false, l
                 variant="fullWidth"
                 sx={{
                   '& .MuiTabs-indicator': { height: 4, borderRadius: 2, background: '#2563EB' },
-                  '& .MuiTab-root': { py: 4, fontSize: '1rem', fontWeight: 700, color: '#64748b' },
+                  '& .MuiTab-root': {
+                    py: { xs: 2.1, sm: 4 },
+                    minHeight: { xs: 50, sm: 'auto' },
+                    fontSize: { xs: '0.82rem', sm: '1rem' },
+                    fontWeight: 700,
+                    color: '#64748b',
+                  },
                   '& .Mui-selected': { color: '#2563EB !important' },
                 }}
               >
