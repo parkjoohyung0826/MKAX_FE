@@ -1,16 +1,19 @@
 'use client';
 
-import React, { ReactNode, useEffect } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import {
   AppBar,
   Box,
   Button,
   Container,
+  Drawer,
+  IconButton,
+  Stack,
   Typography,
   useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { AutoAwesome } from '@mui/icons-material';
+import { CloseRounded, MenuRounded } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCoverLetterStore } from '@/features/cover-letter/store';
@@ -38,6 +41,7 @@ interface Props {
 const AppShell = ({ children, showParticles = false }: Props) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const isResumePage = pathname === '/resume';
@@ -72,6 +76,21 @@ const AppShell = ({ children, showParticles = false }: Props) => {
       }).catch(() => undefined),
     ]);
   }, [pathname, resetCoverLetterData, resetResultData, resetResumeData]);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
+  const navItems = [
+    { path: '/resume', label: '문서 작성', shortLabel: '작성', active: isResumePage },
+    { path: '/report-only', label: 'AI 리포트', shortLabel: '리포트', active: isReportOnlyPage },
+    { path: '/recruitments', label: '채용 공고', shortLabel: '채용', active: isRecruitmentsPage },
+    { path: '/documents', label: '문서 조회', shortLabel: '조회', active: isDocumentsPage },
+  ] as const;
+
+  const handleMove = (path: string) => {
+    router.push(path);
+  };
 
   return (
     <Box
@@ -125,7 +144,9 @@ const AppShell = ({ children, showParticles = false }: Props) => {
             <Box
               display="flex"
               alignItems="center"
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                window.location.href = '/resume';
+              }}
               sx={{
                 cursor: 'pointer',
                 borderRadius: '999px',
@@ -144,76 +165,98 @@ const AppShell = ({ children, showParticles = false }: Props) => {
               </Typography>
             </Box>
 
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                onClick={() => router.push('/resume')}
+            {isMobile ? (
+              <IconButton
+                aria-label="메뉴 열기"
+                onClick={() => setIsMobileMenuOpen(true)}
                 sx={{
-                  color: isResumePage ? '#2563EB' : '#64748b',
-                  fontWeight: 700,
-                  borderRadius: '20px',
-                  px: 2.5,
-                  bgcolor: isResumePage ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
-                  '&:hover': {
-                    backgroundColor: 'rgba(37, 99, 235, 0.12)',
-                    color: '#2563EB',
-                  },
+                  color: '#334155',
+                  border: '1px solid rgba(148, 163, 184, 0.25)',
+                  bgcolor: 'rgba(255,255,255,0.7)',
+                  '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.08)' },
                 }}
               >
-                {isMobile ? '작성' : '문서 작성'}
-              </Button>
-              
-              <Button
-                onClick={() => router.push('/report-only')}
-                sx={{
-                  color: isReportOnlyPage ? '#2563EB' : '#64748b',
-                  fontWeight: 700,
-                  borderRadius: '20px',
-                  px: 2.5,
-                  bgcolor: isReportOnlyPage ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
-                  '&:hover': {
-                    backgroundColor: 'rgba(37, 99, 235, 0.12)',
-                    color: '#2563EB',
-                  },
-                }}
-              >
-                {isMobile ? '리포트' : 'AI 리포트'}
-              </Button>
-              <Button
-                onClick={() => router.push('/recruitments')}
-                sx={{
-                  color: isRecruitmentsPage ? '#2563EB' : '#64748b',
-                  fontWeight: 700,
-                  borderRadius: '20px',
-                  px: 2.5,
-                  bgcolor: isRecruitmentsPage ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
-                  '&:hover': {
-                    backgroundColor: 'rgba(37, 99, 235, 0.12)',
-                    color: '#2563EB',
-                  },
-                }}
-              >
-                {isMobile ? '채용' : '채용 공고'}
-              </Button>
-              <Button
-                onClick={() => router.push('/documents')}
-                sx={{
-                  color: isDocumentsPage ? '#2563EB' : '#64748b',
-                  fontWeight: 700,
-                  borderRadius: '20px',
-                  px: 2.5,
-                  bgcolor: isDocumentsPage ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
-                  '&:hover': {
-                    backgroundColor: 'rgba(37, 99, 235, 0.12)',
-                    color: '#2563EB',
-                  },
-                }}
-              >
-                {isMobile ? '조회' : '문서 조회'}
-              </Button>
-            </Box>
+                <MenuRounded />
+              </IconButton>
+            ) : (
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                {navItems.map((item) => (
+                  <Button
+                    key={item.path}
+                    onClick={() => handleMove(item.path)}
+                    sx={{
+                      color: item.active ? '#2563EB' : '#64748b',
+                      fontWeight: 700,
+                      borderRadius: '20px',
+                      px: 2.5,
+                      bgcolor: item.active ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
+                      '&:hover': {
+                        backgroundColor: 'rgba(37, 99, 235, 0.12)',
+                        color: '#2563EB',
+                      },
+                    }}
+                  >
+                    {item.label}
+                  </Button>
+                ))}
+              </Box>
+            )}
           </Box>
         </Container>
       </AppBar>
+
+      <Drawer
+        anchor="right"
+        open={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        PaperProps={{
+          sx: {
+            width: '82vw',
+            maxWidth: 320,
+            p: 2,
+            background: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(16px)',
+          },
+        }}
+      >
+        <Stack spacing={2}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 0.5 }}>
+            <Typography sx={{ fontWeight: 800, color: '#1e293b' }}>메뉴</Typography>
+            <IconButton
+              aria-label="메뉴 닫기"
+              onClick={() => setIsMobileMenuOpen(false)}
+              sx={{ color: '#64748b' }}
+            >
+              <CloseRounded />
+            </IconButton>
+          </Box>
+
+          <Stack spacing={1}>
+            {navItems.map((item) => (
+              <Button
+                key={item.path}
+                fullWidth
+                onClick={() => handleMove(item.path)}
+                sx={{
+                  justifyContent: 'flex-start',
+                  color: item.active ? '#2563EB' : '#334155',
+                  fontWeight: 700,
+                  borderRadius: '14px',
+                  px: 2,
+                  py: 1.2,
+                  bgcolor: item.active ? 'rgba(37, 99, 235, 0.1)' : 'transparent',
+                  border: item.active ? '1px solid rgba(37, 99, 235, 0.18)' : '1px solid transparent',
+                  '&:hover': {
+                    bgcolor: 'rgba(37, 99, 235, 0.08)',
+                  },
+                }}
+              >
+                {item.label}
+              </Button>
+            ))}
+          </Stack>
+        </Stack>
+      </Drawer>
 
       <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1, pt: 15, pb: 8 }}>
         {children}
