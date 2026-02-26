@@ -157,11 +157,17 @@ const DocumentsPage = () => {
         data.analysis_report_source_type ??
         (resumeUrl || coverLetterUrl ? 'pdf' : 'json');
       let matchedItems = extractMatchedItems(data);
+      let recommendedJobPostingsMeta: ResultData['recommendedJobPostingsMeta'] | undefined;
 
       if (matchedItems.length === 0 && code) {
         try {
           const matchedRecruitments = await fetchMatchedRecruitments(code);
           matchedItems = Array.isArray(matchedRecruitments.items) ? matchedRecruitments.items : [];
+          recommendedJobPostingsMeta = {
+            nextOffset: matchedRecruitments.nextOffset,
+            hasMore: matchedRecruitments.hasMore,
+            prefetched: true,
+          };
         } catch (error) {
           console.error('[documents] 채용공고 재조회 실패', error);
         }
@@ -174,6 +180,7 @@ const DocumentsPage = () => {
         aiCoverLetter: normalizedCoverLetter ? toCoverLetterText(normalizedCoverLetter) : (data.coverLetter ?? ''),
         aiResumeSummary: `${data?.resume?.name ?? ''}님의 경력 분석...`,
         jobPostings: mappedJobPostings,
+        recommendedJobPostingsMeta,
         resumeData: data.resume ?? {},
         accessCode: code,
         analysisReport: data.analysisReport ?? null,

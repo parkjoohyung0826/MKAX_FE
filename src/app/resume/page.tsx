@@ -55,6 +55,7 @@ const ResumePage = () => {
 
       let analysisReport = null;
       let jobPostings = mockJobPostings;
+      let recommendedJobPostingsMeta: ResultData['recommendedJobPostingsMeta'];
       if (resume && code) {
         const coverLetterPayload = {
           growthProcess: coverLetterData.growthProcess,
@@ -73,6 +74,11 @@ const ResumePage = () => {
           ]);
           analysisReport = analysisResult;
           jobPostings = mapMatchedRecruitmentsToJobPostings(matchedRecruitments.items);
+          recommendedJobPostingsMeta = {
+            nextOffset: matchedRecruitments.nextOffset,
+            hasMore: matchedRecruitments.hasMore,
+            prefetched: true,
+          };
         } catch (error) {
           console.error(error);
         }
@@ -82,6 +88,7 @@ const ResumePage = () => {
         aiCoverLetter: coverLetter ?? `[AI 생성 자소서 예시]...`,
         aiResumeSummary: `${resumeData.name}님의 경력 분석...`,
         jobPostings,
+        recommendedJobPostingsMeta,
         resumeData: resume ?? resumeData,
         accessCode: code,
         analysisReport,

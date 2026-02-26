@@ -34,6 +34,11 @@ const sectionTitleSx = {
 interface Props {
   analysisReport?: AnalysisReport | null;
   jobPostings: JobPosting[];
+  recommendedJobPostingsMeta?: {
+    nextOffset: number;
+    hasMore: boolean;
+    prefetched: boolean;
+  };
   accessCode?: string;
 }
 
@@ -56,7 +61,12 @@ const resolveTextBlock = (value?: string | string[]) => {
   return value ?? '';
 };
 
-const CareerAnalysisReport = ({ analysisReport, jobPostings, accessCode }: Props) => {
+const CareerAnalysisReport = ({
+  analysisReport,
+  jobPostings,
+  recommendedJobPostingsMeta,
+  accessCode,
+}: Props) => {
   const [currentSection, setCurrentSection] = useState(0);
 
   const handleSectionChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -189,6 +199,7 @@ const CareerAnalysisReport = ({ analysisReport, jobPostings, accessCode }: Props
             <RecommendedJobPostingsTab
               code={accessCode}
               initialJobPostings={jobPostings}
+              initialMeta={recommendedJobPostingsMeta}
             />
           </Box>
         )}

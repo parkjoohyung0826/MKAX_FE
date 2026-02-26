@@ -9,6 +9,11 @@ import { fetchMatchedRecruitments, mapMatchedRecruitmentsToJobPostings } from '.
 interface RecommendedJobPostingsTabProps {
   code?: string;
   initialJobPostings: JobPosting[];
+  initialMeta?: {
+    nextOffset: number;
+    hasMore: boolean;
+    prefetched: boolean;
+  };
 }
 
 const PAGE_SIZE = 10;
@@ -33,10 +38,11 @@ const dedupeByWantedAuthNo = (prev: JobPosting[], next: JobPosting[]) => {
 const RecommendedJobPostingsTab: React.FC<RecommendedJobPostingsTabProps> = ({
   code,
   initialJobPostings,
+  initialMeta,
 }) => {
   const [items, setItems] = useState<JobPosting[]>(initialJobPostings);
-  const [nextOffset, setNextOffset] = useState(0);
-  const [hasMore, setHasMore] = useState(Boolean(code));
+  const [nextOffset, setNextOffset] = useState(initialMeta?.nextOffset ?? initialJobPostings.length);
+  const [hasMore, setHasMore] = useState(initialMeta?.hasMore ?? Boolean(code));
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -82,11 +88,14 @@ const RecommendedJobPostingsTab: React.FC<RecommendedJobPostingsTabProps> = ({
     if (initializedCodeRef.current === code) return;
     initializedCodeRef.current = code;
 
-    setNextOffset(0);
-    setHasMore(true);
-    setItems([]);
-    void fetchRecommended(0, true);
-  }, [code, fetchRecommended, initialJobPostings]);
+    setItems(initialJobPostings);
+    setNextOffset(initialMeta?.nextOffset ?? initialJobPostings.length);
+    setHasMore(initialMeta?.hasMore ?? true);
+
+    if (!initialMeta?.prefetched) {
+      void fetchRecommended(0, initialJobPostings.length === 0);
+    }
+  }, [code, fetchRecommended, initialJobPostings, initialMeta]);
 
   const loadMore = useCallback(() => {
     if (isLoading || !hasMore || !code) return;

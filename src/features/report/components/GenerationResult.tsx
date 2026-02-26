@@ -228,6 +228,7 @@ const GenerationResult = ({ data, onReset }: Props) => {
                 <CareerAnalysisReport
                   analysisReport={data.analysisReport}
                   jobPostings={data.jobPostings}
+                  recommendedJobPostingsMeta={data.recommendedJobPostingsMeta}
                   accessCode={data.accessCode}
                 />
               </Box>

@@ -138,7 +138,7 @@ const AppShell = ({ children, showParticles = false }: Props) => {
                 },
               }}
             >
-              <AutoAwesome sx={{ mr: 1.5, color: '#2563EB', fontSize: '1.8rem' }} />
+              {/* <AutoAwesome sx={{ mr: 1.5, color: '#2563EB', fontSize: '1.8rem' }} /> */}
               <Typography variant="h6" sx={{ fontWeight: 800, color: '#1e293b', letterSpacing: '-0.5px' }}>
                 Naeil<span style={{ color: '#2563EB' }}>Ro</span>
               </Typography>

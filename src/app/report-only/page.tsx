@@ -63,10 +63,16 @@ const ReportOnlyPage = () => {
         coverLetterFile ?? undefined
       );
       let jobPostings = mockJobPostings;
+      let recommendedJobPostingsMeta: ResultData['recommendedJobPostingsMeta'];
       if (code) {
         try {
           const matchedRecruitments = await fetchMatchedRecruitments(code);
           jobPostings = mapMatchedRecruitmentsToJobPostings(matchedRecruitments.items);
+          recommendedJobPostingsMeta = {
+            nextOffset: matchedRecruitments.nextOffset,
+            hasMore: matchedRecruitments.hasMore,
+            prefetched: true,
+          };
         } catch (error) {
           console.error(error);
         }
@@ -75,6 +81,7 @@ const ReportOnlyPage = () => {
         aiCoverLetter: '',
         aiResumeSummary: '',
         jobPostings,
+        recommendedJobPostingsMeta,
         resumeData: emptyResumeData,
         accessCode: code,
         analysisReport: report ?? null,

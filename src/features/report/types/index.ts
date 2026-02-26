@@ -79,6 +79,11 @@ export interface ResultData {
   aiCoverLetter: string;
   aiResumeSummary: string;
   jobPostings: JobPosting[];
+  recommendedJobPostingsMeta?: {
+    nextOffset: number;
+    hasMore: boolean;
+    prefetched: boolean;
+  };
   resumeData: ResumeData;
   accessCode?: string;
   analysisReport?: AnalysisReport | null;
