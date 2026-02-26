@@ -171,9 +171,10 @@ const AppShell = ({ children, showParticles = false }: Props) => {
                 onClick={() => setIsMobileMenuOpen(true)}
                 sx={{
                   color: '#334155',
-                  border: '1px solid rgba(148, 163, 184, 0.25)',
-                  bgcolor: 'rgba(255,255,255,0.7)',
-                  '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.08)' },
+                  border: 'none',
+                  bgcolor: 'transparent',
+                  borderRadius: 0,
+                  '&:hover': { bgcolor: 'transparent', color: '#2563EB' },
                 }}
               >
                 <MenuRounded />
