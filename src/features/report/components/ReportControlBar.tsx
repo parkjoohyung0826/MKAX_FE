@@ -11,6 +11,7 @@ import {
   ToggleButtonGroup,
   Tooltip,
   Typography,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Assessment,
@@ -23,6 +24,7 @@ import {
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 
 interface Props {
   activeTab: 'report' | 'resume' | 'coverLetter';
@@ -38,10 +40,11 @@ interface Props {
 const toggleBtnSx = {
   border: 'none',
   borderRadius: '50px !important',
-  px: { xs: 2, md: 3 },
-  py: 1,
-  mx: 0.5,
-  fontSize: '0.9rem',
+  px: { xs: 1.2, sm: 2, md: 3 },
+  py: { xs: 0.75, sm: 1 },
+  mx: { xs: 0.15, sm: 0.5 },
+  minHeight: { xs: 38, sm: 44 },
+  fontSize: { xs: '0.78rem', sm: '0.9rem' },
   fontWeight: 600,
   color: '#64748b',
   textTransform: 'none',
@@ -62,6 +65,8 @@ const toggleBtnSx = {
 };
 
 const ReportControlBar = ({ activeTab, onTabChange, accessCode, isDeleting, onRequestDelete }: Props) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [isCodeCopied, setIsCodeCopied] = useState(false);
   const [showCode, setShowCode] = useState(false);
 
@@ -83,14 +88,16 @@ const ReportControlBar = ({ activeTab, onTabChange, accessCode, isDeleting, onRe
         sx={{
           display: 'flex',
           flexDirection: { xs: 'column', md: 'row' },
-          alignItems: 'center',
-          p: 0.8,
-          borderRadius: '50px',
+          alignItems: { xs: 'stretch', md: 'center' },
+          width: { xs: '100%', sm: 'auto' },
+          maxWidth: { xs: '100%', md: 'none' },
+          p: { xs: 0.6, sm: 0.8 },
+          borderRadius: { xs: '20px', sm: '50px' },
           bgcolor: 'rgba(255,255,255,0.8)',
           backdropFilter: 'blur(12px)',
           border: '1px solid rgba(255,255,255,0.8)',
           boxShadow: '0 8px 32px rgba(31, 38, 135, 0.08)',
-          gap: { xs: 2, md: 0 },
+          gap: { xs: 1.2, md: 0 },
         }}
       >
         <ToggleButtonGroup
@@ -98,16 +105,24 @@ const ReportControlBar = ({ activeTab, onTabChange, accessCode, isDeleting, onRe
           exclusive
           onChange={onTabChange}
           aria-label="result tabs"
-          sx={{ bgcolor: 'transparent' }}
+          sx={{
+            bgcolor: 'transparent',
+            width: { xs: '100%', md: 'auto' },
+            display: { xs: 'grid', md: 'inline-flex' },
+            gridTemplateColumns: { xs: '1fr 1fr 1fr', md: 'unset' },
+            '& .MuiToggleButtonGroup-grouped': {
+              border: { xs: 'none', md: undefined },
+            },
+          }}
         >
           <ToggleButton value="report" sx={toggleBtnSx}>
-            <Assessment sx={{ mr: 1, fontSize: 18 }} /> 분석 리포트
+            {!isMobile && <Assessment sx={{ mr: 1, fontSize: 18 }} />} 분석 리포트
           </ToggleButton>
           <ToggleButton value="resume" sx={toggleBtnSx}>
-            <Description sx={{ mr: 1, fontSize: 18 }} /> 이력서
+            {!isMobile && <Description sx={{ mr: 1, fontSize: 18 }} />} 이력서
           </ToggleButton>
           <ToggleButton value="coverLetter" sx={toggleBtnSx}>
-            <Article sx={{ mr: 1, fontSize: 18 }} /> 자기소개서
+            {!isMobile && <Article sx={{ mr: 1, fontSize: 18 }} />} 자기소개서
           </ToggleButton>
         </ToggleButtonGroup>
 
@@ -126,10 +141,13 @@ const ReportControlBar = ({ activeTab, onTabChange, accessCode, isDeleting, onRe
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 1,
-              pl: { xs: 0, md: 1 },
-              pr: 2,
-              pb: { xs: 1, md: 0 },
+              justifyContent: { xs: 'space-between', md: 'flex-start' },
+              flexWrap: { xs: 'nowrap', md: 'wrap' },
+              gap: { xs: 0.6, sm: 1 },
+              pl: { xs: 0.6, md: 1 },
+              pr: { xs: 0.6, md: 2 },
+              pb: { xs: 0.35, md: 0 },
+              width: { xs: '100%', md: 'auto' },
             }}
           >
             <Box
@@ -137,10 +155,15 @@ const ReportControlBar = ({ activeTab, onTabChange, accessCode, isDeleting, onRe
                 display: 'flex',
                 alignItems: 'center',
                 bgcolor: '#f1f5f9',
-                borderRadius: '20px',
-                px: 1.5,
-                py: 0.5,
+                borderRadius: { xs: '16px', sm: '20px' },
+                px: { xs: 1.1, sm: 1.5 },
+                py: { xs: 0.35, sm: 0.5 },
                 border: '1px solid #e2e8f0',
+                width: { xs: 'auto', sm: 'fit-content' },
+                minWidth: 'unset',
+                maxWidth: { xs: '58%', sm: 'none' },
+                flex: { xs: '0 1 auto', sm: '0 1 auto' },
+                flexShrink: 1,
               }}
             >
               <Key sx={{ fontSize: 16, color: '#94a3b8', mr: 1 }} />
@@ -151,9 +174,12 @@ const ReportControlBar = ({ activeTab, onTabChange, accessCode, isDeleting, onRe
                   fontWeight: 700,
                   color: showCode ? '#334155' : '#94a3b8',
                   mr: 1,
-                  minWidth: '60px',
+                  minWidth: 'unset',
+                  maxWidth: { xs: '24vw', sm: 'none' },
                   textAlign: 'center',
-                  fontSize: '0.85rem',
+                  fontSize: { xs: '0.78rem', sm: '0.85rem' },
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                 }}
               >
                 {showCode ? accessCode : '••••••'}
@@ -166,35 +192,52 @@ const ReportControlBar = ({ activeTab, onTabChange, accessCode, isDeleting, onRe
               </Tooltip>
             </Box>
 
-            <Tooltip title="인증코드 복사">
-              <IconButton
-                size="small"
-                onClick={handleCopyAccessCode}
-                sx={{
-                  bgcolor: isCodeCopied ? '#dcfce7' : '#eff6ff',
-                  color: isCodeCopied ? '#16a34a' : '#3b82f6',
-                  '&:hover': { bgcolor: isCodeCopied ? '#dcfce7' : '#dbeafe' },
-                }}
-              >
-                {isCodeCopied ? <CheckCircle sx={{ fontSize: 18 }} /> : <ContentCopy sx={{ fontSize: 18 }} />}
-              </IconButton>
-            </Tooltip>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.4,
+                bgcolor: { xs: 'rgba(241,245,249,0.95)', sm: 'transparent' },
+                border: { xs: '1px solid #e2e8f0', sm: 'none' },
+                borderRadius: { xs: '16px', sm: 0 },
+                p: { xs: 0.35, sm: 0 },
+                flexShrink: 0,
+              }}
+            >
+              <Tooltip title="인증코드 복사">
+                <IconButton
+                  size="small"
+                  onClick={handleCopyAccessCode}
+                  sx={{
+                    width: { xs: 32, sm: 34 },
+                    height: { xs: 32, sm: 34 },
+                    bgcolor: isCodeCopied ? '#dcfce7' : '#eff6ff',
+                    color: isCodeCopied ? '#16a34a' : '#3b82f6',
+                    '&:hover': { bgcolor: isCodeCopied ? '#dcfce7' : '#dbeafe' },
+                  }}
+                >
+                  {isCodeCopied ? <CheckCircle sx={{ fontSize: 18 }} /> : <ContentCopy sx={{ fontSize: 18 }} />}
+                </IconButton>
+              </Tooltip>
 
-            <Tooltip title="문서 삭제">
-              <IconButton
-                size="small"
-                onClick={onRequestDelete}
-                disabled={isDeleting}
-                sx={{
-                  bgcolor: '#fef2f2',
-                  color: '#ef4444',
-                  '&:hover': { bgcolor: '#fee2e2' },
-                  '&.Mui-disabled': { color: '#fca5a5', bgcolor: '#fef2f2' },
-                }}
-              >
-                <DeleteOutline sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
+              <Tooltip title="문서 삭제">
+                <IconButton
+                  size="small"
+                  onClick={onRequestDelete}
+                  disabled={isDeleting}
+                  sx={{
+                    width: { xs: 32, sm: 34 },
+                    height: { xs: 32, sm: 34 },
+                    bgcolor: '#fef2f2',
+                    color: '#ef4444',
+                    '&:hover': { bgcolor: '#fee2e2' },
+                    '&.Mui-disabled': { color: '#fca5a5', bgcolor: '#fef2f2' },
+                  }}
+                >
+                  <DeleteOutline sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Tooltip>
+            </Box>
           </Box>
         )}
       </Paper>

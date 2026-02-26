@@ -34,12 +34,14 @@ const MessageList = ({ messages, isTyping, messageListRef, chatEndRef }: Message
 
   return (
   <Box ref={messageListRef} sx={messageListSx}>
-    <Box sx={{ textAlign: 'center', py: -5, opacity: 0.5 }}>
-      <SmartToyOutlined sx={{ fontSize: 40, color: '#94a3b8', mb: 1 }} />
-      <Typography variant="body2" sx={{ fontWeight: 600, color: '#94a3b8' }}>
-        AI 채용 코디네이터가 입력을 도와드립니다
-      </Typography>
-    </Box>
+    {!isMobile && (
+      <Box sx={{ textAlign: 'center', py: -5, opacity: 0.5 }}>
+        <SmartToyOutlined sx={{ fontSize: 40, color: '#94a3b8', mb: 1 }} />
+        <Typography variant="body2" sx={{ fontWeight: 600, color: '#94a3b8' }}>
+          AI 채용 코디네이터가 입력을 도와드립니다
+        </Typography>
+      </Box>
+    )}
 
     {messages.map((msg) => (
       <Grow in={true} key={msg.id} timeout={500}>

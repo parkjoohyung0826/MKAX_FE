@@ -16,7 +16,7 @@ const glassCardSx = {
   borderRadius: '20px',
   border: '1px solid rgba(255, 255, 255, 0.8)',
   boxShadow: '0 8px 32px rgba(31, 38, 135, 0.05)',
-  p: 4,
+  p: { xs: 2, sm: 4 },
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
@@ -27,8 +27,8 @@ const sectionTitleSx = {
   alignItems: 'center',
   fontWeight: 800,
   color: '#1e293b',
-  mb: 3,
-  fontSize: '1.2rem',
+  mb: { xs: 2, sm: 3 },
+  fontSize: { xs: '1rem', sm: '1.2rem' },
 };
 
 interface Props {
@@ -125,11 +125,19 @@ const CareerAnalysisReport = ({
 
   return (
     <Box>
-      <Box sx={{ mb: 4, textAlign: 'center' }}>
-        <Typography variant="h4" fontWeight={800} sx={{ color: '#1e293b', mb: 1 }}>
+      <Box sx={{ mb: { xs: 2.5, sm: 4 }, textAlign: 'center' }}>
+        <Typography
+          variant="h4"
+          fontWeight={800}
+          sx={{ color: '#1e293b', mb: 1, fontSize: { xs: '1.35rem', sm: '2.125rem' }, lineHeight: 1.25 }}
+        >
           종합 커리어 분석 리포트
         </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 5 }}>
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          sx={{ mb: { xs: 2.5, sm: 5 }, fontSize: { xs: '0.86rem', sm: '1rem' } }}
+        >
           AI가 진단한 지원자님의 직무 역량과 취업 전략입니다.
         </Typography>
       </Box>
@@ -139,7 +147,21 @@ const CareerAnalysisReport = ({
           value={currentSection}
           onChange={handleSectionChange}
           aria-label="analysis report sections"
-          variant="fullWidth"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{
+            minHeight: { xs: 42, sm: 48 },
+            '& .MuiTab-root': {
+              minHeight: { xs: 42, sm: 48 },
+              py: { xs: 0.6, sm: 1 },
+              px: { xs: 1.2, sm: 2 },
+              fontSize: { xs: '0.8rem', sm: '0.95rem' },
+              fontWeight: 700,
+              textTransform: 'none',
+              whiteSpace: 'nowrap',
+            },
+          }}
         >
           <Tab label="종합 요약" />
           <Tab label="문장별 피드백" />
@@ -180,16 +202,27 @@ const CareerAnalysisReport = ({
         )}
         {currentSection === 3 && (
           <Box sx={{ width: '100%', maxWidth: '860px', mx: 'auto' }}>
-            <Box sx={{ mt: 7, mb: 5, px: 2 }}>
+            <Box sx={{ mt: { xs: 2, sm: 7 }, mb: { xs: 2.5, sm: 5 }, px: { xs: 0.5, sm: 2 } }}>
               <Typography
                 variant="h4"
-                sx={{ fontWeight: 800, color: '#202124', letterSpacing: '-0.5px', mb: 2 }}
+                sx={{
+                  fontWeight: 800,
+                  color: '#202124',
+                  letterSpacing: '-0.5px',
+                  mb: 1.2,
+                  fontSize: { xs: '1.2rem', sm: '2.125rem' },
+                }}
               >
                 맞춤 채용 정보
               </Typography>
               <Typography
                 variant="body1"
-                sx={{ color: '#5F6368', lineHeight: 1.6, fontSize: '1.05rem', maxWidth: '800px' }}
+                sx={{
+                  color: '#5F6368',
+                  lineHeight: 1.5,
+                  fontSize: { xs: '0.84rem', sm: '1.05rem' },
+                  maxWidth: '800px',
+                }}
               >
                 지원자님의 이력서와 자기소개서를 바탕으로 적합한 채용 공고를 추천합니다.
                 <br />

@@ -102,7 +102,7 @@ const FormPageLayout = ({ activeTab, onTabChange, children, isLoading = false, l
               </Tabs>
             </Box>
 
-            <Box sx={{ px: { xs: 2, md: 6 }, pt: { xs: 1, md: 6 }, pb: { xs: 2, md: 6 } }}>{children}</Box>
+            <Box sx={{ px: { xs: 2, md: 6 }, pt: { xs: 2, md: 6 }, pb: { xs: 2, md: 6 } }}>{children}</Box>
           </Box>
         )}
       </motion.div>

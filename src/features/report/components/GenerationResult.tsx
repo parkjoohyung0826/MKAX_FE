@@ -113,7 +113,7 @@ const parseCoverLetter = (text: unknown): CoverLetterData => {
 
 const GenerationResult = ({ data, onReset }: Props) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const resumeRef = useRef<HTMLDivElement>(null);
   const coverLetterRef = useRef<HTMLDivElement>(null);
@@ -194,7 +194,7 @@ const GenerationResult = ({ data, onReset }: Props) => {
   };
 
   return (
-    <Box sx={{ my: 4 }}>
+    <Box sx={{ my: { xs: 2, sm: 4 } }}>
       <ReportControlBar
         activeTab={activeTab}
         onTabChange={handleTabChange}
@@ -209,13 +209,13 @@ const GenerationResult = ({ data, onReset }: Props) => {
         sx={{ 
           maxWidth: '1100px', 
           mx: 'auto', 
-          minHeight: '600px',
-          borderRadius: '40px',
-          bgcolor: 'rgba(255, 255, 255, 0.7)', 
-          backdropFilter: 'blur(20px)',
+          minHeight: { xs: 'auto', md: '600px' },
+          borderRadius: { xs: '20px', md: '40px' },
+          bgcolor: { xs: 'rgba(255, 255, 255, 0.82)', md: 'rgba(255, 255, 255, 0.7)' }, 
+          backdropFilter: { xs: 'blur(10px)', md: 'blur(20px)' },
           border: '1px solid rgba(255, 255, 255, 0.6)',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.03)',
-          p: { xs: 3, md: 6 }, 
+          boxShadow: { xs: '0 10px 30px rgba(0,0,0,0.04)', md: '0 20px 50px rgba(0,0,0,0.03)' },
+          p: { xs: 2, md: 6 }, 
           position: 'relative',
           overflow: 'hidden'
         }}
@@ -237,21 +237,32 @@ const GenerationResult = ({ data, onReset }: Props) => {
             {/* 탭 2: 이력서 */}
             {activeTab === 'resume' && (
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Box sx={{ mb: 5, width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="h6" fontWeight={700} color="#334155">
+                <Box
+                  sx={{
+                    mb: { xs: 2.5, md: 5 },
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: { xs: 'stretch', sm: 'center' },
+                    gap: { xs: 1, sm: 2 },
+                    flexDirection: { xs: 'column', sm: 'row' },
+                  }}
+                >
+                  <Typography variant="h6" fontWeight={700} color="#334155" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                      {data.analysisReportSourceType === 'pdf' ? '이력서 미리보기' : '생성된 이력서 미리보기'}
                   </Typography>
                   {data.analysisReportSourceType !== 'pdf' && (
                     <Button
                       variant="contained"
-                      size="large"
+                      size={isMobile ? 'medium' : 'large'}
                       startIcon={<Download />}
                       onClick={() => handleDownloadPDF(resumeRef, `${resumeData.name}_이력서.pdf`)}
                       sx={{ 
-                        py: 1.2, px: 3, 
-                        fontSize: '1rem', fontWeight: 700,
+                        alignSelf: { xs: 'center', sm: 'auto' },
+                        py: { xs: 0.9, sm: 1.2 }, px: { xs: 2, sm: 3 }, 
+                        fontSize: { xs: '0.82rem', sm: '1rem' }, fontWeight: 700,
                         bgcolor: '#2563EB', '&:hover': { bgcolor: '#1d4ed8' },
-                        borderRadius: '16px',
+                        borderRadius: { xs: '12px', sm: '16px' },
                         boxShadow: '0 8px 20px rgba(37, 99, 235, 0.25)'
                       }}
                     >
@@ -259,45 +270,72 @@ const GenerationResult = ({ data, onReset }: Props) => {
                     </Button>
                   )}
                 </Box>
-                <Box sx={{ 
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.1)', 
-                  borderRadius: '12px', 
-                  overflow: 'hidden',
-                  width: '100%',
-                  bgcolor: 'white',
-                }}>
-                  {data.resumeUrl ? (
-                    <Box
-                      component="iframe"
-                      src={data.resumeUrl}
-                      title="이력서 PDF 미리보기"
-                      sx={{ width: '100%', height: '780px', border: 'none', display: 'block' }}
-                    />
-                  ) : (
-                    <ResumeTemplateRenderer ref={resumeRef} />
-                  )}
-                </Box>
+                {isMobile ? (
+                  <Box
+                    sx={{
+                      width: '100%',
+                      p: 2,
+                      borderRadius: '14px',
+                      bgcolor: 'rgba(255,255,255,0.7)',
+                      border: '1px solid rgba(148,163,184,0.14)',
+                    }}
+                  >
+                    <Typography sx={{ color: '#64748b', fontSize: '0.82rem', lineHeight: 1.5 }}>
+                      모바일에서는 미리보기를 숨기고 다운로드만 제공합니다.
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box sx={{ 
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.1)', 
+                    borderRadius: '12px', 
+                    overflow: 'hidden',
+                    width: '100%',
+                    bgcolor: 'white',
+                  }}>
+                    {data.resumeUrl ? (
+                      <Box
+                        component="iframe"
+                        src={data.resumeUrl}
+                        title="이력서 PDF 미리보기"
+                        sx={{ width: '100%', height: { xs: '62vh', md: '780px' }, border: 'none', display: 'block' }}
+                      />
+                    ) : (
+                      <ResumeTemplateRenderer ref={resumeRef} />
+                    )}
+                  </Box>
+                )}
               </Box>
             )}
 
             {/* 탭 3: 자기소개서 */}
             {activeTab === 'coverLetter' && (
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Box sx={{ mb: 5, width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                   <Typography variant="h6" fontWeight={700} color="#334155">
+                <Box
+                  sx={{
+                    mb: { xs: 2.5, md: 5 },
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: { xs: 'stretch', sm: 'center' },
+                    gap: { xs: 1, sm: 2 },
+                    flexDirection: { xs: 'column', sm: 'row' },
+                  }}
+                >
+                   <Typography variant="h6" fontWeight={700} color="#334155" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                      {data.analysisReportSourceType === 'pdf' ? '자기소개서 미리보기' : '생성된 자기소개서 미리보기'}
                   </Typography>
                   {data.analysisReportSourceType !== 'pdf' && (
                     <Button
                       variant="contained"
-                      size="large"
+                      size={isMobile ? 'medium' : 'large'}
                       startIcon={<Download />}
                       onClick={() => handleDownloadPDF(coverLetterRef, `${resumeData.name}_자기소개서.pdf`)}
                       sx={{ 
-                        py: 1.2, px: 3, 
-                        fontSize: '1rem', fontWeight: 700,
+                        alignSelf: { xs: 'center', sm: 'auto' },
+                        py: { xs: 0.9, sm: 1.2 }, px: { xs: 2, sm: 3 }, 
+                        fontSize: { xs: '0.82rem', sm: '1rem' }, fontWeight: 700,
                         bgcolor: '#2563EB', '&:hover': { bgcolor: '#1d4ed8' },
-                        borderRadius: '16px',
+                        borderRadius: { xs: '12px', sm: '16px' },
                         boxShadow: '0 8px 20px rgba(37, 99, 235, 0.25)'
                       }}
                     >
@@ -305,31 +343,47 @@ const GenerationResult = ({ data, onReset }: Props) => {
                     </Button>
                   )}
                 </Box>
-                <Box sx={{ 
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.1)', 
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  width: '100%',
-                  bgcolor: 'white',
-                }}>
-                  {data.coverLetterUrl ? (
-                    <Box
-                      component="iframe"
-                      src={data.coverLetterUrl}
-                      title="자기소개서 PDF 미리보기"
-                      sx={{ width: '100%', height: '780px', border: 'none', display: 'block' }}
-                    />
-                  ) : (
-                    <CoverLetterTemplateRenderer ref={coverLetterRef} resumeName={resumeData.name} />
-                  )}
-                </Box>
+                {isMobile ? (
+                  <Box
+                    sx={{
+                      width: '100%',
+                      p: 2,
+                      borderRadius: '14px',
+                      bgcolor: 'rgba(255,255,255,0.7)',
+                      border: '1px solid rgba(148,163,184,0.14)',
+                    }}
+                  >
+                    <Typography sx={{ color: '#64748b', fontSize: '0.82rem', lineHeight: 1.5 }}>
+                      모바일에서는 미리보기를 숨기고 다운로드만 제공합니다.
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box sx={{ 
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.1)', 
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    width: '100%',
+                    bgcolor: 'white',
+                  }}>
+                    {data.coverLetterUrl ? (
+                      <Box
+                        component="iframe"
+                        src={data.coverLetterUrl}
+                        title="자기소개서 PDF 미리보기"
+                        sx={{ width: '100%', height: { xs: '62vh', md: '780px' }, border: 'none', display: 'block' }}
+                      />
+                    ) : (
+                      <CoverLetterTemplateRenderer ref={coverLetterRef} resumeName={resumeData.name} />
+                    )}
+                  </Box>
+                )}
               </Box>
             )}
           </Box>
         </Fade>
 
         {/* 하단 공통 버튼 */}
-        <Box sx={{ textAlign: 'center', mt: 3, pt: 4, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+        <Box sx={{ textAlign: 'center', mt: { xs: 2, sm: 3 }, pt: { xs: 2.5, sm: 4 }, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
           <Button 
             onClick={onReset} 
             variant="text" 
@@ -338,8 +392,9 @@ const GenerationResult = ({ data, onReset }: Props) => {
             sx={{ 
               color: '#64748b', 
               fontWeight: 600,
-              px: 4, py: 1.5,
-              borderRadius: '20px',
+              px: { xs: 2.5, sm: 4 }, py: { xs: 1, sm: 1.5 },
+              borderRadius: { xs: '14px', sm: '20px' },
+              fontSize: { xs: '0.85rem', sm: '1rem' },
               '&:hover': { bgcolor: 'rgba(0,0,0,0.04)', color: '#334155' }
             }}
           >

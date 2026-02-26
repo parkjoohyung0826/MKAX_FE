@@ -258,7 +258,10 @@ const AppShell = ({ children, showParticles = false }: Props) => {
         </Stack>
       </Drawer>
 
-      <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1, pt: 15, pb: 8 }}>
+      <Container
+        maxWidth="md"
+        sx={{ position: 'relative', zIndex: 1, pt: { xs: 12.5, sm: 15 }, pb: 8 }}
+      >
         {children}
       </Container>
     </Box>

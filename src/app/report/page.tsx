@@ -44,7 +44,7 @@ const ReportPage = () => {
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.6 }}
         >
-          <Box sx={{ mb: 6, textAlign: 'center' }}>
+          <Box sx={{ mb: { xs: 3, sm: 6 }, textAlign: 'center' }}>
             <Typography
               variant="h3"
               fontWeight={900}
@@ -53,6 +53,8 @@ const ReportPage = () => {
                 color: '#1e293b',
                 textShadow: '0 2px 10px rgba(0,0,0,0.05)',
                 letterSpacing: '-1px',
+                fontSize: { xs: '1.5rem', sm: '3rem' },
+                lineHeight: { xs: 1.2, sm: 1.167 },
               }}
             >
               분석 및 생성이 완료되었습니다!
@@ -61,7 +63,13 @@ const ReportPage = () => {
               variant="h6"
               color="text.secondary"
               fontWeight={500}
-              sx={{ opacity: 0.8, mt: 2, wordBreak: 'keep-all' }}
+              sx={{
+                opacity: 0.8,
+                mt: { xs: 1, sm: 2 },
+                wordBreak: 'keep-all',
+                fontSize: { xs: '0.8rem', sm: '1.25rem' },
+                lineHeight: { xs: 1.4, sm: 1.6 },
+              }}
             >
               AI가 분석한 커리어 리포트와 완성된 서류를 탭을 눌러 확인해보세요.
             </Typography>

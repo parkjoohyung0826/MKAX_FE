@@ -50,14 +50,14 @@ const JobPostingList: React.FC<JobPostingListProps> = ({
             key={job.wantedAuthNo}
             elevation={0}
             sx={{
-              borderRadius: '20px',
+              borderRadius: { xs: '16px', sm: '20px' },
               border: '1px solid',
               borderColor: 'divider',
               bgcolor: 'background.paper',
               position: 'relative',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
-                transform: 'translateY(-4px)',
+                transform: { xs: 'none', sm: 'translateY(-4px)' },
                 borderColor: alpha(COLORS.primary, 0.4),
                 boxShadow: `0 12px 24px -6px ${alpha(COLORS.primary, 0.12)}`,
                 '& .hover-arrow': { transform: 'translateX(0)', opacity: 1 },
@@ -66,23 +66,23 @@ const JobPostingList: React.FC<JobPostingListProps> = ({
           >
             <Box
               sx={{
-                p: { xs: 3, sm: 3.5 },
+                p: { xs: 2, sm: 3.5 },
                 display: 'flex',
                 flexDirection: { xs: 'column', md: 'row' },
-                gap: 3,
+                gap: { xs: 2, sm: 3 },
               }}
             >
-              <Box sx={{ display: 'flex', gap: 2.5, flex: 1, minWidth: 0 }}>
+              <Box sx={{ display: 'flex', gap: { xs: 1.2, sm: 2.5 }, flex: 1, minWidth: 0 }}>
                 <Avatar
                   variant="rounded"
                   sx={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: '14px',
+                    width: { xs: 40, sm: 52 },
+                    height: { xs: 40, sm: 52 },
+                    borderRadius: { xs: '10px', sm: '14px' },
                     bgcolor: '#fff',
                     color: COLORS.primary,
                     fontWeight: 800,
-                    fontSize: '1.2rem',
+                    fontSize: { xs: '1rem', sm: '1.2rem' },
                     border: `1px solid ${alpha('#cbd5e1', 0.5)}`,
                     boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
                     flexShrink: 0,
@@ -95,16 +95,16 @@ const JobPostingList: React.FC<JobPostingListProps> = ({
                   <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
                     <Typography
                       variant="body2"
-                      sx={{ fontWeight: 700, color: COLORS.textBody, fontSize: '0.85rem' }}
+                      sx={{ fontWeight: 700, color: COLORS.textBody, fontSize: { xs: '0.78rem', sm: '0.85rem' } }}
                     >
                       {job.company}
                     </Typography>
-                    <Box sx={{ width: 3, height: 3, borderRadius: '50%', bgcolor: '#cbd5e1' }} />
+                    <Box sx={{ width: 3, height: 3, borderRadius: '50%', bgcolor: '#cbd5e1', display: { xs: 'none', sm: 'block' } }} />
                     <Stack direction="row" alignItems="center" spacing={0.5}>
                       <EventAvailable sx={{ fontSize: 14, color: '#EF4444' }} />
                       <Typography
                         variant="caption"
-                        sx={{ fontWeight: 700, color: '#EF4444', letterSpacing: '-0.2px' }}
+                        sx={{ fontWeight: 700, color: '#EF4444', letterSpacing: '-0.2px', fontSize: { xs: '0.68rem', sm: '0.75rem' } }}
                       >
                         {job.closeDt}
                       </Typography>
@@ -115,15 +115,15 @@ const JobPostingList: React.FC<JobPostingListProps> = ({
                     variant="h6"
                     sx={{
                       fontWeight: 800,
-                      mb: 2,
-                      fontSize: '1.15rem',
+                      mb: { xs: 1.2, sm: 2 },
+                      fontSize: { xs: '0.95rem', sm: '1.15rem' },
                       color: COLORS.textTitle,
                       cursor: 'pointer',
                       lineHeight: 1.4,
                       transition: 'color 0.2s',
                       '&:hover': { color: COLORS.primary },
                       display: '-webkit-box',
-                      WebkitLineClamp: 1,
+                      WebkitLineClamp: { xs: 2, sm: 1 },
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
                     }}
@@ -135,7 +135,7 @@ const JobPostingList: React.FC<JobPostingListProps> = ({
                     direction="row"
                     alignItems="center"
                     spacing={0}
-                    sx={{ mb: 2, flexWrap: 'wrap', gap: 1.5 }}
+                    sx={{ mb: { xs: 1.2, sm: 2 }, flexWrap: 'wrap', gap: { xs: 0.8, sm: 1.5 } }}
                   >
                     <MetaText icon={<LocationOnOutlined />} text={job.basicAddr || job.region} />
                     <MetaDivider />
@@ -159,6 +159,8 @@ const JobPostingList: React.FC<JobPostingListProps> = ({
                   flexShrink: 0,
                   minWidth: { md: '140px' },
                   justifyContent: { xs: 'flex-start', md: 'center' },
+                  width: { xs: '100%', md: 'auto' },
+                  '& > *': { flex: { xs: 1, md: 'initial' } },
                   borderLeft: { md: `1px dashed ${theme.palette.divider}` },
                   pl: { md: 3 },
                   ml: { md: 'auto' },
@@ -180,7 +182,8 @@ const JobPostingList: React.FC<JobPostingListProps> = ({
                     borderRadius: 2.5,
                     boxShadow: `0 4px 12px ${alpha(mainBlue, 0.18)}`,
                     fontWeight: 700,
-                    py: 1.1,
+                    py: { xs: 0.9, md: 1.1 },
+                    fontSize: { xs: '0.82rem', sm: '0.9rem' },
                     textTransform: 'none',
                     whiteSpace: 'nowrap',
                     '&:hover': {
@@ -202,7 +205,8 @@ const JobPostingList: React.FC<JobPostingListProps> = ({
                     borderColor: 'divider',
                     color: 'text.secondary',
                     fontWeight: 600,
-                    py: 1.1,
+                    py: { xs: 0.9, md: 1.1 },
+                    fontSize: { xs: '0.82rem', sm: '0.9rem' },
                     textTransform: 'none',
                     whiteSpace: 'nowrap',
                     '&:hover': {
