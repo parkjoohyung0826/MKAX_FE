@@ -64,14 +64,12 @@ const ResumePage = () => {
           motivation: coverLetterData.motivation,
         };
         try {
-          const [analysisResult, matchedRecruitments] = await Promise.all([
-            requestAnalysisReport({
-              resume,
-              coverLetter: coverLetterPayload,
-              code,
-            }),
-            fetchMatchedRecruitments(code),
-          ]);
+          const analysisResult = await requestAnalysisReport({
+            resume,
+            coverLetter: coverLetterPayload,
+            code,
+          });
+          const matchedRecruitments = await fetchMatchedRecruitments(code);
           analysisReport = analysisResult;
           jobPostings = mapMatchedRecruitmentsToJobPostings(matchedRecruitments.items);
           recommendedJobPostingsMeta = {
