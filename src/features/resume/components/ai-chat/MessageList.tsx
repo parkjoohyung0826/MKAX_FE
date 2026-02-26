@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Avatar, Box, Fade, Grow, Paper, Typography } from '@mui/material';
+import { Avatar, Box, Fade, Grow, Paper, Typography, useMediaQuery } from '@mui/material';
 import { AutoAwesome, SmartToyOutlined } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 import TypingIndicator from './TypingIndicator';
 import { ChatMessage } from './types';
 
@@ -27,7 +28,11 @@ type MessageListProps = {
   chatEndRef: React.RefObject<HTMLDivElement>;
 };
 
-const MessageList = ({ messages, isTyping, messageListRef, chatEndRef }: MessageListProps) => (
+const MessageList = ({ messages, isTyping, messageListRef, chatEndRef }: MessageListProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  return (
   <Box ref={messageListRef} sx={messageListSx}>
     <Box sx={{ textAlign: 'center', py: -5, opacity: 0.5 }}>
       <SmartToyOutlined sx={{ fontSize: 40, color: '#94a3b8', mb: 1 }} />
@@ -46,7 +51,7 @@ const MessageList = ({ messages, isTyping, messageListRef, chatEndRef }: Message
             mb: 1,
           }}
         >
-          {msg.sender === 'ai' && (
+          {msg.sender === 'ai' && !isMobile && (
             <Avatar
               sx={{
                 width: 38,
@@ -66,8 +71,8 @@ const MessageList = ({ messages, isTyping, messageListRef, chatEndRef }: Message
             elevation={0}
             sx={{
               p: 2.5,
-              px: 3,
-              maxWidth: '80%',
+              px: { xs: 2.2, sm: 3 },
+              maxWidth: { xs: '88%', sm: '80%' },
               borderRadius: '26px',
               borderTopLeftRadius: msg.sender === 'ai' ? '4px' : '26px',
               borderTopRightRadius: msg.sender === 'user' ? '4px' : '26px',
@@ -81,8 +86,8 @@ const MessageList = ({ messages, isTyping, messageListRef, chatEndRef }: Message
                 msg.sender === 'ai'
                   ? '0 4px 20px rgba(0,0,0,0.05)'
                   : '0 8px 25px rgba(37, 99, 235, 0.3)',
-              fontSize: '1rem',
-              lineHeight: 1.6,
+              fontSize: { xs: '0.92rem', sm: '1rem' },
+              lineHeight: { xs: 1.55, sm: 1.6 },
             }}
           >
             <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
@@ -95,13 +100,14 @@ const MessageList = ({ messages, isTyping, messageListRef, chatEndRef }: Message
 
     {isTyping && (
       <Fade in={true}>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-start', pl: 7 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-start', pl: isMobile ? 0 : 7 }}>
           <TypingIndicator />
         </Box>
       </Fade>
     )}
     <div ref={chatEndRef} />
   </Box>
-);
+  );
+};
 
 export default MessageList;

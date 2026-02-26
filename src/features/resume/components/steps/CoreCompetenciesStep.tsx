@@ -86,6 +86,7 @@ const CoreCompetenciesStep = () => {
       <StepHeader
         title={copy.coreStepTitle}
         subtitle={copy.coreStepSubtitle}
+        hideOnMobile
       />
 
       <ResumeAssistantTextSection

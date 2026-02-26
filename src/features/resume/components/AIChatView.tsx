@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useImperativeHandle } from 'react';
-import { Box, Button } from '@mui/material';
+import { Box, Button, useMediaQuery } from '@mui/material';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
+import { useTheme } from '@mui/material/styles';
 import { AnimatePresence, motion } from 'framer-motion';
 import MessageList from './ai-chat/MessageList';
 import ChatInputBar from './ai-chat/ChatInputBar';
@@ -195,6 +196,8 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
 }: AIChatViewProps<T>,
   ref: React.Ref<AIChatViewHandle>
 ) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -638,7 +641,7 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
             sx={{
               display: 'flex',
               justifyContent: 'flex-end',
-              pr: 1, 
+              pr: { xs: 0.5, sm: 1 },
             }}
           >
             <Button
@@ -647,14 +650,15 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
               size="small"
               sx={{
                 color: 'text.secondary', 
-                fontSize: '0.8rem',
+                fontSize: isMobile ? '0.76rem' : '0.8rem',
                 fontWeight: 500,
                 textTransform: 'none', 
-                borderRadius: '20px',
+                borderRadius: isMobile ? '14px' : '20px',
                 bgcolor: 'action.hover', 
-                px: 2,
-                py: 0.5,
+                px: isMobile ? 1.4 : 2,
+                py: isMobile ? 0.45 : 0.5,
                 border: '1px solid transparent',
+                whiteSpace: 'nowrap',
                 transition: 'all 0.2s ease',
                 '&:hover': {
                   bgcolor: 'action.selected',
@@ -664,7 +668,7 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
                 },
               }}
             >
-              처음부터 다시 쓰기
+              {isMobile ? '처음부터 다시쓰기' : '처음부터 다시 쓰기'}
             </Button>
           </Box>
         )}

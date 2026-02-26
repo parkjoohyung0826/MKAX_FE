@@ -137,7 +137,14 @@ const ProgressStepper = ({ steps, activeStep, onStepClick, completedSteps = [] }
           }}
         >
           <Box sx={{ minWidth: 0 }}>
-            <Stack direction="row" spacing={0.8} alignItems="center" sx={{ mb: 0.4 }}>
+            <Stack
+              direction="row"
+              spacing={0.8}
+              alignItems="center"
+              useFlexGap
+              flexWrap="wrap"
+              sx={{ mb: 0.35, rowGap: 0.5 }}
+            >
               <Typography sx={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 700 }}>
                 진행 단계
               </Typography>
@@ -152,6 +159,9 @@ const ProgressStepper = ({ steps, activeStep, onStepClick, completedSteps = [] }
                   color: '#2563EB',
                 }}
               />
+              <Typography sx={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                완료 {completedCount}단계
+              </Typography>
             </Stack>
             <Typography
               sx={{
@@ -165,9 +175,6 @@ const ProgressStepper = ({ steps, activeStep, onStepClick, completedSteps = [] }
               }}
             >
               {currentLabel}
-            </Typography>
-            <Typography sx={{ fontSize: '0.72rem', color: '#94a3b8', mt: 0.2 }}>
-              완료 {completedCount}단계
             </Typography>
           </Box>
 

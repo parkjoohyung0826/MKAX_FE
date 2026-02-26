@@ -169,6 +169,7 @@ const BasicInfoStep = ({ data, handleChange }: Props) => {
         title="기본 정보 입력"
         subtitle="면접관에게 가장 먼저 보여지는 핵심 정보입니다."
         marginBottom={5}
+        hideOnMobile
       />
       
       {/* 메인 레이아웃 (Flex & CSS Grid) */}

@@ -31,8 +31,8 @@ const TemplateSelectGrid = <T extends string>({ items, selectedId, onSelect }: P
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-        gap: 3,
+        gridTemplateColumns: '1fr 1fr',
+        gap: { xs: 1.25, sm: 3 },
       }}
     >
       {items.map((item) => {
@@ -45,7 +45,7 @@ const TemplateSelectGrid = <T extends string>({ items, selectedId, onSelect }: P
             onClick={() => onSelect(item.id)}
             sx={{
               p: 0,
-              borderRadius: '32px',
+              borderRadius: { xs: '18px', sm: '32px' },
               bgcolor: COLORS.bg,
               cursor: 'pointer',
               overflow: 'hidden',
@@ -64,7 +64,7 @@ const TemplateSelectGrid = <T extends string>({ items, selectedId, onSelect }: P
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               
               '&:hover': {
-                transform: 'translateY(-8px)',
+                transform: { xs: 'none', sm: 'translateY(-8px)' },
                 boxShadow: isSelected
                   ? `0 32px 50px -12px ${alpha(item.accent, 0.3)}`
                   : '0 20px 40px -12px rgba(15, 23, 42, 0.12)',
@@ -82,7 +82,7 @@ const TemplateSelectGrid = <T extends string>({ items, selectedId, onSelect }: P
                 sx={{
                   position: 'relative',
                   overflow: 'hidden',
-                  height: '72%',
+                  height: { xs: '70%', sm: '72%' },
                   
                   '&:hover .template-image': {
                     filter: 'blur(4px)',
@@ -116,7 +116,7 @@ const TemplateSelectGrid = <T extends string>({ items, selectedId, onSelect }: P
                   sx={{
                     position: 'absolute',
                     inset: 0,
-                    display: 'flex',
+                    display: { xs: 'none', sm: 'flex' },
                     alignItems: 'center',
                     justifyContent: 'center',
                     textAlign: 'center',
@@ -137,22 +137,22 @@ const TemplateSelectGrid = <T extends string>({ items, selectedId, onSelect }: P
               {/* 2. 하단 텍스트 영역 (높이 최소화) */}
               <Box 
                 sx={{ 
-                  px: 2, 
-                  py: 1.5,
+                  px: { xs: 1.2, sm: 2 }, 
+                  py: { xs: 0.55, sm: 1.5 },
                   borderTop: `1px solid ${alpha(COLORS.border, 0.8)}`,
                   bgcolor: isSelected ? alpha(item.accent, 0.04) : '#FFFFFF',
                   flexGrow: 1,
                   transition: 'background-color 0.3s ease',
                 }}
               >
-                <Stack spacing={0.5} justifyContent="center" sx={{ height: '100%' }}>
+                <Stack spacing={{ xs: 0.2, sm: 0.5 }} justifyContent="center" sx={{ height: '100%' }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
                     <Stack direction="row" alignItems="center" gap={0.5}>
                       <Typography 
                         variant="h6" 
                         sx={{ 
                           fontWeight: 700, 
-                          fontSize: '1rem', 
+                          fontSize: { xs: '0.82rem', sm: '1rem' }, 
                           lineHeight: 1.3,
                           color: isSelected ? item.accent : COLORS.textTitle, 
                           transition: 'color 0.2s ease',
@@ -164,7 +164,7 @@ const TemplateSelectGrid = <T extends string>({ items, selectedId, onSelect }: P
                       <Box 
                         className="hover-arrow"
                         sx={{
-                          display: 'flex',
+                          display: { xs: 'none', sm: 'flex' },
                           opacity: 0,
                           transform: 'translate(-4px, 4px)',
                           transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
@@ -203,20 +203,6 @@ const TemplateSelectGrid = <T extends string>({ items, selectedId, onSelect }: P
                     )}
                   </Box>
 
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: COLORS.textBody, 
-                      lineHeight: 1.4,
-                      fontSize: '0.85rem',
-                      fontWeight: 500,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {item.description}
-                  </Typography>
                 </Stack>
               </Box>
             </Stack>

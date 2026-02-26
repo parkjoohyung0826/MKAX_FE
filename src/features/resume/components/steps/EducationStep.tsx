@@ -83,6 +83,7 @@ const EducationStep = () => {
       <StepHeader
         title="학력 사항 입력"
         subtitle="전공 분야와 학습하신 내용을 중심으로 작성해주세요."
+        hideOnMobile
       />
       
       <ResumeAssistantTextSection

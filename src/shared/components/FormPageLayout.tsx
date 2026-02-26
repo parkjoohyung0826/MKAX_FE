@@ -23,7 +23,7 @@ const FormPageLayout = ({ activeTab, onTabChange, children, isLoading = false, l
 
   return (
     <AppShell>
-      {!isLoading && (
+      {!isLoading && !isMobile && (
         <AnimatePresence mode="wait">
           <motion.div
             key="form-title"
@@ -70,15 +70,17 @@ const FormPageLayout = ({ activeTab, onTabChange, children, isLoading = false, l
         ) : (
           <Box
             sx={{
-              background: 'rgba(255, 255, 255, 0.75)',
-              backdropFilter: 'blur(24px)',
-              borderRadius: '32px',
-              border: '1px solid rgba(255, 255, 255, 0.8)',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.05)',
-              overflow: 'hidden',
+              mx: { xs: -2, sm: 0 },
+              width: { xs: 'calc(100% + 32px)', sm: '100%' },
+              background: { xs: 'transparent', sm: 'rgba(255, 255, 255, 0.75)' },
+              backdropFilter: { xs: 'none', sm: 'blur(24px)' },
+              borderRadius: { xs: 0, sm: '32px' },
+              border: { xs: 'none', sm: '1px solid rgba(255, 255, 255, 0.8)' },
+              boxShadow: { xs: 'none', sm: '0 20px 50px rgba(0,0,0,0.05)' },
+              overflow: { xs: 'visible', sm: 'hidden' },
             }}
           >
-            <Box sx={{ borderBottom: '1px solid rgba(0,0,0,0.05)', px: 4 }}>
+            <Box sx={{ borderBottom: '1px solid rgba(0,0,0,0.05)', px: { xs: 2, sm: 4 } }}>
               <Tabs
                 value={activeTab}
                 onChange={onTabChange}
@@ -100,7 +102,7 @@ const FormPageLayout = ({ activeTab, onTabChange, children, isLoading = false, l
               </Tabs>
             </Box>
 
-            <Box sx={{ p: { xs: 3, md: 6 } }}>{children}</Box>
+            <Box sx={{ p: { xs: 2, md: 6 } }}>{children}</Box>
           </Box>
         )}
       </motion.div>

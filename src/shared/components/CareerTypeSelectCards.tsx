@@ -39,10 +39,10 @@ const CareerTypeSelectCards = ({ title, subtitle, selectedId, onSelect }: Props)
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-          gap: { xs: 3, md: 4 },
-          mt: 4,
-          px: { xs: 2, sm: 0 },
+          gridTemplateColumns: '1fr 1fr',
+          gap: { xs: 1.25, sm: 3, md: 4 },
+          mt: { xs: 2, sm: 4 },
+          px: { xs: 0, sm: 0 },
         }}
       >
         {cards.map((card) => {
@@ -56,7 +56,7 @@ const CareerTypeSelectCards = ({ title, subtitle, selectedId, onSelect }: Props)
               sx={{
                 aspectRatio: '1 / 1',
                 position: 'relative',
-                borderRadius: '32px',
+                borderRadius: { xs: '18px', sm: '32px' },
                 cursor: 'pointer',
                 overflow: 'hidden',
                 background: isSelected
@@ -71,7 +71,7 @@ const CareerTypeSelectCards = ({ title, subtitle, selectedId, onSelect }: Props)
                   : '0 12px 32px -8px rgba(15, 23, 42, 0.08), inset 0 2px 20px rgba(255,255,255,0.5)',
                 transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 '&:hover': {
-                  transform: 'translateY(-8px)',
+                  transform: { xs: 'none', sm: 'translateY(-8px)' },
                   boxShadow: isSelected
                     ? `0 32px 50px -12px ${alpha('#2563EB', 0.3)}`
                     : '0 20px 40px -12px rgba(15, 23, 42, 0.12)',
@@ -113,35 +113,24 @@ const CareerTypeSelectCards = ({ title, subtitle, selectedId, onSelect }: Props)
                 }}
               />
 
-              <Stack justifyContent="space-between" sx={{ position: 'relative', zIndex: 2, height: '100%', p: { xs: 3, md: 4 } }}>
+              <Stack justifyContent="space-between" sx={{ position: 'relative', zIndex: 2, height: '100%', p: { xs: 1.6, sm: 3, md: 4 } }}>
                 <Box sx={{ maxWidth: '90%' }}>
                   <Typography
                     variant="h5"
                     sx={{
                       fontWeight: 900,
                       color: isSelected ? '#1e293b' : '#334155',
-                      mb: 1.5,
-                      fontSize: { xs: '1.2rem', md: '1.4rem' },
+                      mb: { xs: 0.5, sm: 1.5 },
+                      fontSize: { xs: '0.9rem', sm: '1.2rem', md: '1.4rem' },
                       letterSpacing: '-0.5px',
+                      lineHeight: 1.25,
                     }}
                   >
                     {card.title}
                   </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      color: '#64748b',
-                      lineHeight: 1.5,
-                      fontSize: { xs: '0.9rem', md: '0.95rem' },
-                      fontWeight: 500,
-                      wordBreak: 'keep-all',
-                    }}
-                  >
-                    {card.description}
-                  </Typography>
                 </Box>
 
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', height: 40 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', height: { xs: 28, sm: 40 } }}>
                   {isSelected && (
                     <Box
                       sx={{
@@ -150,8 +139,8 @@ const CareerTypeSelectCards = ({ title, subtitle, selectedId, onSelect }: Props)
                         gap: 0.8,
                         bgcolor: '#2563EB',
                         color: 'white',
-                        px: 1.5,
-                        py: 0.6,
+                        px: { xs: 0.9, sm: 1.5 },
+                        py: { xs: 0.35, sm: 0.6 },
                         borderRadius: '99px',
                         boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
                         animation: 'popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
@@ -161,8 +150,10 @@ const CareerTypeSelectCards = ({ title, subtitle, selectedId, onSelect }: Props)
                         },
                       }}
                     >
-                      <CheckCircleRounded sx={{ fontSize: 18 }} />
-                      <Typography sx={{ fontSize: '0.8rem', fontWeight: 700 }}>선택됨</Typography>
+                      <CheckCircleRounded sx={{ fontSize: { xs: 14, sm: 18 } }} />
+                      <Typography sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' }, fontWeight: 700 }}>
+                        선택됨
+                      </Typography>
                     </Box>
                   )}
                 </Box>

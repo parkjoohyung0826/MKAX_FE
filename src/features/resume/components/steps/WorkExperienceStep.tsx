@@ -82,6 +82,7 @@ const WorkExperienceStep = () => {
       <StepHeader
         title="경력 사항 입력"
         subtitle="직무와 관련된 주요 프로젝트와 성과를 중심으로 작성해주세요."
+        hideOnMobile
       />
 
       <ResumeAssistantTextSection

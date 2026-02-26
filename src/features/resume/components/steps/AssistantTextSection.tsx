@@ -12,8 +12,10 @@ import {
   CircularProgress,
   InputAdornment,
   Collapse,
+  useMediaQuery,
 } from '@mui/material';
 import { AutoAwesome } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 import ConversationalAssistant from '@/shared/components/ConversationalAssistant';
 
 const glowingPulse = keyframes`
@@ -97,6 +99,8 @@ const ResumeAssistantTextSection = ({
   isValidated = false,
   onValidatedChange,
 }: ResumeAssistantTextSectionProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [isAssistantOpen, setAssistantOpen] = useState(false);
   const [missingInfo, setMissingInfo] = useState('');
   const [isValidating, setIsValidating] = useState(false);
@@ -169,7 +173,12 @@ const ResumeAssistantTextSection = ({
         prompt={assistantPrompt}
       />
 
-      <Box display="flex" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 1.5, px: 1 }}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems={isMobile ? 'stretch' : 'flex-end'}
+        sx={{ mb: 1.5, px: 1, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 1.25 : 0 }}
+      >
         <Box>
           <Box display="flex" alignItems="center" gap={1} mb={sectionHint ? 0.5 : 0}>
             {icon}
@@ -183,13 +192,28 @@ const ResumeAssistantTextSection = ({
             </Typography>
           ) : null}
         </Box>
-        <Box display="flex" gap={1} alignItems="center">
+        <Box
+          display="flex"
+          gap={1}
+          alignItems="center"
+          justifyContent={isMobile ? 'flex-start' : 'flex-end'}
+          flexWrap={isMobile ? 'wrap' : 'nowrap'}
+          sx={{ ml: isMobile ? 0 : 1 }}
+        >
           <Box>
             <Button
               size="small"
               onClick={handleOpenAssistant}
               startIcon={<AutoAwesome />}
-              sx={aiButtonSx}
+              sx={{
+                ...aiButtonSx,
+                px: isMobile ? 1.4 : 2,
+                py: isMobile ? 0.45 : 0.5,
+                minHeight: isMobile ? 34 : undefined,
+                fontSize: isMobile ? '0.78rem' : '0.85rem',
+                borderRadius: isMobile ? '14px' : '20px',
+                whiteSpace: 'nowrap',
+              }}
               disabled={isValidated}
             >
               {buttonLabel}
@@ -209,10 +233,12 @@ const ResumeAssistantTextSection = ({
                 sx={{
                   fontWeight: 600,
                   textTransform: 'none',
-                  borderRadius: '20px',
-                  px: 2,
-                  py: 0.5,
-                  fontSize: '0.85rem',
+                  borderRadius: isMobile ? '14px' : '20px',
+                  px: isMobile ? 1.4 : 2,
+                  py: isMobile ? 0.45 : 0.5,
+                  minHeight: isMobile ? 34 : undefined,
+                  fontSize: isMobile ? '0.78rem' : '0.85rem',
+                  whiteSpace: 'nowrap',
                   transition: 'all 0.2s ease',
                   ...(isValidated
                     ? {
@@ -279,6 +305,15 @@ const ResumeAssistantTextSection = ({
           },
           '& .MuiInputBase-input::placeholder': {
             whiteSpace: 'pre-line',
+          },
+          '& .MuiOutlinedInput-input': {
+            fontSize: isMobile ? '0.92rem' : '1rem',
+            lineHeight: isMobile ? 1.6 : 1.7,
+          },
+          '& .MuiOutlinedInput-input::placeholder': {
+            fontSize: isMobile ? '0.9rem' : '1rem',
+            color: isMobile ? '#94a3b8' : undefined,
+            opacity: isMobile ? 0.72 : 1,
           },
             '& .MuiOutlinedInput-root': {
               ...(glassInputSx as any)['& .MuiOutlinedInput-root'],

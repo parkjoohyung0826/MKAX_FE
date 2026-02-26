@@ -86,6 +86,7 @@ const CertificationsStep = () => {
       <StepHeader
         title={copy.certStepTitle}
         subtitle={copy.certStepSubtitle}
+        hideOnMobile
       />
 
       <ResumeAssistantTextSection
