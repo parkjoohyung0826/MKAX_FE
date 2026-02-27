@@ -148,7 +148,12 @@ const GenerationResult = ({ data, onReset }: Props) => {
   };
 
   const handleDownloadPDF = async (targetRef: RefObject<HTMLDivElement | null>, fileName: string) => {
-    if (!targetRef.current) return;
+    if (!targetRef.current) {
+      setToastMessage('PDF 미리보기를 준비하지 못했습니다. 잠시 후 다시 시도해주세요.');
+      setToastSeverity('error');
+      setToastOpen(true);
+      return;
+    }
     try {
       const canvas = await html2canvas(targetRef.current, { scale: 2, useCORS: true, logging: false });
       const imgData = canvas.toDataURL('image/png');
@@ -304,6 +309,20 @@ const GenerationResult = ({ data, onReset }: Props) => {
                     )}
                   </Box>
                 )}
+                {isMobile && !data.resumeUrl && (
+                  <Box
+                    sx={{
+                      position: 'fixed',
+                      left: '-10000px',
+                      top: 0,
+                      width: '210mm',
+                      visibility: 'hidden',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    <ResumeTemplateRenderer ref={resumeRef} />
+                  </Box>
+                )}
               </Box>
             )}
 
@@ -375,6 +394,20 @@ const GenerationResult = ({ data, onReset }: Props) => {
                     ) : (
                       <CoverLetterTemplateRenderer ref={coverLetterRef} resumeName={resumeData.name} />
                     )}
+                  </Box>
+                )}
+                {isMobile && !data.coverLetterUrl && (
+                  <Box
+                    sx={{
+                      position: 'fixed',
+                      left: '-10000px',
+                      top: 0,
+                      width: '210mm',
+                      visibility: 'hidden',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    <CoverLetterTemplateRenderer ref={coverLetterRef} resumeName={resumeData.name} />
                   </Box>
                 )}
               </Box>
