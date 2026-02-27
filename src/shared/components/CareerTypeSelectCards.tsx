@@ -128,6 +128,22 @@ const CareerTypeSelectCards = ({ title, subtitle, selectedId, onSelect }: Props)
                   >
                     {card.title}
                   </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      display: { xs: 'none', sm: '-webkit-box' },
+                      color: '#475569',
+                      fontWeight: 500,
+                      fontSize: { sm: '0.85rem', md: '0.92rem' },
+                      lineHeight: 1.4,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                    }}
+                  >
+                    {card.description}
+                  </Typography>
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'flex-end', height: { xs: 28, sm: 40 } }}>

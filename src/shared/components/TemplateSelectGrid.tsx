@@ -202,7 +202,22 @@ const TemplateSelectGrid = <T extends string>({ items, selectedId, onSelect }: P
                       </Box>
                     )}
                   </Box>
-
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      display: { xs: 'none', sm: '-webkit-box' },
+                      color: COLORS.textBody,
+                      fontWeight: 500,
+                      fontSize: '0.82rem',
+                      lineHeight: 1.35,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                    }}
+                  >
+                    {item.description}
+                  </Typography>
                 </Stack>
               </Box>
             </Stack>
