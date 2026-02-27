@@ -312,8 +312,8 @@ const ResumeAssistantTextSection = ({
           },
           '& .MuiOutlinedInput-input::placeholder': {
             fontSize: isMobile ? '0.9rem' : '1rem',
-            color: isMobile ? '#94a3b8' : undefined,
-            opacity: isMobile ? 0.72 : 1,
+            color: '#94a3b8',
+            opacity: 0.72,
           },
             '& .MuiOutlinedInput-root': {
               ...(glassInputSx as any)['& .MuiOutlinedInput-root'],
