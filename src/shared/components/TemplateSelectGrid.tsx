@@ -77,12 +77,11 @@ const TemplateSelectGrid = <T extends string>({ items, selectedId, onSelect }: P
           >
             <Stack spacing={0} sx={{ height: '100%' }}>
               
-              {/* 1. 이미지 및 오버레이 영역 (4:3 비율 유지) */}
               <Box
                 sx={{
                   position: 'relative',
                   overflow: 'hidden',
-                  height: { xs: '70%', sm: '72%' },
+                  height: { xs: '70%', sm: '75%' },
                   
                   '&:hover .template-image': {
                     filter: 'blur(4px)',
