@@ -97,8 +97,8 @@ const FormPageLayout = ({ activeTab, onTabChange, children, isLoading = false, l
                   '& .Mui-selected': { color: '#2563EB !important' },
                 }}
               >
-                <Tab label="01. 이력서 작성" value="resume" />
-                <Tab label="02. 자기소개서 작성" value="coverLetter" />
+                <Tab label="이력서 작성" value="resume" />
+                <Tab label="자기소개서 작성" value="coverLetter" />
               </Tabs>
             </Box>
 
