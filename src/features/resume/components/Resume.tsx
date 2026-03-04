@@ -132,7 +132,6 @@ const Resume = ({ onFinishResume }: Props) => {
   );
   const contentSteps = useMemo(() => resumeSteps.slice(2, -1), [resumeSteps]);
   const progressSteps = useMemo(() => resumeSteps.slice(2, -1), [resumeSteps]);
-  const currentMode = stepInputModes[activeStep] || 'ai';
   const isTypeStep = activeStep === 0;
   const isTemplateStep = activeStep === 1;
   const isFinalStep = activeStep === resumeSteps.length - 1;
@@ -140,6 +139,8 @@ const Resume = ({ onFinishResume }: Props) => {
   const progressActiveStep = Math.min(Math.max(activeStep - 2, 0), progressSteps.length - 1);
   const aiChatRef = useRef<AIChatViewHandle | null>(null);
   const isContentStep = !isTypeStep && !isTemplateStep && !isFinalStep;
+  const isBasicInfoStep = isContentStep && contentStepIndex === 0;
+  const currentMode = isBasicInfoStep ? 'direct' : (stepInputModes[activeStep] || 'ai');
   const [persistentContentStepIndex, setPersistentContentStepIndex] = useState(0);
   const [shouldPersistAiChat, setShouldPersistAiChat] = useState(false);
 
@@ -170,7 +171,7 @@ const Resume = ({ onFinishResume }: Props) => {
     if (index <= 1 || index === resumeSteps.length - 1) {
       return completed;
     }
-    const mode = stepInputModes[index] ?? 'ai';
+    const mode = index === 2 ? 'direct' : (stepInputModes[index] ?? 'ai');
     return mode === 'ai' ? !!aiCompletedSteps[index] : completed;
   });
 
@@ -232,7 +233,7 @@ const Resume = ({ onFinishResume }: Props) => {
   }
 
   const renderModeToggle = () => {
-    if (isFinalStep || isTemplateStep || isTypeStep) return null;
+    if (isFinalStep || isTemplateStep || isTypeStep || isBasicInfoStep) return null;
     return (
       <ModeToggleBar
         currentMode={currentMode}
@@ -243,7 +244,7 @@ const Resume = ({ onFinishResume }: Props) => {
     );
   };
 
-  const showAiChatView = currentMode === 'ai' && isContentStep;
+  const showAiChatView = currentMode === 'ai' && isContentStep && !isBasicInfoStep;
   const showNonAiPanel = !showAiChatView;
 
   return (
