@@ -3,7 +3,13 @@ import CareerTypeSelectCards from '@/shared/components/CareerTypeSelectCards';
 import { useCoverLetterStore } from '../../store';
 
 const CareerTypeSelectStep = () => {
-  const { selectedCareerType, setSelectedCareerType, setCoverLetterData } = useCoverLetterStore();
+  const {
+    selectedCareerType,
+    setSelectedCareerType,
+    setCoverLetterData,
+    setSelectedQuestionMode,
+    setCompanyQuestions,
+  } = useCoverLetterStore();
 
   const handleSelectCareerType = async (careerType: 'basic' | 'senior') => {
     const hasChanged = selectedCareerType !== null && selectedCareerType !== careerType;
@@ -21,6 +27,8 @@ const CareerTypeSelectStep = () => {
       motivation: '',
       motivationSummary: '',
     });
+    setSelectedQuestionMode(null);
+    setCompanyQuestions([]);
 
     await Promise.all(
       ['GROWTH_PROCESS', 'PERSONALITY', 'CAREER_STRENGTH', 'MOTIVATION_ASPIRATION'].map((section) =>

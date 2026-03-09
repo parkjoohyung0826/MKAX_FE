@@ -10,15 +10,21 @@ interface Props {
 }
 
 const ModernCoverLetterTemplate = React.forwardRef<HTMLDivElement, Props>(({ resumeName, data }, ref) => {
-  const { coverLetterData, selectedCareerType } = useCoverLetterStore();
+  const { coverLetterData, selectedCareerType, selectedQuestionMode, companyQuestions } = useCoverLetterStore();
   const displayData = data ?? coverLetterData;
   const copy = getCoverLetterCareerTypeCopy(selectedCareerType);
-  const sections: Array<{ label: string; key: keyof CoverLetterData }> = [
-    { label: copy.sections.growthProcess.modernDisplayLabel, key: 'growthProcess' },
-    { label: copy.sections.strengthsAndWeaknesses.modernDisplayLabel, key: 'strengthsAndWeaknesses' },
-    { label: copy.sections.keyExperience.modernDisplayLabel, key: 'keyExperience' },
-    { label: copy.sections.motivation.modernDisplayLabel, key: 'motivation' },
-  ];
+  const sections = selectedQuestionMode === 'company'
+    ? companyQuestions.map((item, index) => ({
+        label: `문항 ${index + 1}`,
+        question: item.question,
+        content: item.answer,
+      }))
+    : [
+        { label: copy.sections.growthProcess.modernDisplayLabel, question: '', content: displayData.growthProcess || '' },
+        { label: copy.sections.strengthsAndWeaknesses.modernDisplayLabel, question: '', content: displayData.strengthsAndWeaknesses || '' },
+        { label: copy.sections.keyExperience.modernDisplayLabel, question: '', content: displayData.keyExperience || '' },
+        { label: copy.sections.motivation.modernDisplayLabel, question: '', content: displayData.motivation || '' },
+      ];
 
   return (
     <Paper
@@ -50,9 +56,9 @@ const ModernCoverLetterTemplate = React.forwardRef<HTMLDivElement, Props>(({ res
       </Box>
 
       <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {sections.map((section) => (
+        {sections.map((section, index) => (
           <Box
-            key={section.key}
+            key={`${section.label}-${index}`}
             sx={{
               borderRadius: '14px',
               border: '1px solid #e2e8f0',
@@ -67,8 +73,13 @@ const ModernCoverLetterTemplate = React.forwardRef<HTMLDivElement, Props>(({ res
               </Typography>
             </Box>
             <Divider sx={{ my: 1.5, borderColor: 'rgba(15, 23, 42, 0.1)' }} />
+            {section.question && (
+              <Typography variant="subtitle2" color="#0f172a" sx={{ mb: 1, fontWeight: 700 }}>
+                {section.question}
+              </Typography>
+            )}
             <Typography variant="body2" color="#334155" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
-              {displayData[section.key] || ''}
+              {section.content || ''}
             </Typography>
           </Box>
         ))}

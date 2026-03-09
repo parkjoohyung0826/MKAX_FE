@@ -2,7 +2,6 @@
 
 import { Box, Typography } from '@mui/material';
 import { Create, FavoriteBorder, StarBorder, Flare } from '@mui/icons-material';
-import { CoverLetterData } from '../../types';
 import { useCoverLetterStore } from '../../store';
 import { getCoverLetterCareerTypeCopy } from '../../careerTypeCopy';
 
@@ -46,14 +45,22 @@ const SectionContent = ({ content }: { content: string }) => (
 );
 
 const FinalReviewStep = () => {
-  const { coverLetterData, selectedCareerType } = useCoverLetterStore();
+  const { coverLetterData, selectedCareerType, selectedQuestionMode, companyQuestions } = useCoverLetterStore();
   const copy = getCoverLetterCareerTypeCopy(selectedCareerType);
-  const sections = [
-    { id: 'growthProcess', label: copy.sections.growthProcess.finalReviewLabel, icon: Create },
-    { id: 'strengthsAndWeaknesses', label: copy.sections.strengthsAndWeaknesses.finalReviewLabel, icon: FavoriteBorder },
-    { id: 'keyExperience', label: copy.sections.keyExperience.finalReviewLabel, icon: StarBorder },
-    { id: 'motivation', label: copy.sections.motivation.finalReviewLabel, icon: Flare },
-  ];
+  const isCompanyMode = selectedQuestionMode === 'company';
+  const sections = isCompanyMode
+    ? companyQuestions.map((item, index) => ({
+        id: item.id,
+        label: `문항 ${index + 1}. ${item.question}`,
+        content: item.answer,
+        icon: Create,
+      }))
+    : [
+        { id: 'growthProcess', label: copy.sections.growthProcess.finalReviewLabel, content: coverLetterData.growthProcess, icon: Create },
+        { id: 'strengthsAndWeaknesses', label: copy.sections.strengthsAndWeaknesses.finalReviewLabel, content: coverLetterData.strengthsAndWeaknesses, icon: FavoriteBorder },
+        { id: 'keyExperience', label: copy.sections.keyExperience.finalReviewLabel, content: coverLetterData.keyExperience, icon: StarBorder },
+        { id: 'motivation', label: copy.sections.motivation.finalReviewLabel, content: coverLetterData.motivation, icon: Flare },
+      ];
 
   return (
     <Box sx={{ py: 2 }}>
@@ -70,7 +77,7 @@ const FinalReviewStep = () => {
         {sections.map((section) => (
           <Box sx={glassBox} key={section.id}>
             <SectionHeader icon={section.icon} title={section.label} />
-            <SectionContent content={String(coverLetterData[section.id as keyof CoverLetterData] ?? '')} />
+            <SectionContent content={section.content ?? ''} />
           </Box>
         ))}
       </Box>

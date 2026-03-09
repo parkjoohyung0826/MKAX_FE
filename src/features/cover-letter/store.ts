@@ -1,5 +1,12 @@
 import { create } from 'zustand';
-import { CoverLetterCareerType, CoverLetterData, CoverLetterTemplateId } from './types';
+import {
+  CompanyCoverLetterQuestion,
+  CompanyQuestionAssistantId,
+  CoverLetterCareerType,
+  CoverLetterData,
+  CoverLetterQuestionMode,
+  CoverLetterTemplateId,
+} from './types';
 
 interface CoverLetterState {
   coverLetterData: CoverLetterData;
@@ -9,6 +16,12 @@ interface CoverLetterState {
   setSelectedTemplate: (template: CoverLetterTemplateId) => void;
   selectedCareerType: CoverLetterCareerType | null;
   setSelectedCareerType: (careerType: CoverLetterCareerType) => void;
+  selectedQuestionMode: CoverLetterQuestionMode | null;
+  setSelectedQuestionMode: (mode: CoverLetterQuestionMode | null) => void;
+  companyQuestions: CompanyCoverLetterQuestion[];
+  setCompanyQuestions: (questions: CompanyCoverLetterQuestion[]) => void;
+  setCompanyQuestionAnswer: (id: string, answer: string) => void;
+  setCompanyQuestionAssistant: (id: string, assistantId: CompanyQuestionAssistantId) => void;
 }
 
 const initialState: CoverLetterData = {
@@ -34,9 +47,27 @@ export const useCoverLetterStore = create<CoverLetterState>((set) => ({
   setSelectedTemplate: (template) => set({ selectedTemplate: template }),
   selectedCareerType: null,
   setSelectedCareerType: (careerType) => set({ selectedCareerType: careerType }),
+  selectedQuestionMode: null,
+  setSelectedQuestionMode: (mode) => set({ selectedQuestionMode: mode }),
+  companyQuestions: [],
+  setCompanyQuestions: (questions) => set({ companyQuestions: questions }),
+  setCompanyQuestionAnswer: (id, answer) =>
+    set((state) => ({
+      companyQuestions: state.companyQuestions.map((item) => (
+        item.id === id ? { ...item, answer } : item
+      )),
+    })),
+  setCompanyQuestionAssistant: (id, assistantId) =>
+    set((state) => ({
+      companyQuestions: state.companyQuestions.map((item) => (
+        item.id === id ? { ...item, assistantId } : item
+      )),
+    })),
   resetCoverLetterData: () => set({
     coverLetterData: initialState,
     selectedTemplate: defaultTemplate,
     selectedCareerType: null,
+    selectedQuestionMode: null,
+    companyQuestions: [],
   }),
 }));

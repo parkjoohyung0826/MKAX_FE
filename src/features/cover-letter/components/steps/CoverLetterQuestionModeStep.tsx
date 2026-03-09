@@ -1,0 +1,184 @@
+import React from 'react';
+import { Box, Paper, Stack, Typography, alpha } from '@mui/material';
+import { CheckCircleRounded } from '@mui/icons-material';
+import StepHeader from '@/features/resume/components/steps/StepHeader';
+import { useCoverLetterStore } from '../../store';
+import { CoverLetterQuestionMode } from '../../types';
+
+const cards: Array<{
+  id: CoverLetterQuestionMode;
+  title: string;
+  description: string;
+  illustrationUrl: string;
+}> = [
+  {
+    id: 'default',
+    title: '기본 문항으로 작성',
+    description: '성장과정/장단점/경험/지원동기 기본 문항으로 진행합니다.',
+    illustrationUrl: 'https://illustrations.popsy.co/blue/writing.svg',
+  },
+  {
+    id: 'company',
+    title: '기업별 문항으로 작성',
+    description: '기업 자소서 문항을 직접 입력하고 문항별 작성 도우미를 설정합니다.',
+    illustrationUrl: 'https://illustrations.popsy.co/blue/team-presentation.svg',
+  },
+];
+
+const CoverLetterQuestionModeStep = () => {
+  const { selectedQuestionMode, setSelectedQuestionMode, setCompanyQuestions } = useCoverLetterStore();
+
+  const handleSelect = (mode: CoverLetterQuestionMode) => {
+    setSelectedQuestionMode(mode);
+    if (mode === 'default') {
+      setCompanyQuestions([]);
+    }
+  };
+
+  return (
+    <Box sx={{ py: 2 }}>
+      <StepHeader
+        title="문항 유형 선택"
+        subtitle="템플릿 선택 후, 어떤 방식으로 자기소개서를 작성할지 선택해주세요."
+      />
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: { xs: 1.25, sm: 3, md: 4 },
+          mt: { xs: 2, sm: 4 },
+        }}
+      >
+        {cards.map((card) => {
+          const isSelected = selectedQuestionMode === card.id;
+
+          return (
+            <Paper
+              key={card.id}
+              elevation={0}
+              onClick={() => handleSelect(card.id)}
+              sx={{
+                aspectRatio: '1 / 1',
+                position: 'relative',
+                borderRadius: { xs: '18px', sm: '32px' },
+                cursor: 'pointer',
+                overflow: 'hidden',
+                background: isSelected
+                  ? 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.02) 100%)'
+                  : 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid',
+                borderColor: isSelected ? 'rgba(37, 99, 235, 0.5)' : 'rgba(255, 255, 255, 0.6)',
+                boxShadow: isSelected
+                  ? `0 24px 48px -12px ${alpha('#2563EB', 0.25)}, inset 0 2px 20px rgba(255,255,255,0.5)`
+                  : '0 12px 32px -8px rgba(15, 23, 42, 0.08), inset 0 2px 20px rgba(255,255,255,0.5)',
+                transition: 'all 0.25s ease',
+                '&:hover': {
+                  transform: { xs: 'none', sm: 'translateY(-8px)' },
+                  boxShadow: isSelected
+                    ? `0 32px 50px -12px ${alpha('#2563EB', 0.3)}`
+                    : '0 20px 40px -12px rgba(15, 23, 42, 0.12)',
+                  '& .illustration-layer': {
+                    transform: 'scale(1.05) translateY(-4px)',
+                  },
+                },
+              }}
+            >
+              <Box
+                className="illustration-layer"
+                sx={{
+                  position: 'absolute',
+                  bottom: '2%',
+                  right: '2%',
+                  width: '60%',
+                  height: '60%',
+                  backgroundImage: `url(${card.illustrationUrl})`,
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'bottom right',
+                  opacity: isSelected ? 1 : 0.6,
+                  transition: 'transform 0.25s ease, opacity 0.25s ease',
+                  zIndex: 0,
+                  filter: isSelected ? 'drop-shadow(0 10px 16px rgba(37,99,235,0.2))' : 'none',
+                }}
+              />
+
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '70%',
+                  background: 'linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 100%)',
+                  zIndex: 1,
+                  pointerEvents: 'none',
+                }}
+              />
+
+              <Stack justifyContent="space-between" sx={{ position: 'relative', zIndex: 2, height: '100%', p: { xs: 1.6, sm: 3, md: 4 } }}>
+                <Box sx={{ maxWidth: '90%' }}>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: 900,
+                      color: isSelected ? '#1e293b' : '#334155',
+                      mb: { xs: 0.5, sm: 1.5 },
+                      fontSize: { xs: '0.9rem', sm: '1.2rem', md: '1.4rem' },
+                      letterSpacing: '-0.5px',
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    {card.title}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      display: { xs: 'none', sm: '-webkit-box' },
+                      color: '#475569',
+                      fontWeight: 500,
+                      fontSize: { sm: '0.85rem', md: '0.92rem' },
+                      lineHeight: 1.4,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                    }}
+                  >
+                    {card.description}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', height: { xs: 28, sm: 40 } }}>
+                  {isSelected && (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.8,
+                        bgcolor: '#2563EB',
+                        color: 'white',
+                        px: { xs: 0.9, sm: 1.5 },
+                        py: { xs: 0.35, sm: 0.6 },
+                        borderRadius: '99px',
+                        boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
+                      }}
+                    >
+                      <CheckCircleRounded sx={{ fontSize: { xs: 14, sm: 18 } }} />
+                      <Typography sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' }, fontWeight: 700 }}>
+                        선택됨
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Stack>
+            </Paper>
+          );
+        })}
+      </Box>
+    </Box>
+  );
+};
+
+export default CoverLetterQuestionModeStep;

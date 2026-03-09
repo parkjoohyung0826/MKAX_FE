@@ -24,7 +24,7 @@ const ResumePage = () => {
   const [activeTab, setActiveTab] = useState<'resume' | 'coverLetter'>('resume');
   const [isGenerating, setIsGenerating] = useState(false);
   const { resumeData, setFormattedResume, selectedCareerType } = useResumeStore();
-  const { coverLetterData } = useCoverLetterStore();
+  const { coverLetterData, selectedQuestionMode, companyQuestions } = useCoverLetterStore();
   const { setResultData } = useReportStore();
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: 'resume' | 'coverLetter') => {
@@ -34,13 +34,31 @@ const ResumePage = () => {
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
+      const companyAnswers = companyQuestions.map((item) => item.answer.trim()).filter(Boolean);
+      const normalizedCoverLetterForApi = selectedQuestionMode === 'company'
+        ? {
+            growthProcess: companyAnswers[0] ?? '',
+            strengthsAndWeaknesses: companyAnswers[1] ?? '',
+            keyExperience: companyAnswers[2] ?? '',
+            motivation: companyAnswers[3] ?? '',
+          }
+        : {
+            growthProcess: coverLetterData.growthProcess,
+            strengthsAndWeaknesses: coverLetterData.strengthsAndWeaknesses,
+            keyExperience: coverLetterData.keyExperience,
+            motivation: coverLetterData.motivation,
+          };
+
       const res = await fetch('/api/recommend/format', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           ...resumeData,
-          coverLetter: coverLetterData,
+          coverLetter: {
+            ...coverLetterData,
+            ...normalizedCoverLetterForApi,
+          },
           resumeType: selectedCareerType ?? 'basic',
         }),
       });
@@ -57,12 +75,7 @@ const ResumePage = () => {
       let jobPostings = mockJobPostings;
       let recommendedJobPostingsMeta: ResultData['recommendedJobPostingsMeta'];
       if (resume && code) {
-        const coverLetterPayload = {
-          growthProcess: coverLetterData.growthProcess,
-          strengthsAndWeaknesses: coverLetterData.strengthsAndWeaknesses,
-          keyExperience: coverLetterData.keyExperience,
-          motivation: coverLetterData.motivation,
-        };
+        const coverLetterPayload = normalizedCoverLetterForApi;
         try {
           const analysisResult = await requestAnalysisReport({
             resume,

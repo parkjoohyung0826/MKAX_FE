@@ -58,7 +58,7 @@ interface Props {
 }
 
 const CoverLetterDisplay = React.forwardRef<HTMLDivElement, Props>(({ resumeName, data }, ref) => {
-  const { coverLetterData, selectedCareerType } = useCoverLetterStore();
+  const { coverLetterData, selectedCareerType, selectedQuestionMode, companyQuestions } = useCoverLetterStore();
   const displayData = data ?? coverLetterData;
   const copy = getCoverLetterCareerTypeCopy(selectedCareerType);
 
@@ -73,12 +73,18 @@ const CoverLetterDisplay = React.forwardRef<HTMLDivElement, Props>(({ resumeName
     return '';
   };
 
-  const sections = [
-    { label: copy.sections.growthProcess.classicDisplayLabel, key: 'growthProcess' as keyof CoverLetterData },
-    { label: copy.sections.strengthsAndWeaknesses.classicDisplayLabel, key: 'strengthsAndWeaknesses' as keyof CoverLetterData },
-    { label: copy.sections.keyExperience.classicDisplayLabel, key: 'keyExperience' as keyof CoverLetterData },
-    { label: copy.sections.motivation.classicDisplayLabel, key: 'motivation' as keyof CoverLetterData },
-  ];
+  const sections = selectedQuestionMode === 'company'
+    ? companyQuestions.map((item, index) => ({
+        label: `문항 ${index + 1}`,
+        question: item.question,
+        content: item.answer,
+      }))
+    : [
+        { label: copy.sections.growthProcess.classicDisplayLabel, question: '', content: normalizeContent(displayData.growthProcess) },
+        { label: copy.sections.strengthsAndWeaknesses.classicDisplayLabel, question: '', content: normalizeContent(displayData.strengthsAndWeaknesses) },
+        { label: copy.sections.keyExperience.classicDisplayLabel, question: '', content: normalizeContent(displayData.keyExperience) },
+        { label: copy.sections.motivation.classicDisplayLabel, question: '', content: normalizeContent(displayData.motivation) },
+      ];
 
   return (
     <Paper
@@ -120,8 +126,12 @@ const CoverLetterDisplay = React.forwardRef<HTMLDivElement, Props>(({ resumeName
               </div>
               {/* 오른쪽 내용 */}
               <div css={contentCellStyle}>
-                
-                {normalizeContent(displayData[section.key])}
+                {section.question && (
+                  <Typography variant="subtitle2" sx={{ mb: 1, color: '#0f172a', fontWeight: 700 }}>
+                    {section.question}
+                  </Typography>
+                )}
+                {normalizeContent(section.content)}
               </div>
             </div>
           ))}

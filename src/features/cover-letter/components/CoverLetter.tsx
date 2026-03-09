@@ -9,6 +9,9 @@ import AIChatView, { ConversationStep, AIChatViewHandle } from '@/features/resum
 import CareerTypeSelectStep from './steps/CareerTypeSelectStep';
 import CoverLetterDirectInputStep from './steps/CoverLetterDirectInputStep';
 import CoverLetterTemplateSelectStep from './steps/CoverLetterTemplateSelectStep';
+import CoverLetterQuestionModeStep from './steps/CoverLetterQuestionModeStep';
+import CoverLetterCompanyQuestionSetupStep from './steps/CoverLetterCompanyQuestionSetupStep';
+import CoverLetterCompanyDirectInputStep from './steps/CoverLetterCompanyDirectInputStep';
 import FinalReviewStep from './steps/FinalReviewStep';
 import QuestionPanel from './chat-panels/QuestionPanel';
 import ProgressStepper from '@/shared/components/ProgressStepper';
@@ -42,25 +45,61 @@ interface Props {
 }
 
 const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
-  const { coverLetterData, setCoverLetterData, selectedTemplate, selectedCareerType } = useCoverLetterStore();
+  const {
+    coverLetterData,
+    setCoverLetterData,
+    selectedTemplate,
+    selectedCareerType,
+    selectedQuestionMode,
+    companyQuestions,
+  } = useCoverLetterStore();
   const [activeStep, setActiveStep] = useState(0);
   const [direction, setDirection] = useState(0);
-  const [isStepComplete, setIsStepComplete] = useState(false);
   const [stepInputModes, setStepInputModes] = useState<Record<number, InputMode>>({});
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const aiChatRef = useRef<AIChatViewHandle | null>(null);
+
   const mode = toCareerMode(selectedCareerType);
   const copy = useMemo(() => getCoverLetterCareerTypeCopy(selectedCareerType), [selectedCareerType]);
-  const contentSteps = useMemo(
+  const defaultContentSteps = useMemo(
     () => coverLetterSectionOrder.map((sectionId) => copy.sections[sectionId].stepLabel),
     [copy],
   );
-  const progressSteps = contentSteps;
-  const coverLetterSteps = useMemo(
-    () => ['작성 유형 선택', '템플릿 선택', ...contentSteps, '최종 검토'],
-    [contentSteps],
+  const isCompanyMode = selectedQuestionMode === 'company';
+  const contentSteps = useMemo(
+    () => (isCompanyMode ? companyQuestions.map((_, index) => `문항 ${index + 1}`) : defaultContentSteps),
+    [companyQuestions, defaultContentSteps, isCompanyMode],
   );
+
+  const hasCompanySetupStep = isCompanyMode;
+  const typeStepIndex = 0;
+  const templateStepIndex = 1;
+  const questionModeStepIndex = 2;
+  const companySetupStepIndex = hasCompanySetupStep ? 3 : -1;
+  const contentStartIndex = hasCompanySetupStep ? 4 : 3;
+
+  const coverLetterSteps = useMemo(
+    () => [
+      '작성 유형 선택',
+      '템플릿 선택',
+      '문항 유형 선택',
+      ...(hasCompanySetupStep ? ['기업 문항 설정'] : []),
+      ...contentSteps,
+      '최종 검토',
+    ],
+    [contentSteps, hasCompanySetupStep],
+  );
+
+  const isTypeStep = activeStep === typeStepIndex;
+  const isTemplateStep = activeStep === templateStepIndex;
+  const isQuestionModeStep = activeStep === questionModeStepIndex;
+  const isCompanySetupStep = hasCompanySetupStep && activeStep === companySetupStepIndex;
+  const isFinalStep = activeStep === coverLetterSteps.length - 1;
+  const isContentStep = activeStep >= contentStartIndex && activeStep < coverLetterSteps.length - 1;
+  const contentStepIndex = Math.max(activeStep - contentStartIndex, 0);
+  const currentMode: InputMode = isCompanyMode ? 'direct' : (stepInputModes[activeStep] || 'ai');
+
   const coverLetterConversationSteps = useMemo<ConversationStep<CoverLetterData>[]>(() => [
     {
       title: copy.sections.growthProcess.stepLabel,
@@ -98,15 +137,42 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
     },
   ], [copy]);
 
-  const coverLetterCompletedSteps = [
-    Boolean(selectedCareerType),
-    Boolean(selectedTemplate),
-    !!coverLetterData.growthProcess,
-    !!coverLetterData.strengthsAndWeaknesses,
-    !!coverLetterData.keyExperience,
-    !!coverLetterData.motivation,
-    false,
-  ];
+  const contentCompletedSteps = isCompanyMode
+    ? companyQuestions.map((item) => Boolean(item.answer.trim()))
+    : [
+        Boolean(coverLetterData.growthProcess),
+        Boolean(coverLetterData.strengthsAndWeaknesses),
+        Boolean(coverLetterData.keyExperience),
+        Boolean(coverLetterData.motivation),
+      ];
+
+  const progressActiveStep = contentSteps.length > 0
+    ? Math.min(Math.max(activeStep - contentStartIndex, 0), contentSteps.length - 1)
+    : 0;
+  const companySetupCompleted = !isCompanyMode || (
+    companyQuestions.length > 0 && companyQuestions.every((item) => item.question.trim().length > 0)
+  );
+
+  const [persistentContentStepIndex, setPersistentContentStepIndex] = useState(0);
+  const [shouldPersistAiChat, setShouldPersistAiChat] = useState(false);
+
+  useEffect(() => {
+    if (activeStep > coverLetterSteps.length - 1) {
+      setActiveStep(coverLetterSteps.length - 1);
+    }
+  }, [activeStep, coverLetterSteps.length]);
+
+  useEffect(() => {
+    if (!isCompanyMode && isContentStep) {
+      setPersistentContentStepIndex(contentStepIndex);
+    }
+  }, [contentStepIndex, isCompanyMode, isContentStep]);
+
+  useEffect(() => {
+    if (!isCompanyMode && isContentStep) {
+      setShouldPersistAiChat(true);
+    }
+  }, [isCompanyMode, isContentStep]);
 
   const handleNextStep = () => {
     if (isTypeStep && !selectedCareerType) {
@@ -121,19 +187,30 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
       return;
     }
 
+    if (isQuestionModeStep && !selectedQuestionMode) {
+      setToastMessage('문항 유형(기본 문항/기업별 문항)을 먼저 선택해주세요.');
+      setToastOpen(true);
+      return;
+    }
+
+    if (isCompanySetupStep && !companySetupCompleted) {
+      setToastMessage('기업별 문항을 1개 이상 작성하고, 각 문항 내용을 입력해주세요.');
+      setToastOpen(true);
+      return;
+    }
+
     if (activeStep === coverLetterSteps.length - 1) {
       handleGenerate();
-    } else {
-      setDirection(1);
-      setActiveStep((prev) => prev + 1);
-      setIsStepComplete(false);
+      return;
     }
+
+    setDirection(1);
+    setActiveStep((prev) => prev + 1);
   };
 
   const handleBackStep = () => {
     setDirection(-1);
     setActiveStep((prev) => prev - 1);
-    setIsStepComplete(true);
   };
 
   const handleStepClick = (step: number) => {
@@ -146,54 +223,32 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
   };
 
   const handleProgressStepClick = (step: number) => {
-    handleStepClick(step + 2);
+    handleStepClick(step + contentStartIndex);
   };
 
-  const handleModeChange = (step: number, mode: InputMode) => {
-    setStepInputModes(prev => ({...prev, [step]: mode}));
-  }
-  
-  const isTypeStep = activeStep === 0;
-  const isTemplateStep = activeStep === 1;
-  const isFinalStep = activeStep === coverLetterSteps.length - 1;
-  const currentMode = stepInputModes[activeStep] || 'ai';
-  const contentStepIndex = Math.max(activeStep - 2, 0);
-  const progressActiveStep = Math.min(Math.max(activeStep - 2, 0), progressSteps.length - 1);
-  const isContentStep = !isTypeStep && !isTemplateStep && !isFinalStep;
-  const [persistentContentStepIndex, setPersistentContentStepIndex] = useState(0);
-  const [shouldPersistAiChat, setShouldPersistAiChat] = useState(false);
+  const handleModeChange = (step: number, modeValue: InputMode) => {
+    setStepInputModes((prev) => ({ ...prev, [step]: modeValue }));
+  };
 
-  useEffect(() => {
-    if (isContentStep) {
-      setPersistentContentStepIndex(contentStepIndex);
-    }
-  }, [contentStepIndex, isContentStep]);
-
-  useEffect(() => {
-    if (isContentStep) {
-      setShouldPersistAiChat(true);
-    }
-  }, [isContentStep]);
-
-  const showAiChatView = currentMode === 'ai' && isContentStep;
+  const showAiChatView = !isCompanyMode && currentMode === 'ai' && isContentStep;
   const showNonAiPanel = !showAiChatView;
 
   return (
     <Box>
-      {!isTypeStep && !isTemplateStep && !isFinalStep && (
+      {isContentStep && contentSteps.length > 0 && (
         <Box sx={{ mt: -3 }}>
           <ProgressStepper
-            steps={progressSteps}
+            steps={contentSteps}
             activeStep={progressActiveStep}
             onStepClick={handleProgressStepClick}
-            completedSteps={coverLetterCompletedSteps.slice(2, -1)}
+            completedSteps={contentCompletedSteps}
           />
         </Box>
       )}
-      {!isFinalStep && !isTemplateStep && !isTypeStep && (
+      {!isFinalStep && !isTypeStep && !isTemplateStep && !isQuestionModeStep && !isCompanyMode && isContentStep && (
         <ModeToggleBar
           currentMode={currentMode}
-          onModeChange={(mode) => handleModeChange(activeStep, mode)}
+          onModeChange={(modeValue) => handleModeChange(activeStep, modeValue)}
           onReset={() => aiChatRef.current?.resetCurrentStep()}
           resetDisabled={currentMode !== 'ai'}
         />
@@ -203,8 +258,8 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
           <AIChatView
             ref={aiChatRef}
             activeStep={persistentContentStepIndex}
-            steps={contentSteps}
-            onStepComplete={() => setIsStepComplete(true)}
+            steps={defaultContentSteps}
+            onStepComplete={() => undefined}
             onResetChat={async (args) => {
               const sections = args?.sections?.length
                 ? args.sections
@@ -263,7 +318,7 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
           <motion.div
             custom={direction}
             variants={stepSlideVariants}
-            key={`${activeStep}-${currentMode}`}
+            key={isContentStep ? `${activeStep}-${currentMode}` : `${activeStep}`}
             initial="enter"
             animate="center"
             exit="exit"
@@ -271,13 +326,20 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
           >
             {isTypeStep && <CareerTypeSelectStep />}
             {isTemplateStep && <CoverLetterTemplateSelectStep />}
+            {isQuestionModeStep && <CoverLetterQuestionModeStep />}
+            {isCompanySetupStep && <CoverLetterCompanyQuestionSetupStep />}
             {isFinalStep && <FinalReviewStep />}
-            <Box sx={{ display: currentMode === 'direct' ? (isFinalStep || isTemplateStep || isTypeStep ? 'none' : 'block') : 'none' }}>
+
+            {!isFinalStep && isContentStep && isCompanyMode && (
+              <CoverLetterCompanyDirectInputStep activeStep={contentStepIndex} />
+            )}
+
+            {!isFinalStep && isContentStep && !isCompanyMode && currentMode === 'direct' && (
               <CoverLetterDirectInputStep
-                  activeStep={contentStepIndex}
-                  isGenerating={isGenerating}
+                activeStep={contentStepIndex}
+                isGenerating={isGenerating}
               />
-            </Box>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
