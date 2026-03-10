@@ -4,8 +4,6 @@ import React, { useState } from 'react';
 import {
   Box,
   Button,
-  TextField,
-  Typography,
   Stack,
   IconButton,
   Tooltip,
@@ -18,46 +16,13 @@ import { useTheme } from '@mui/material/styles';
 import CustomModal from '@/shared/components/CustomModal';
 import ConversationalAssistant from '@/shared/components/ConversationalAssistant';
 import WritingGuide from '../cover-letter/WritingGuide';
+import CoverLetterInputBox from './CoverLetterInputBox';
 import { CoverLetterData } from '../../types';
 import { useCoverLetterStore } from '../../store';
 import { coverLetterSectionOrder, getCoverLetterCareerTypeCopy } from '../../careerTypeCopy';
 import { coverLetterDraftApi, toCareerMode } from '@/shared/constants/careerModeApi';
 
 /* ================= 스타일 ================= */
-
-const glassSectionSx = {
-  backgroundColor: 'rgba(255, 255, 255, 0.6)',
-  borderRadius: '24px',
-  p: 4,
-  pb: 2,
-  mb: 3,
-  border: '1px solid rgba(255, 255, 255, 0.6)',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
-    boxShadow: '0 8px 30px rgba(0,0,0,0.04)',
-  },
-};
-
-const glassInputSx = {
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: '16px',
-    padding: '16px',
-    transition: 'all 0.3s ease',
-    '& fieldset': { borderColor: 'transparent' },
-    '&:hover fieldset': { borderColor: 'rgba(37, 99, 235, 0.3)' },
-    '&.Mui-focused': {
-      backgroundColor: '#fff',
-      boxShadow: '0 8px 20px rgba(37, 99, 235, 0.1)',
-      '& fieldset': { borderColor: '#2563EB', borderWidth: '1px' },
-    },
-  },
-  '& .MuiInputBase-input': {
-    lineHeight: 1.6,
-    color: '#334155',
-  },
-};
 
 const actionButtonSx = {
   borderRadius: '12px',
@@ -115,18 +80,6 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
   const section = coverLetterSections[activeStep];
   if (!section) return null;
   const selectedSectionInfo = coverLetterSections.find((item) => item.id === selectedSection);
-  const getSectionCharCount = (sectionId: string) => {
-    const value = coverLetterData[sectionId as keyof CoverLetterData];
-    return value ? value.length : 0;
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setCoverLetterData({ [name]: value });
-  };
-
   /* ---------- 가이드 ---------- */
   const handleGuideClick = (sectionId: string) => {
     setSelectedSection(sectionId);
@@ -199,30 +152,15 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
 
   return (
     <Box sx={{ py: 2, mb: -5 }}>
-      <Box sx={glassSectionSx}>
-        {/* 헤더 */}
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: isMobile ? 'stretch' : 'flex-start',
-            flexDirection: isMobile ? 'column' : 'row',
-            gap: isMobile ? 1.25 : 0,
-            mb: 3,
-          }}
-        >
-          <Box>
-            <Typography
-              variant="h6"
-              sx={{ fontWeight: 700, color: '#334155', mb: 0.5, fontSize: { xs: '1rem', sm: '1.25rem' } }}
-            >
-              {section.label}
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#94a3b8', fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
-              {section.desc}
-            </Typography>
-          </Box>
-
+      <CoverLetterInputBox
+        title={section.label}
+        description={section.desc}
+        value={String(coverLetterData[section.id as keyof CoverLetterData] ?? '')}
+        onChange={(value) => setCoverLetterData({ [section.id]: value })}
+        placeholder={`${section.label} 내용을 입력하세요.`}
+        minRows={section.rows}
+        disabled={isGenerating}
+        actions={(
           <Stack direction="row" spacing={1} justifyContent={isMobile ? 'flex-start' : 'flex-end'} flexWrap="wrap" useFlexGap>
             <Tooltip title="작성 가이드 보기">
               <IconButton
@@ -271,26 +209,8 @@ const CoverLetterDirectInputStep = ({ activeStep }: Props) => {
               {isMobile ? 'AI 초안' : 'AI 초안 작성'}
             </Button>
           </Stack>
-        </Box>
-
-        {/* 입력 */}
-        <TextField
-          fullWidth
-          multiline
-          minRows={section.rows}
-          name={section.id}
-          value={coverLetterData[section.id as keyof CoverLetterData]}
-          onChange={handleChange}
-          placeholder={`${section.label} 내용을 입력하세요.`}
-          disabled={isGenerating}
-          sx={glassInputSx}
-        />
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
-          <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 600 }}>
-            {getSectionCharCount(section.id)}자
-          </Typography>
-        </Box>
-      </Box>
+        )}
+      />
 
       {/* 작성 가이드 모달 */}
   <CustomModal

@@ -364,9 +364,11 @@ const AIChatView = React.forwardRef(function AIChatView<T extends Record<string,
         body: JSON.stringify(body),
       });
       const responseData = await requestAiJson<any>(res);
-      const nextQuestion = String(responseData?.nextQuestion ?? '추가 정보를 알려주세요.').trim();
+      const nextQuestion = String(
+        responseData?.nextQuestion ?? responseData?.missingInfo ?? '추가 정보를 알려주세요.'
+      ).trim();
       const summary = String(responseData?.summary ?? '').trim();
-      const finalDraft = String(responseData?.finalDraft ?? '').trim();
+      const finalDraft = String(responseData?.finalDraft ?? responseData?.fullDescription ?? '').trim();
       const isComplete = Boolean(responseData?.isComplete);
 
       if (summary.length > 0 || finalDraft.length > 0) {
