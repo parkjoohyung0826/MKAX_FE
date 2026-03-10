@@ -6,11 +6,10 @@ import { CompanyCoverLetterQuestion } from '../../types';
 
 const MAX_COMPANY_QUESTIONS = 5;
 
-// ✨ 모던 글래스모피즘 입력창 스타일
 const inputSx = {
   '& .MuiOutlinedInput-root': {
     borderRadius: '16px',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)', // 반투명 배경
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     backdropFilter: 'blur(8px)',
     '& fieldset': { 
@@ -25,7 +24,7 @@ const inputSx = {
     },
     '&.Mui-focused': {
       backgroundColor: '#ffffff',
-      boxShadow: '0 8px 24px -6px rgba(37, 99, 235, 0.2)', // 포커스 시 안티그래비티 글로우
+      boxShadow: '0 8px 24px -6px rgba(37, 99, 235, 0.2)',
       '& fieldset': { borderColor: '#2563EB', borderWidth: '1.5px' },
     },
   },
@@ -113,7 +112,6 @@ const CoverLetterCompanyQuestionSetupStep = () => {
             문항별 질문과 글자수 제한을 설정해주세요.
           </Typography>
           
-          {/* 상태 뱃지 (Glassmorphism) */}
           <Box
             sx={{
               display: 'inline-flex',
@@ -148,12 +146,10 @@ const CoverLetterCompanyQuestionSetupStep = () => {
                   position: 'relative',
                   borderRadius: '28px',
                   p: { xs: 2.5, sm: 3.5 },
-                  // ✨ Glassmorphism 배경 및 테두리 반사광
                   background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.35) 100%)',
                   backdropFilter: 'blur(24px)',
                   WebkitBackdropFilter: 'blur(24px)',
                   border: '1px solid rgba(255, 255, 255, 0.9)',
-                  // ✨ Antigravity 기본 그림자 & 이너 섀도우
                   boxShadow: `
                     0 20px 40px -12px rgba(15, 23, 42, 0.08), 
                     inset 0 1px 0 rgba(255, 255, 255, 1)
@@ -167,7 +163,6 @@ const CoverLetterCompanyQuestionSetupStep = () => {
                   }
                 }}
               >
-              {/* 문항 헤더 */}
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
                 <Typography variant="h6" sx={{ color: '#1e293b', fontWeight: 800 }}>
                   문항 {index + 1}
@@ -195,7 +190,7 @@ const CoverLetterCompanyQuestionSetupStep = () => {
                       color: '#ef4444',
                       bgcolor: alpha('#ef4444', 0.08),
                       '&:hover': { bgcolor: alpha('#ef4444', 0.12) },
-                      '&.Mui-disabled': { color: '#cbd5e1' },
+                      '&.Mui-disabled': { color: '#cbd5e1', borderColor: '#e2e8f0' },
                     }}
                   >
                     <DeleteOutlineRounded fontSize="small" />
@@ -204,7 +199,6 @@ const CoverLetterCompanyQuestionSetupStep = () => {
               </Stack>
 
               <Stack spacing={2}>
-                {/* 문항 입력 */}
                 <TextField
                   fullWidth
                   label="문항 질문"
@@ -214,7 +208,6 @@ const CoverLetterCompanyQuestionSetupStep = () => {
                   sx={inputSx}
                 />
                 
-                {/* 제한 설정 (가로 배치) */}
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <TextField
                     select
@@ -237,7 +230,7 @@ const CoverLetterCompanyQuestionSetupStep = () => {
                         borderRadius: '8px',
                         fontSize: '0.9rem',
                         minHeight: 36,
-                        // px: 1.5,
+                        px: 1.5,
                         '&.Mui-selected': { color: '#3182F6', fontWeight: 600, backgroundColor: 'transparent' },
                       }}
                     >
@@ -249,7 +242,7 @@ const CoverLetterCompanyQuestionSetupStep = () => {
                         borderRadius: '8px',
                         fontSize: '0.9rem',
                         minHeight: 36,
-                        // px: 1.5,
+                        px: 1.5,
                         '&.Mui-selected': { color: '#3182F6', fontWeight: 600, backgroundColor: 'transparent' },
                       }}
                     >
@@ -274,7 +267,7 @@ const CoverLetterCompanyQuestionSetupStep = () => {
                     }}
                     sx={{
                        ...inputSx,
-                       opacity: item.hasCharacterLimit ? 1 : 0.6, // 비활성화 시 투명도 조절
+                       opacity: item.hasCharacterLimit ? 1 : 0.6,
                     }}
                   />
                 </Stack>
