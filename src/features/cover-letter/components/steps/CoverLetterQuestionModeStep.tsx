@@ -15,13 +15,13 @@ const cards: Array<{
     id: 'default',
     title: '기본 문항으로 작성',
     description: '성장과정/장단점/경험/지원동기 기본 문항으로 진행합니다.',
-    illustrationUrl: 'https://illustrations.popsy.co/blue/writing.svg',
+    illustrationUrl: 'https://illustrations.popsy.co/blue/work-from-home.svg',
   },
   {
     id: 'company',
     title: '기업별 문항으로 작성',
     description: '기업 자소서 문항을 직접 입력하고 문항별 작성 도우미를 설정합니다.',
-    illustrationUrl: 'https://illustrations.popsy.co/blue/team-presentation.svg',
+    illustrationUrl: 'https://illustrations.popsy.co/blue/shaking-hands.svg',
   },
 ];
 
@@ -163,6 +163,11 @@ const CoverLetterQuestionModeStep = () => {
                         py: { xs: 0.35, sm: 0.6 },
                         borderRadius: '99px',
                         boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
+                        animation: 'popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+                        '@keyframes popIn': {
+                          '0%': { transform: 'scale(0.8) translateY(10px)', opacity: 0 },
+                          '100%': { transform: 'scale(1) translateY(0)', opacity: 1 },
+                        },
                       }}
                     >
                       <CheckCircleRounded sx={{ fontSize: { xs: 14, sm: 18 } }} />

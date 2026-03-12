@@ -270,7 +270,7 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
             activeStep={progressActiveStep}
             onStepClick={handleProgressStepClick}
             completedSteps={contentCompletedSteps}
-            forceDropdownStyle={isCompanyMode && contentSteps.length <= 3}
+            forceDropdownStyle={isCompanyMode && (contentSteps.length <= 3 || contentSteps.length >= 6)}
             stepDescriptions={isCompanyMode ? companyQuestions.map((item) => item.question) : []}
           />
         </Box>
