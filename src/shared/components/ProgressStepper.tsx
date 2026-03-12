@@ -24,6 +24,8 @@ interface Props {
   activeStep: number;
   onStepClick?: (step: number) => void;
   completedSteps?: boolean[];
+  forceDropdownStyle?: boolean;
+  stepDescriptions?: string[];
 }
 
 // 1. 고정된 색상의 연결선 (회색 유지)
@@ -91,7 +93,14 @@ function StyledStepIcon(props: StepIconProps) {
   );
 }
 
-const ProgressStepper = ({ steps, activeStep, onStepClick, completedSteps = [] }: Props) => {
+const ProgressStepper = ({
+  steps,
+  activeStep,
+  onStepClick,
+  completedSteps = [],
+  forceDropdownStyle = false,
+  stepDescriptions = [],
+}: Props) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [mobileMenuAnchorEl, setMobileMenuAnchorEl] = useState<HTMLElement | null>(null);
@@ -115,8 +124,9 @@ const ProgressStepper = ({ steps, activeStep, onStepClick, completedSteps = [] }
     setMobileMenuAnchorEl(null);
   };
 
-  if (isMobile) {
+  if (isMobile || forceDropdownStyle) {
     const currentLabel = steps[activeStep] ?? '';
+    const currentDescription = stepDescriptions[activeStep] ?? '';
     const completedCount = completedSteps.length > 0
       ? completedSteps.filter(Boolean).length
       : activeStep;
@@ -163,19 +173,45 @@ const ProgressStepper = ({ steps, activeStep, onStepClick, completedSteps = [] }
                 완료 {completedCount}단계
               </Typography>
             </Stack>
-            <Typography
+            <Box
               sx={{
-                fontSize: '0.88rem',
-                color: '#0f172a',
-                fontWeight: 800,
-                lineHeight: 1.3,
+                display: 'flex',
+                alignItems: 'baseline',
+                gap: 0.45,
+                minWidth: 0,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
-                textOverflow: 'ellipsis',
               }}
             >
-              {currentLabel}
-            </Typography>
+              <Typography
+                component="span"
+                sx={{
+                  fontSize: '0.88rem',
+                  color: '#0f172a',
+                  fontWeight: 800,
+                  lineHeight: 1.3,
+                  flexShrink: 0,
+                }}
+              >
+                {currentLabel}
+              </Typography>
+              {currentDescription && (
+                <Typography
+                  component="span"
+                  sx={{
+                    fontSize: '0.86rem',
+                    color: '#334155',
+                    fontWeight: 500,
+                    lineHeight: 1.3,
+                    minWidth: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  · {currentDescription}
+                </Typography>
+              )}
+            </Box>
           </Box>
 
           <Button
@@ -226,6 +262,7 @@ const ProgressStepper = ({ steps, activeStep, onStepClick, completedSteps = [] }
           MenuListProps={{ sx: { p: 0.5 } }}
         >
           {steps.map((label, index) => {
+            const description = stepDescriptions[index] ?? '';
             const isCompleted = completedSteps.length > 0 ? completedSteps[index] : index < activeStep;
             const isActive = index === activeStep;
             const isClickable = !!onStepClick;
@@ -271,17 +308,45 @@ const ProgressStepper = ({ steps, activeStep, onStepClick, completedSteps = [] }
                     {isCompleted ? <Check sx={{ fontSize: 13 }} /> : index + 1}
                   </Box>
                   <Box sx={{ minWidth: 0 }}>
-                    <Typography
+                    <Box
                       sx={{
-                        fontSize: '0.82rem',
-                        fontWeight: isActive ? 800 : 700,
-                        color: isActive ? '#1d4ed8' : '#334155',
-                        lineHeight: 1.25,
-                        wordBreak: 'keep-all',
+                        display: 'flex',
+                        alignItems: 'baseline',
+                        gap: 0.4,
+                        minWidth: 0,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
                       }}
                     >
-                      {label}
-                    </Typography>
+                      <Typography
+                        component="span"
+                        sx={{
+                          fontSize: '0.82rem',
+                          fontWeight: isActive ? 800 : 700,
+                          color: isActive ? '#1d4ed8' : '#334155',
+                          lineHeight: 1.25,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {label}
+                      </Typography>
+                      {description && (
+                        <Typography
+                          component="span"
+                          sx={{
+                            fontSize: '0.8rem',
+                            fontWeight: 500,
+                            color: isActive ? '#2563EB' : '#64748b',
+                            lineHeight: 1.25,
+                            minWidth: 0,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          · {description}
+                        </Typography>
+                      )}
+                    </Box>
                     <Typography sx={{ fontSize: '0.68rem', color: '#94a3b8', mt: 0.1 }}>
                       {isActive ? '현재 단계' : isCompleted ? '완료됨' : '이동하기'}
                     </Typography>
