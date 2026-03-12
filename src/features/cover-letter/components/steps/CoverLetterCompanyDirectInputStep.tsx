@@ -5,7 +5,6 @@ import { useTheme } from '@mui/material/styles';
 import { useCoverLetterStore } from '../../store';
 import CoverLetterInputBox from './CoverLetterInputBox';
 import ConversationalAssistant from '@/shared/components/ConversationalAssistant';
-import { coverLetterDraftApi, toCareerMode } from '@/shared/constants/careerModeApi';
 
 interface Props {
   activeStep: number;
@@ -25,14 +24,13 @@ const actionButtonSx = {
 const CoverLetterCompanyDirectInputStep = ({ activeStep }: Props) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { companyQuestions, setCompanyQuestionAnswer, selectedCareerType } = useCoverLetterStore();
+  const { companyQuestions, setCompanyQuestionAnswer, setCompanyQuestionChatState } = useCoverLetterStore();
   const question = companyQuestions[activeStep];
   const [isAIModalOpen, setAIModalOpen] = React.useState(false);
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [toastOpen, setToastOpen] = React.useState(false);
   const [toastMessage, setToastMessage] = React.useState('');
   const [toastSeverity, setToastSeverity] = React.useState<'success' | 'error'>('success');
-  const mode = toCareerMode(selectedCareerType);
 
   if (!question) return null;
 
@@ -41,34 +39,46 @@ const CoverLetterCompanyDirectInputStep = ({ activeStep }: Props) => {
 
   const handleAIGenerate = async (prompt: string): Promise<{ missingInfo?: string; isComplete?: boolean }> => {
     try {
+      if (!question.questionId) {
+        throw new Error('문항 세트가 생성되지 않았습니다. 기업 문항 설정 단계에서 다음을 눌러주세요.');
+      }
       setIsGenerating(true);
 
-      const res = await fetch(coverLetterDraftApi, {
+      const res = await fetch(`/api/cover-letter/custom-chat/${question.questionId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
-          // backend section enum이 필수라 기본 문항 엔드포인트를 재사용하고,
-          // 실제 문항 맥락은 userInput에 포함해 생성 품질을 맞춘다.
-          section: 'MOTIVATION_ASPIRATION',
-          userInput: `기업 문항: ${question.question}\n요청 사항: ${prompt}`,
-          mode,
+          userInput: prompt,
+          currentSummary: question.summary ?? '',
         }),
       });
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.message ?? 'AI 초안 생성에 실패했습니다.');
 
-      const fullDescription = String(data?.fullDescription ?? '').trim();
-      if (!fullDescription) return { missingInfo: '생성을 위해 추가 정보가 필요합니다.', isComplete: false };
+      const nextQuestion = String(data?.nextQuestion ?? '').trim();
+      const summary = String(data?.summary ?? '').trim();
+      const finalDraft = String(data?.finalDraft ?? '').trim();
+      const isComplete = Boolean(data?.isComplete);
 
-      const nextValue = hasLimit && limit ? fullDescription.slice(0, limit) : fullDescription;
+      if (!finalDraft) {
+        return { missingInfo: nextQuestion || '생성을 위해 추가 정보가 필요합니다.', isComplete: false };
+      }
+
+      setCompanyQuestionChatState(question.id, {
+        summary,
+        finalDraft,
+        isComplete,
+      });
+      const nextValue = hasLimit && limit ? finalDraft.slice(0, limit) : finalDraft;
       setCompanyQuestionAnswer(question.id, nextValue);
       setAIModalOpen(false);
       setToastMessage('AI 작성이 완료되었습니다.');
       setToastSeverity('success');
       setToastOpen(true);
 
-      return { isComplete: true };
+      return { missingInfo: nextQuestion, isComplete };
     } catch (e: any) {
       setToastMessage(e?.message ?? 'AI 작성에 실패했습니다.');
       setToastSeverity('error');

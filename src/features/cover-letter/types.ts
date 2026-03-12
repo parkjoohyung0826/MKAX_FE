@@ -17,8 +17,12 @@ export type CompanyQuestionAssistantId = 'balanced' | 'story' | 'impact' | 'conc
 
 export interface CompanyCoverLetterQuestion {
   id: string;
+  questionId: number | null;
   question: string;
   answer: string;
+  summary: string;
+  finalDraft: string;
+  isComplete: boolean;
   assistantId: CompanyQuestionAssistantId;
   hasCharacterLimit: boolean;
   characterLimit: number | null;

@@ -23,7 +23,7 @@ import { coverLetterSectionOrder, getCoverLetterCareerTypeCopy } from '../career
 import { coverLetterApiByMode, toCareerMode } from '@/shared/constants/careerModeApi';
 
 type InputMode = 'ai' | 'direct';
-type CompanyChatData = { answer: string };
+type CompanyChatData = { answer: string; summary: string };
 
 const stepSlideVariants = {
   enter: (dir: number) => ({
@@ -52,13 +52,20 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
     selectedTemplate,
     selectedCareerType,
     selectedQuestionMode,
+    companyName,
+    companyQuestionSetId,
+    setCompanyQuestionSetId,
     companyQuestions,
+    setCompanyQuestions,
+    setCompanyQuestionAnswer,
+    setCompanyQuestionChatState,
   } = useCoverLetterStore();
   const [activeStep, setActiveStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [stepInputModes, setStepInputModes] = useState<Record<number, InputMode>>({});
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [isCreatingCustomSet, setIsCreatingCustomSet] = useState(false);
   const aiChatRef = useRef<AIChatViewHandle | null>(null);
 
   const mode = toCareerMode(selectedCareerType);
@@ -151,6 +158,25 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
               {currentCompanyQuestion.question}
             </Typography>
             <Typography variant="subtitle2" sx={{ color: '#64748b', fontWeight: 700, mb: 1 }}>
+              요약
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                color: '#334155',
+                lineHeight: 1.6,
+                bgcolor: 'rgba(148, 163, 184, 0.12)',
+                borderRadius: '12px',
+                px: 2,
+                py: 1.5,
+                mb: 2.2,
+              }}
+            >
+              {data.summary || <span style={{ color: '#94a3b8' }}>(요약 대기 중...)</span>}
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: '#64748b', fontWeight: 700, mb: 1 }}>
               작성 내용
             </Typography>
             <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#334155', lineHeight: 1.6 }}>
@@ -178,11 +204,14 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
     ? Math.min(Math.max(activeStep - contentStartIndex, 0), contentSteps.length - 1)
     : 0;
   const companySetupCompleted = !isCompanyMode || (
-    companyQuestions.length > 0 && companyQuestions.every((item) => item.question.trim().length > 0)
+    companyName.trim().length > 0 &&
+    companyQuestions.length > 0 &&
+    companyQuestions.every((item) => item.question.trim().length > 0)
   );
 
   const [persistentContentStepIndex, setPersistentContentStepIndex] = useState(0);
   const [shouldPersistAiChat, setShouldPersistAiChat] = useState(false);
+  const [shouldPersistCompanyAiChat, setShouldPersistCompanyAiChat] = useState(false);
 
   useEffect(() => {
     if (activeStep > coverLetterSteps.length - 1) {
@@ -202,7 +231,68 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
     }
   }, [isCompanyMode, isContentStep]);
 
-  const handleNextStep = () => {
+  useEffect(() => {
+    if (isCompanyMode && isContentStep) {
+      setShouldPersistCompanyAiChat(true);
+    }
+  }, [isCompanyMode, isContentStep]);
+
+  const createCompanyQuestionSet = async () => {
+    if (!isCompanyMode) return true;
+    if (!isCompanySetupStep) return true;
+
+    try {
+      setIsCreatingCustomSet(true);
+      const payload = {
+        companyName: companyName.trim(),
+        questions: companyQuestions.map((item) => ({
+          title: item.question.trim(),
+          hasCharacterLimit: item.hasCharacterLimit,
+          ...(item.hasCharacterLimit && item.characterLimit ? { characterLimit: item.characterLimit } : {}),
+        })),
+      };
+
+      const res = await fetch('/api/cover-letter/custom-sets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.message ?? data?.detail ?? '문항 세트 생성에 실패했습니다.');
+      }
+
+      const returnedQuestions = Array.isArray(data?.questions) ? data.questions : [];
+      const returnedSetId =
+        typeof data?.setId === 'number'
+          ? data.setId
+          : typeof data?.id === 'number'
+            ? data.id
+            : companyQuestionSetId;
+
+      setCompanyQuestionSetId(returnedSetId ?? null);
+      setCompanyQuestions(
+        companyQuestions.map((item, index) => ({
+          ...item,
+          questionId:
+            typeof returnedQuestions[index]?.questionId === 'number'
+              ? returnedQuestions[index].questionId
+              : item.questionId ?? null,
+        })),
+      );
+      return true;
+    } catch (error) {
+      setToastMessage(error instanceof Error ? error.message : '문항 세트 생성에 실패했습니다.');
+      setToastOpen(true);
+      return false;
+    } finally {
+      setIsCreatingCustomSet(false);
+    }
+  };
+
+  const handleNextStep = async () => {
     if (isTypeStep && !selectedCareerType) {
       setToastMessage('작성 유형(기본형/시니어용)을 먼저 선택해주세요.');
       setToastOpen(true);
@@ -222,9 +312,13 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
     }
 
     if (isCompanySetupStep && !companySetupCompleted) {
-      setToastMessage('기업별 문항을 1개 이상 작성하고, 각 문항 내용을 입력해주세요.');
+      setToastMessage('기업명을 입력하고, 기업별 문항을 1개 이상 작성해주세요.');
       setToastOpen(true);
       return;
+    }
+    if (isCompanySetupStep) {
+      const created = await createCompanyQuestionSet();
+      if (!created) return;
     }
 
     if (activeStep === coverLetterSteps.length - 1) {
@@ -259,6 +353,8 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
   };
 
   const showAiChatView = currentMode === 'ai' && isContentStep;
+  const showDefaultAiChatView = showAiChatView && !isCompanyMode;
+  const showCompanyAiChatView = showAiChatView && isCompanyMode;
   const showNonAiPanel = !showAiChatView;
 
   return (
@@ -285,79 +381,164 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
           resetDisabled={currentMode !== 'ai' || isCompanyMode}
         />
       )}
-      {showAiChatView && (
-        <Box>
-          {!isCompanyMode && shouldPersistAiChat && (
-            <AIChatView
-              ref={aiChatRef}
-              activeStep={persistentContentStepIndex}
-              steps={defaultContentSteps}
-              onStepComplete={() => undefined}
-              onResetChat={async (args) => {
-                const sections = args?.sections?.length
-                  ? args.sections
-                  : args?.section
-                    ? [args.section]
-                    : [];
-                if (sections.length === 0) return;
-                await Promise.all(
-                  sections.map((section) =>
-                    fetch('/api/cover-letter/chat/reset', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      credentials: 'include',
-                      body: JSON.stringify({ section }),
-                    })
-                  )
+      {shouldPersistAiChat && (
+        <Box sx={{ display: showDefaultAiChatView ? 'block' : 'none' }}>
+          <AIChatView
+            ref={aiChatRef}
+            activeStep={persistentContentStepIndex}
+            steps={defaultContentSteps}
+            onStepComplete={() => undefined}
+            onResetChat={async (args) => {
+              const sections = args?.sections?.length
+                ? args.sections
+                : args?.section
+                  ? [args.section]
+                  : [];
+              if (sections.length === 0) return;
+              await Promise.all(
+                sections.map((section) =>
+                  fetch('/api/cover-letter/chat/reset', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ section }),
+                  })
+                )
+              );
+            }}
+            data={coverLetterData}
+            setData={(update) => {
+              const newValues =
+                typeof update === 'function'
+                  ? update(coverLetterData)
+                  : update;
+              setCoverLetterData({ ...coverLetterData, ...newValues });
+            }}
+            conversationSteps={coverLetterConversationSteps}
+            hideResetButton
+            fieldApiConfigs={{
+              growthProcess: {
+                endpoint: coverLetterApiByMode[mode].growthProcess,
+                summaryField: 'growthProcessSummary',
+                resetSection: 'GROWTH_PROCESS',
+              },
+              strengthsAndWeaknesses: {
+                endpoint: coverLetterApiByMode[mode].strengthsAndWeaknesses,
+                summaryField: 'strengthsAndWeaknessesSummary',
+                resetSection: 'PERSONALITY',
+              },
+              keyExperience: {
+                endpoint: coverLetterApiByMode[mode].keyExperience,
+                summaryField: 'keyExperienceSummary',
+                resetSection: 'CAREER_STRENGTH',
+              },
+              motivation: {
+                endpoint: coverLetterApiByMode[mode].motivation,
+                summaryField: 'motivationSummary',
+                resetSection: 'MOTIVATION_ASPIRATION',
+              },
+            }}
+          />
+        </Box>
+      )}
+      {shouldPersistCompanyAiChat && (
+        <Box sx={{ display: isCompanyMode ? 'block' : 'none' }}>
+          {companyQuestions.map((question, index) => {
+                const isVisible = showCompanyAiChatView && isContentStep && index === contentStepIndex;
+                const hasLimit = question.hasCharacterLimit
+                  && typeof question.characterLimit === 'number'
+                  && question.characterLimit > 0;
+                const limit = hasLimit ? question.characterLimit : null;
+                const singleQuestionSteps: ConversationStep<CompanyChatData>[] = [
+                  {
+                    title: `문항 ${index + 1}`,
+                    panel: (data) => (
+                      <Box>
+                        <Typography variant="h6" fontWeight={700} gutterBottom>{`문항 ${index + 1}`}</Typography>
+                        <Typography variant="body2" sx={{ color: '#64748b', mb: 2, whiteSpace: 'pre-wrap' }}>
+                          {question.question}
+                        </Typography>
+                        <Typography variant="subtitle2" sx={{ color: '#64748b', fontWeight: 700, mb: 1 }}>
+                          요약
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-word',
+                            color: '#334155',
+                            lineHeight: 1.6,
+                            bgcolor: 'rgba(148, 163, 184, 0.12)',
+                            borderRadius: '12px',
+                            px: 2,
+                            py: 1.5,
+                            mb: 2.2,
+                          }}
+                        >
+                          {data.summary || <span style={{ color: '#94a3b8' }}>(요약 대기 중...)</span>}
+                        </Typography>
+                        <Typography variant="subtitle2" sx={{ color: '#64748b', fontWeight: 700, mb: 1 }}>
+                          작성 내용
+                        </Typography>
+                        <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#334155', lineHeight: 1.6 }}>
+                          {data.answer || <span style={{ color: '#94a3b8' }}>(입력 대기 중...)</span>}
+                        </Typography>
+                      </Box>
+                    ),
+                    fields: [{ field: 'answer', question: question.question }],
+                  },
+                ];
+
+                return (
+                  <Box key={`company-chat-${question.id}`} sx={{ display: isVisible ? 'block' : 'none' }}>
+                    <AIChatView
+                      activeStep={0}
+                      steps={[`문항 ${index + 1}`]}
+                      onStepComplete={() => undefined}
+                      onResetChat={async () => {
+                        if (!question.questionId) return;
+                        await fetch('/api/cover-letter/custom-chat/reset', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
+                          body: JSON.stringify({ questionId: question.questionId }),
+                        });
+                        setCompanyQuestionChatState(question.id, {
+                          summary: '',
+                          finalDraft: '',
+                          isComplete: false,
+                          answer: '',
+                        });
+                      }}
+                      hideResetButton
+                      data={{ answer: question.answer, summary: question.summary }}
+                      setData={(update) => {
+                        const prev = { answer: question.answer, summary: question.summary };
+                        const next = typeof update === 'function' ? update(prev) : update;
+                        const rawAnswer = String(next.answer ?? '');
+                        const answer = hasLimit && limit ? rawAnswer.slice(0, limit) : rawAnswer;
+                        setCompanyQuestionAnswer(question.id, answer);
+                        setCompanyQuestionChatState(question.id, {
+                          summary: String(next.summary ?? question.summary ?? ''),
+                          finalDraft: answer,
+                        });
+                      }}
+                      conversationSteps={singleQuestionSteps}
+                      fieldApiConfigs={
+                        question.questionId
+                          ? {
+                              answer: {
+                                endpoint: `/api/cover-letter/custom-chat/${question.questionId}`,
+                                summaryField: 'summary',
+                                buildBody: ({ userInput, currentSummary }) => ({ userInput, currentSummary }),
+                              },
+                            }
+                          : undefined
+                      }
+                    />
+                  </Box>
                 );
-              }}
-              data={coverLetterData}
-              setData={(update) => {
-                const newValues =
-                  typeof update === 'function'
-                    ? update(coverLetterData)
-                    : update;
-                setCoverLetterData({ ...coverLetterData, ...newValues });
-              }}
-              conversationSteps={coverLetterConversationSteps}
-              hideResetButton
-              fieldApiConfigs={{
-                growthProcess: {
-                  endpoint: coverLetterApiByMode[mode].growthProcess,
-                  summaryField: 'growthProcessSummary',
-                  resetSection: 'GROWTH_PROCESS',
-                },
-                strengthsAndWeaknesses: {
-                  endpoint: coverLetterApiByMode[mode].strengthsAndWeaknesses,
-                  summaryField: 'strengthsAndWeaknessesSummary',
-                  resetSection: 'PERSONALITY',
-                },
-                keyExperience: {
-                  endpoint: coverLetterApiByMode[mode].keyExperience,
-                  summaryField: 'keyExperienceSummary',
-                  resetSection: 'CAREER_STRENGTH',
-                },
-                motivation: {
-                  endpoint: coverLetterApiByMode[mode].motivation,
-                  summaryField: 'motivationSummary',
-                  resetSection: 'MOTIVATION_ASPIRATION',
-                },
-              }}
-            />
-          )}
-          {isCompanyMode && currentCompanyQuestion && (
-            <AIChatView
-              key={`company-chat-${contentStepIndex}-${currentCompanyQuestion.id}`}
-              activeStep={0}
-              steps={[`문항 ${contentStepIndex + 1}`]}
-              onStepComplete={() => undefined}
-              onResetChat={() => undefined}
-              hideResetButton
-              data={{ answer: currentCompanyQuestion.answer }}
-              setData={(_update) => undefined}
-              conversationSteps={companyConversationSteps}
-            />
-          )}
+              })}
         </Box>
       )}
       <AnimatePresence mode="wait" initial={false}>
@@ -395,8 +576,13 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
         <Button disabled={activeStep === 0} onClick={handleBackStep} sx={{ color: '#64748b', fontWeight: 600, px: 3, py: 1, borderRadius: '20px', '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' } }} >
           이전 단계
         </Button>
-        <Button variant="contained" onClick={handleNextStep} sx={{ px: 4, py: 1.2, borderRadius: '30px', fontWeight: 700, boxShadow: '0 8px 16px rgba(37, 99, 235, 0.25)', background: 'linear-gradient(45deg, #2563EB, #1d4ed8)' }} >
-          {activeStep === coverLetterSteps.length - 1 ? '자기소개서 완성하기' : '다음'}
+        <Button
+          variant="contained"
+          onClick={handleNextStep}
+          disabled={isCreatingCustomSet}
+          sx={{ px: 4, py: 1.2, borderRadius: '30px', fontWeight: 700, boxShadow: '0 8px 16px rgba(37, 99, 235, 0.25)', background: 'linear-gradient(45deg, #2563EB, #1d4ed8)' }}
+        >
+          {isCreatingCustomSet ? '세트 생성 중...' : activeStep === coverLetterSteps.length - 1 ? '자기소개서 완성하기' : '다음'}
         </Button>
       </Box>
 

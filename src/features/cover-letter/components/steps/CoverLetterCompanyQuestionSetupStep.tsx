@@ -48,15 +48,19 @@ const recruitmentFilterMenuProps = {
 
 const createQuestion = (index: number): CompanyCoverLetterQuestion => ({
   id: `company-question-${Date.now()}-${index}`,
+  questionId: null,
   question: '',
   answer: '',
+  summary: '',
+  finalDraft: '',
+  isComplete: false,
   assistantId: 'balanced',
   hasCharacterLimit: false,
   characterLimit: null,
 });
 
 const CoverLetterCompanyQuestionSetupStep = () => {
-  const { companyQuestions, setCompanyQuestions } = useCoverLetterStore();
+  const { companyName, setCompanyName, companyQuestions, setCompanyQuestions } = useCoverLetterStore();
 
   useEffect(() => {
     if (companyQuestions.length === 0) {
@@ -70,7 +74,14 @@ const CoverLetterCompanyQuestionSetupStep = () => {
     setCompanyQuestions(
       normalizedQuestions.map((item) => {
         if (item.id !== id) return item;
-        const next = { ...item, ...patch };
+        const questionChanged =
+          typeof patch.question === 'string' &&
+          patch.question.trim() !== item.question.trim();
+        const next = {
+          ...item,
+          ...patch,
+          ...(questionChanged ? { questionId: null, summary: '', isComplete: false } : {}),
+        };
 
         if (!next.hasCharacterLimit) {
           next.characterLimit = null;
@@ -131,6 +142,14 @@ const CoverLetterCompanyQuestionSetupStep = () => {
             추가된 문항 <Box component="span" sx={{ color: '#2563EB', ml: 1, mr: 0.5 }}>{normalizedQuestions.length}</Box> / {MAX_COMPANY_QUESTIONS}
           </Box>
         </Stack>
+        <TextField
+          fullWidth
+          label="기업명"
+          value={companyName}
+          onChange={(e) => setCompanyName(e.target.value)}
+          placeholder="예) 네이버"
+          sx={{ ...inputSx, mt: 2 }}
+        />
       </Box>
 
       {/* 리스트 영역 */}

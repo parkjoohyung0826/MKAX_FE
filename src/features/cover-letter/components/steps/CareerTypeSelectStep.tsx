@@ -8,6 +8,8 @@ const CareerTypeSelectStep = () => {
     setSelectedCareerType,
     setCoverLetterData,
     setSelectedQuestionMode,
+    setCompanyName,
+    setCompanyQuestionSetId,
     setCompanyQuestions,
   } = useCoverLetterStore();
 
@@ -28,6 +30,8 @@ const CareerTypeSelectStep = () => {
       motivationSummary: '',
     });
     setSelectedQuestionMode(null);
+    setCompanyName('');
+    setCompanyQuestionSetId(null);
     setCompanyQuestions([]);
 
     await Promise.all(

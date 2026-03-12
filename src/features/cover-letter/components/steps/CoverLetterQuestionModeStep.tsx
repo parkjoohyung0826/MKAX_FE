@@ -26,11 +26,19 @@ const cards: Array<{
 ];
 
 const CoverLetterQuestionModeStep = () => {
-  const { selectedQuestionMode, setSelectedQuestionMode, setCompanyQuestions } = useCoverLetterStore();
+  const {
+    selectedQuestionMode,
+    setSelectedQuestionMode,
+    setCompanyName,
+    setCompanyQuestionSetId,
+    setCompanyQuestions,
+  } = useCoverLetterStore();
 
   const handleSelect = (mode: CoverLetterQuestionMode) => {
     setSelectedQuestionMode(mode);
     if (mode === 'default') {
+      setCompanyName('');
+      setCompanyQuestionSetId(null);
       setCompanyQuestions([]);
     }
   };
