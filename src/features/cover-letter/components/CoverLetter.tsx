@@ -346,7 +346,7 @@ const CoverLetter = ({ handleGenerate, isGenerating }: Props) => {
             />
           )}
           {isCompanyMode && currentCompanyQuestion && (
-            <AIChatView<CompanyChatData>
+            <AIChatView
               key={`company-chat-${contentStepIndex}-${currentCompanyQuestion.id}`}
               activeStep={0}
               steps={[`문항 ${contentStepIndex + 1}`]}
